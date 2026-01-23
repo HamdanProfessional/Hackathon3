@@ -1,0 +1,121 @@
+{
+  "name": "learnflow-database",
+  "version": "1.0.0",
+  "description": "MCP server providing real-time access to LearnFlow database for AI agents",
+  "author": "LearnFlow Team",
+  "license": "MIT",
+  "tools": [
+    {
+      "name": "get_student_progress",
+      "description": "Retrieve comprehensive student progress data including mastery scores, completion rates, and learning patterns",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "student_id": {
+            "type": "string",
+            "description": "Unique student identifier"
+          }
+        },
+        "required": ["student_id"]
+      }
+    },
+    {
+      "name": "list_exercises",
+      "description": "List all available exercises with filters for topic, difficulty, and completion status",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "topic": {
+            "type": "string",
+            "description": "Filter by Python topic (e.g., loops, functions, classes)"
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": ["beginner", "intermediate", "advanced"],
+            "description": "Filter by difficulty level"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 20,
+            "description": "Maximum number of exercises to return"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_code_submissions",
+      "description": "Retrieve student's code submissions with review feedback and scores",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "student_id": {
+            "type": "string",
+            "description": "Unique student identifier"
+          },
+          "exercise_id": {
+            "type": "string",
+            "description": "Optional: Filter by specific exercise"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 10,
+            "description": "Maximum submissions to return"
+          }
+        },
+        "required": ["student_id"]
+      }
+    },
+    {
+      "name": "get_conversation_history",
+      "description": "Retrieve conversation history between student and AI agents for context continuity",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "student_id": {
+            "type": "string",
+            "description": "Unique student identifier"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 20,
+            "description": "Number of recent messages"
+          }
+        },
+        "required": ["student_id"]
+      }
+    },
+    {
+      "name": "detect_struggles",
+      "description": "Identify learning struggles based on error patterns, failed attempts, and performance metrics",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "student_id": {
+            "type": "string",
+            "description": "Unique student identifier"
+          }
+        },
+        "required": ["student_id"]
+      }
+    },
+    {
+      "name": "search_code_patterns",
+      "description": "Search for common code patterns across all student submissions to identify learning trends",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "Code pattern to search (e.g., 'for loop', 'function definition')"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 50,
+            "description": "Maximum results"
+          }
+        },
+        "required": ["pattern"]
+      }
+    }
+  ]
+}

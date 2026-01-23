@@ -1,0 +1,144 @@
+# LearnFlow MCP Servers Deployment
+# Deploys database and code execution MCP servers
+
+# Namespace (if not using learnflow)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: learnflow-mcp
+---
+# Database MCP Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database-mcp
+  namespace: learnflow-mcp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: database-mcp
+  template:
+    metadata:
+      labels:
+        app: database-mcp
+    spec:
+      containers:
+      - name: database-mcp
+        image: learnflow/database-mcp:v1
+        imagePullPolicy: Never  # Use local images for Minikube
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: mcp-config
+              key: database-url
+        - name: LOG_LEVEL
+          value: "INFO"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: database-mcp
+  namespace: learnflow-mcp
+spec:
+  selector:
+    app: database-mcp
+  ports:
+  - port: 8000
+    targetPort: 8000
+---
+# Code Execution MCP Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code-exec-mcp
+  namespace: learnflow-mcp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: code-exec-mcp
+  template:
+    metadata:
+      labels:
+        app: code-exec-mcp
+    spec:
+      containers:
+      - name: code-exec-mcp
+        image: learnflow/code-exec-mcp:v1
+        imagePullPolicy: Never  # Use local images for Minikube
+        ports:
+        - containerPort: 8001
+        env:
+        - name: MAX_TIMEOUT
+          value: "10"
+        - name: MAX_MEMORY
+          value: "100"
+        - name: LOG_LEVEL
+          value: "INFO"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: code-exec-mcp
+  namespace: learnflow-mcp
+spec:
+  selector:
+    app: code-exec-mcp
+  ports:
+  - port: 8001
+    targetPort: 8001
+---
+# ConfigMap for MCP configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-config
+  namespace: learnflow-mcp
+data:
+  database-url: "postgresql://learnflow:learnflow@postgres.postgres.svc.cluster.local:5432/learnflow"
+---
+# Ingress for MCP servers (optional)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mcp-ingress
+  namespace: learnflow-mcp
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: mcp.learnflow.local
+    http:
+      paths:
+      - path: /database
+        pathType: Prefix
+        backend:
+          service:
+            name: database-mcp
+            port:
+              number: 8000
+      - path: /code-exec
+        pathType: Prefix
+        backend:
+          service:
+            name: code-exec-mcp
+            port:
+              number: 8001
