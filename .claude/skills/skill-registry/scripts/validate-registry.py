@@ -5,6 +5,11 @@ import sys
 import re
 from pathlib import Path
 
+# Configure UTF-8 encoding for Windows console
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
 SKILLS_DIR = ".claude/skills"
 
 def validate_skill(skill_path):
@@ -35,7 +40,7 @@ def validate_skill(skill_path):
             warnings.append("No scripts in scripts/ directory")
 
     # Check token budget
-    with open(skill_md) as f:
+    with open(skill_md, encoding='utf-8') as f:
         content = f.read()
     char_count = len(content)
     token_count = char_count // 4

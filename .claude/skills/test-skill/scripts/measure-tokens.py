@@ -3,6 +3,11 @@
 import sys
 from pathlib import Path
 
+# Configure UTF-8 encoding for Windows console
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
 SKILLS_DIR = ".claude/skills"
 
 def measure_tokens():

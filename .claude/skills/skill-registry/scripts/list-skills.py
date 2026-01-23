@@ -5,11 +5,16 @@ import sys
 from pathlib import Path
 import re
 
+# Configure UTF-8 encoding for Windows console
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
 SKILLS_DIR = ".claude/skills"
 
 def parse_frontmatter(file_path):
     """Parse YAML frontmatter from SKILL.md."""
-    with open(file_path) as f:
+    with open(file_path, encoding='utf-8') as f:
         content = f.read()
 
     if not content.startswith("---"):
