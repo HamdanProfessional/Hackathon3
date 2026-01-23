@@ -2,723 +2,399 @@
 
 **Status**: Draft
 **Phase**: 4
-**Focus**: Build FastAPI microservices with Dapr sidecars and AI agent integration for LearnFlow
+**Focus**: Backend microservices for LearnFlow multi-agent learning platform
 
 ---
 
 ## Overview
 
-Build the backend microservices architecture for the LearnFlow multi-agent learning platform. Each service is:
-- **FastAPI-based**: RESTful API endpoints
-- **Dapr-enabled**: Service mesh for state management, pub/sub, and service invocation
-- **Agent-integrated**: AI agents for tutoring capabilities
-- **Stateless**: All state managed by Dapr or PostgreSQL
+Build the backend services that power the LearnFlow multi-agent learning platform. These services enable conversational AI tutoring for Python learning through:
+- **Intelligent Query Routing**: Direct student questions to appropriate specialist agents
+- **Concept Explanation**: Adaptive explanations based on student mastery level
+- **Error Analysis**: Parse errors and provide progressive hints
+- **Exercise Generation**: Auto-graded coding challenges with hints
+- **Progress Tracking**: Calculate mastery scores and learning streaks
+- **Code Review**: Analyze code for correctness, style, efficiency, and readability
 
-### Services to Deploy
+### What This Phase Delivers
 
-| Service | Port | Agent | Dapr Components |
-|---------|---------|-------|-----------------|
-| **triage-service** | 8001 | Triage Agent | Pub/Sub, Service Invocation |
-| **concepts-service** | 8002 | Concepts Agent | State store, Pub/Sub |
-| **debug-service** | 8003 | Debug Agent | State store, Pub/Sub |
-| **exercise-service** | 8004 | Exercise Agent | State store, Pub/Sub |
-| **progress-service** | 8005 | Progress Agent | State store, Pub/Sub |
-| **code-review-service** | 8006 | Code Review Agent | State store, Pub/Sub |
+Six independent microservices that can:
+1. Accept student queries via REST APIs
+2. Communicate with each other for service orchestration
+3. Publish/subscribe to events for asynchronous processing
+4. Maintain state through external data stores
+5. Scale independently based on load
 
 ---
 
 ## Success Criteria
 
-- [ ] All 6 FastAPI services deployed to Minikube
-- [ ] Each service has Dapr sidecar running
-- [ ] Services communicate via Dapr service invocation
-- [ ] Kafka pub/sub configured for event streaming
-- [ ] AI agents integrated with OpenAI SDK
-- [ ] PostgreSQL schemas created for each service
-- [ ] Health endpoints responding on all services
-- [ ] Zero manual intervention - autonomous deployment via Skills
+**Measurable Outcomes** (technology-agnostic):
+
+- [ ] All six services respond to health checks within 1 second
+- [ ] Services can invoke each other without hard-coded dependencies
+- [ ] Events published by one service are received by subscribers within 2 seconds
+- [ ] Student data persists across service restarts
+- [ ] Services handle 100 concurrent requests with <500ms average response time
+- [ ] Zero-downtime deployment possible (rolling updates supported)
+- [ ] Services deploy autonomously using defined Skills
 
 ---
 
-## Architecture
+## User Stories
 
-### Component Diagram
+### P1: Student Query Routing
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                         MINIKUBE CLUSTER                              │
-│                                                                        │
-│  ┌──────────────────────────────────────────────────────────────────┐ │
-│  │  NAMESPACE: learnflow                                             │ │
-│  │                                                                  │ │
-│  │  ┌──────────────────┐         ┌──────────────────┐              │ │
-│  │  │ triage-service   │         │ concepts-service │              │ │
-│  │  │ + FastAPI        │◄────────┤ + FastAPI        │              │ │
-│  │  │ + Dapr Sidecar   │ Invoke  │ + Dapr Sidecar   │              │ │
-│  │  │ + Triage Agent   │         │ + Concepts Agent │              │ │
-│  │  └────────┬─────────┘         └────────┬─────────┘              │ │
-│  │           │                            │                          │ │
-│  │           │ Pub/Sub                   │ Pub/Sub                  │ │
-│  │           ▼                            ▼                          │ │
-│  │  ┌──────────────────┐         ┌──────────────────┐              │ │
-│  │  │ debug-service    │         │ exercise-service │              │ │
-│  │  │ + FastAPI        │◄────────┤ + FastAPI        │              │ │
-│  │  │ + Dapr Sidecar   │ Invoke  │ + Dapr Sidecar   │              │ │
-│  │  │ + Debug Agent    │         │ + Exercise Agent │              │ │
-│  │  └────────┬─────────┘         └────────┬─────────┘              │ │
-│  │           │                            │                          │ │
-│  │           │ Pub/Sub                   │ Pub/Sub                  │ │
-│  │           ▼                            ▼                          │ │
-│  │  ┌──────────────────┐         ┌──────────────────┐              │ │
-│  │  │progress-service  │         │code-review-svc   │              │ │
-│  │  │ + FastAPI        │◄────────┤ + FastAPI        │              │ │
-│  │  │ + Dapr Sidecar   │ Invoke  │ + Dapr Sidecar   │              │ │
-│  │  │ + Progress Agent │         │ + CodeReview Agnt │              │ │
-│  │  └────────┬─────────┘         └────────┬─────────┘              │ │
-│  │           │                            │                          │ │
-│  │           │ Pub/Sub                   │ Pub/Sub                  │ │
-│  │           ▼                            ▼                          │ │
-│  │  ┌──────────────────┐         ┌──────────────────┐              │ │
-│  │  │   KAFKA          │         │  POSTGRESQL      │              │ │
-│  │  │  (Pub/Sub)      │         │  (State Store)   │              │ │
-│  │  │                  │         │                  │              │ │
-│  │  │ learning.*       │         │                  │              │ │
-│  │  │ code.*           │         │                  │              │ │
-│  │  │ exercise.*       │         │                  │              │ │
-│  │  │ struggle.*       │         │                  │              │ │
-│  │  └──────────────────┘         └──────────────────┘              │ │
-│  └──────────────────────────────────────────────────────────────────┘ │
-└────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Technology Stack
-
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| **API Framework** | FastAPI 0.104+ | RESTful endpoints |
-| **AI SDK** | OpenAI SDK (AsyncOpenAI) | Agent integration |
-| **Service Mesh** | Dapr 1.12+ | Sidecar pattern |
-| **Pub/Sub** | Kafka (via Dapr) | Event streaming |
-| **State Store** | PostgreSQL (via Dapr) | Persistence |
-| **Container** | Docker | Deployment |
-| **Orchestration** | Kubernetes | Service management |
-
----
-
-## Requirements
-
-### Common Requirements (All Services)
-
-**Minimum Configuration**:
-- Python 3.11+
-- FastAPI with async/await
-- Dapr sidecar with default ports (3500 HTTP, 50001 gRPC)
-- Health check endpoint: `/health`
-- OpenAPI documentation at `/docs`
-- Structured logging with JSON output
-
-**Dapr Components**:
-- `pubsub` component for Kafka
-- `state` component for PostgreSQL
-- `secret` component for environment variables
+**As a** student learning Python
+**I want** my questions to be automatically routed to the right specialist
+**So that** I get relevant help without manually selecting the assistance type
 
 **Acceptance Criteria**:
-- [ ] Service container running
-- [ ] Dapr sidecar running
-- [ ] Health endpoint returns 200
-- [ ] Can invoke other services via Dapr
-- [ ] Can publish/subscribe to Kafka topics
+- [ ] Given a student query, the system identifies if it's about concepts, debugging, or exercises
+- [ ] Query is routed to appropriate specialist service
+- [ ] Routing decision completes within 500ms
+- [ ] System logs routing decisions for analytics
 
-### 1. Triage Service
-
-**Port**: 8001
-**Dapr App ID**: `triage-service`
-
-**Endpoints**:
-```python
-POST /api/v1/triage
-"""
-Analyzes student query and routes to appropriate specialist agent.
-
-Request:
-{
-    "conversation_id": "uuid",
-    "student_id": "uuid",
-    "message": "How do for loops work in Python?"
-}
-
-Response:
-{
-    "agent": "concepts",
-    "confidence": 0.95,
-    "reasoning": "Query asks for explanation, not debugging"
-}
-"""
-```
-
-**Agent**: Triage Agent
-- Classifies queries into: explain, debug, exercise, progress
-- Uses keyword analysis + LLM classification
-- Publishes `learning.triage` event with routing decision
-
-**Events Published**:
-- `learning.triage` - Routing decisions for analytics
-
-**Events Subscribed**:
-- `code.submission` - Code submissions requiring triage
+**Notes**:
+- "explain", "what is", "how does" → Concepts Agent
+- "error", "bug", "not working" → Debug Agent
+- "exercise", "practice", "challenge" → Exercise Agent
 
 ---
 
-### 2. Concepts Service
+### P1: Adaptive Concept Explanations
 
-**Port**: 8002
-**Dapr App ID**: `concepts-service`
+**As a** student
+**I want** explanations that match my current understanding level
+**So that** I'm not overwhelmed by too-advanced or too-simple content
 
-**Endpoints**:
-```python
-POST /api/v1/concepts/explain
-"""
-Explains a Python concept with examples.
+**Acceptance Criteria**:
+- [ ] Given a concept request, system retrieves student's mastery level
+- [ ] Explanation complexity adjusts based on mastery (Beginner/Learning/Proficient/Mastered)
+- [ ] System provides code examples relevant to the concept
+- [ ] Topics covered align with 8-module Python curriculum
 
-Request:
-{
-    "conversation_id": "uuid",
-    "student_id": "uuid",
-    "concept": "for loops",
-    "level": "beginner"
-}
-
-Response:
-{
-    "explanation": "A for loop iterates over sequences...",
-    "examples": ["for i in range(5):", "for item in list:"],
-    "complexity": "beginner",
-    "related_concepts": ["while loops", "range()"]
-}
-"""
-```
-
-**Agent**: Concepts Agent
-- Explains Python concepts from 8-module curriculum
-- Adapts explanation to student's mastery level
-- Provides code examples and visualizations
-- Tracks which concepts have been covered
-
-**Python Curriculum (8 Modules)**:
-
-| Module | Topics | Concepts | Difficulty |
-|--------|--------|----------|------------|
-| **1. Basics** | Variables, Data Types, Input/Output, Operators, Type Conversion | print(), input(), int, float, str, bool, arithmetic operators, type() | Beginner |
-| **2. Control Flow** | Conditionals, Loops, Break/Continue | if/elif/else, for loops, while loops, range(), break, continue | Beginner |
-| **3. Data Structures** | Lists, Tuples, Dictionaries, Sets | list[], tuple{}, dict{}, set(), indexing, slicing, methods | Intermediate |
-| **4. Functions** | Defining Functions, Parameters, Return Values, Scope | def, return, args, kwargs, lambda, scope, nested functions | Intermediate |
-| **5. OOP** | Classes & Objects, Attributes & Methods, Inheritance, Encapsulation | class, __init__, self, inheritance, super(), private attributes | Intermediate |
-| **6. Files** | Reading/Writing Files, CSV Processing, JSON Handling | open(), read(), write(), with, csv module, json module, file paths | Advanced |
-| **7. Errors** | Try/Except, Exception Types, Custom Exceptions, Debugging | try, except, finally, raise, Exception types, traceback, logging | Advanced |
-| **8. Libraries** | Installing Packages, Working with APIs, Virtual Environments | pip, requests, virtualenv/venv, pipenv, PyPI, API calls | Advanced |
-
-**State Management** (via Dapr):
-- Student's current module
-- Concepts explained per session
-- Explanation history
-- Module completion progress
-
-**Events Published**:
-- `learning.concept_explained` - When concept is explained
-
-**Events Subscribed**:
-- `learning.triage` - Routing requests for explanations
+**Mastery Level Definitions**:
+- **Beginner (0-40%)**: Simple language, minimal jargon, basic examples
+- **Learning (41-70%)**: Standard explanations, some terminology
+- **Proficient (71-90%)**: Concise explanations, technical terms
+- **Mastered (91-100%)**: Advanced concepts, edge cases, best practices
 
 ---
 
-### 3. Debug Service
+### P1: Progressive Debugging Hints
 
-**Port**: 8003
-**Dapr App ID**: `debug-service`
+**As a** student encountering an error
+**I want** hints that guide me to the solution without giving the answer
+**So that** I learn debugging skills through practice
 
-**Endpoints**:
-```python
-POST /api/v1/debug/analyze
-"""
-Analyzes code error and provides hints.
+**Acceptance Criteria**:
+- [ ] Given code with error, system identifies error type and location
+- [ ] System provides progressive hints (not direct solutions)
+- [ ] Each hint brings student closer to solution
+- [ ] System detects repeated errors (same type 3+ times) and alerts teacher
 
-Request:
-{
-    "conversation_id": "uuid",
-    "student_id": "uuid",
-    "code": "for i in range(5",
-    "error": "SyntaxError: unexpected EOF"
-}
-
-Response:
-{
-    "root_cause": "Missing closing parenthesis",
-    "hints": [
-        "Check that all opening parentheses have matching closing ones",
-        "The range() function needs complete parentheses"
-    ],
-    "severity": "error",
-    "suggestion": "for i in range(5):"
-}
-"""
-```
-
-**Agent**: Debug Agent
-- Parses Python errors (SyntaxError, NameError, TypeError, etc.)
-- Identifies root causes
-- Provides progressive hints (not direct solutions)
-- Tracks repeated errors for struggle detection
-
-**Struggle Detection**:
-- Same error type 3+ times → trigger alert
-- 5+ failed executions → trigger alert
-
-**Events Published**:
-- `struggle.alert` - When struggle detected
-- `code.error_analyzed` - Error analysis for analytics
-
-**Events Subscribed**:
-- `learning.triage` - Routing requests for debugging
-- `code.submission` - Code with errors
+**Hint Progression**:
+1. First hint: Error category and general area
+2. Second hint: Specific line or concept issue
+3. Third hint: Concrete suggestion (but not solution)
 
 ---
 
-### 4. Exercise Service
+### P1: Auto-Graded Exercises
 
-**Port**: 8004
-**Dapr App ID**: `exercise-service`
+**As a** student
+**I want** immediate feedback on coding exercises
+**So that** I know if I understand the concept and can correct mistakes
 
-**Endpoints**:
-```python
-POST /api/v1/exercise/generate
-"""
-Generates coding exercise for a topic.
+**Acceptance Criteria**:
+- [ ] Given exercise request, system generates appropriate challenge
+- [ ] Exercise difficulty matches student's current module and mastery
+- [ ] Submission is auto-graded against test cases
+- [ ] Feedback includes pass/fail status and hints
+- [ ] Completed exercises update progress tracking
 
-Request:
-{
-    "student_id": "uuid",
-    "topic": "for loops",
-    "difficulty": "easy",
-    "count": 3
-}
-
-Response:
-{
-    "exercises": [
-        {
-            "id": "uuid",
-            "prompt": "Write a for loop that prints numbers 1-5",
-            "starter_code": "# Your code here",
-            "test_cases": [...],
-            "hints": ["Use range(1, 6)"]
-        }
-    ]
-}
-"""
-
-POST /api/v1/exercise/submit
-"""
-Submits solution and returns auto-grading result.
-
-Request:
-{
-    "exercise_id": "uuid",
-    "student_id": "uuid",
-    "code": "for i in range(1, 6):\n    print(i)"
-}
-
-Response:
-{
-    "passed": true,
-    "test_results": [...],
-    "feedback": "Great job! Your solution works correctly.",
-    "points_earned": 10
-}
-"""
-```
-
-**Agent**: Exercise Agent
-- Generates exercises from template bank
-- Auto-grades submissions using test cases
-- Tracks exercise completion rates
-- Provides hints on request
-
-**Exercise Database**:
-- 8 modules × 5 topics × 3 difficulties = 120+ exercises
-- Template-based generation for infinite variety
-
-**Events Published**:
-- `exercise.attempt` - Exercise attempts for analytics
-- `exercise.completed` - When exercise passed
-
-**Events Subscribed**:
-- `learning.triage` - Routing requests for exercises
+**Exercise Generation**:
+- 120+ exercises across 8 modules
+- Multiple difficulty levels per concept
+- Test cases validate correctness
+- Hints available on request
 
 ---
 
-### 5. Progress Service
+### P2: Mastery Progress Tracking
 
-**Port**: 8005
-**Dapr App ID**: `progress-service`
+**As a** student
+**I want** to see my overall progress and mastery levels
+**So that** I know what I've learned and what to focus on next
 
-**Endpoints**:
-```python
-GET /api/v1/progress/{student_id}
-"""
-Returns student's mastery progress.
+**Acceptance Criteria**:
+- [ ] System calculates mastery score per topic using weighted formula
+- [ ] Mastery level displayed (Beginner/Learning/Proficient/Mastered)
+- [ ] Progress updates after each activity (exercise, quiz, code submission)
+- [ ] Streak tracking for consistency (days active in last 30 days)
 
-Response:
-{
-    "student_id": "uuid",
-    "overall_mastery": 0.68,
-    "modules": [
-        {
-            "name": "Control Flow",
-            "mastery": 0.60,
-            "level": "learning",
-            "exercises_completed": 4,
-            "quiz_score": 0.80,
-            "streak_days": 3
-        }
-    ],
-    "next_recommendation": "Continue with while loops"
-}
-"""
-
-POST /api/v1/progress/update
-"""
-Updates progress after activity.
-
-Request:
-{
-    "student_id": "uuid",
-    "activity_type": "exercise",
-    "module": "Control Flow",
-    "score": 1.0
-}
-
-Response:
-{
-    "updated": true,
-    "new_mastery": 0.68,
-    "level_changed": false
-}
-"""
-```
-
-**Agent**: Progress Agent
-- Calculates mastery using weighted formula:
-  - Exercise completion: 40%
-  - Quiz scores: 30%
-  - Code quality: 20%
-  - Consistency (streak): 10%
-- Determines mastery levels:
-  - 0-40% → Beginner (Red)
-  - 41-70% → Learning (Yellow)
-  - 71-90% → Proficient (Green)
-  - 91-100% → Mastered (Blue)
-
-**State Management** (via Dapr):
-- Student progress records
-- Mastery scores per module
-- Activity history
-
-**Events Published**:
-- `learning.progress` - Progress updates for analytics
-
-**Events Subscribed**:
-- `exercise.completed` - Update progress on completion
-- `code.submission` - Track code quality
+**Mastery Formula**:
+- Exercise completion: 40%
+- Quiz scores: 30%
+- Code quality ratings: 20%
+- Consistency (streak): 10%
 
 ---
 
-## Database Schema
+### P2: Code Quality Analysis
 
-### Tables
+**As a** student
+**I want** feedback on my code quality beyond just correctness
+**So that** I learn to write clean, maintainable Python
 
-```sql
--- Students
-CREATE TABLE students (
-    id UUID PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW(),
-    last_active TIMESTAMP
-);
+**Acceptance Criteria**:
+- [ ] Given code submission, system analyzes for correctness
+- [ ] System checks style compliance (PEP 8)
+- [ ] System assesses efficiency (time/space complexity)
+- [ ] System evaluates readability (naming, comments, structure)
+- [ ] Overall quality score (0-100) provided with breakdown
 
--- Progress Tracking
-CREATE TABLE student_progress (
-    student_id UUID REFERENCES students(id),
-    module VARCHAR(100) NOT NULL,
-    mastery_level DECIMAL(3,2) DEFAULT 0.0,
-    exercise_score DECIMAL(3,2) DEFAULT 0.0,
-    quiz_score DECIMAL(3,2) DEFAULT 0.0,
-    code_quality_score DECIMAL(3,2) DEFAULT 0.0,
-    streak_days INTEGER DEFAULT 0,
-    updated_at TIMESTAMP DEFAULT NOW(),
-    PRIMARY KEY (student_id, module)
-);
-
--- Exercise Attempts
-CREATE TABLE exercise_attempts (
-    id UUID PRIMARY KEY,
-    student_id UUID REFERENCES students(id),
-    exercise_id UUID NOT NULL,
-    code TEXT,
-    passed BOOLEAN,
-    attempts INTEGER,
-    completed_at TIMESTAMP
-);
-
--- Code Submissions
-CREATE TABLE code_submissions (
-    id UUID PRIMARY KEY,
-    student_id UUID REFERENCES students(id),
-    code TEXT NOT NULL,
-    error_message TEXT,
-    executed_at TIMESTAMP
-);
-
--- Conversations
-CREATE TABLE conversations (
-    id UUID PRIMARY KEY,
-    student_id UUID REFERENCES students(id),
-    agent_type VARCHAR(50),
-    messages JSONB,
-    started_at TIMESTAMP,
-    ended_at TIMESTAMP
-);
-```
+**Quality Metrics**:
+- Correctness: Code runs without errors
+- Style: Follows PEP 8 conventions
+- Efficiency: Appropriate for problem size
+- Readability: Clear names and structure
 
 ---
 
-## Skills Used
+### P3: Struggle Detection
 
-### fastapi-dapr-agent
+**As a** teacher
+**I want** alerts when students are struggling
+**So that** I can provide targeted help before they give up
 
-**Location**: `.claude/skills/fastapi-dapr-agent/`
+**Acceptance Criteria**:
+- [ ] System detects struggle triggers (same error 3+ times, stuck >10 min, quiz <50%)
+- [ ] Alert includes student ID, topic, and struggle type
+- [ ] Teacher dashboard shows active struggles
+- [ ] System allows teacher to assign remedial exercises
 
-**Scripts**:
-- `scripts/generate.py` - Generates FastAPI + Dapr service scaffold
-- `scripts/deploy.sh` - Deploys service to Kubernetes with Dapr sidecar
-
-**Usage**:
-```bash
-# Generate service scaffold
-python .claude/skills/fastapi-dapr-agent/scripts/generate.py \
-    --name concepts-service \
-    --port 8002 \
-    --agent concepts
-
-# Deploy to Kubernetes
-./.claude/skills/fastapi-dapr-agent/scripts/deploy.sh
-```
+**Struggle Triggers**:
+- Same error type 3+ times
+- Stuck on exercise > 10 minutes
+- Quiz score < 50%
+- Student says "I don't understand" or "I'm stuck"
+- 5+ failed code executions in a row
 
 ---
 
-## Dapr Configuration
+## Functional Requirements
 
-### Component: PubSub (Kafka)
+### FR-1: Service Communication
 
-**File**: `dapr/components/pubsub.yaml`
+Services must communicate without hard-coded dependencies:
+- Services discover each other through a service registry
+- Communication happens through standardized protocols
+- Failed service calls retry with exponential backoff
+- Circuit breakers prevent cascading failures
 
-```yaml
-apiVersion: dapr.io/v1alpha1
-kind: Component
-metadata:
-  name: pubsub
-  namespace: learnflow
-spec:
-  type: pubsub.kafka
-  version: v1
-  metadata:
-    - name: brokers
-      value: "kafka.kafka.svc.cluster.local:9092"
-    - name: consumerGroup
-      value: "learnflow-services"
-    - name: authRequired
-      value: "false"
-```
+### FR-2: Event Streaming
 
-### Component: State Store (PostgreSQL)
+Services publish domain events for asynchronous processing:
+- `learning.*` events for learning activities
+- `code.*` events for code submissions
+- `exercise.*` events for exercise attempts
+- `struggle.*` events for struggle detection
 
-**File**: `dapr/components/statestore.yaml`
+### FR-3: State Management
 
-```yaml
-apiVersion: dapr.io/v1alpha1
-kind: Component
-metadata:
-  name: statestore
-  namespace: learnflow
-spec:
-  type: state.postgresql
-  version: v1
-  metadata:
-    - name: connectionString
-      secretKeyRef:
-        name: postgres-credentials
-        key: connection-string
-    - name: tableName
-      value: "state"
-```
+Services maintain no in-memory state:
+- All persistent data stored externally
+- Session state retrieved on each request
+- Conversation history stored per student
+- Services are horizontally scalable
 
----
+### FR-4: API Contract
 
-## Validation
+Each service exposes a consistent API:
+- Health check endpoint for monitoring
+- Standardized request/response formats
+- Error responses with helpful messages
+- API documentation auto-generated
 
-### Health Check Scripts
+### FR-5: AI Agent Integration
 
-```bash
-# Check all services
-for service in triage concepts debug exercise progress; do
-    echo "Checking $service-service..."
-    curl -f http://$service-service:8000/health || echo "FAILED"
-done
-
-# Check Dapr sidecars
-kubectl get pods -n learnflow -l dapr.io/enabled=true
-
-# Check Kafka connectivity
-kubectl exec -n learnflow triage-service-0 -- \
-    dapr list --app-id triage-service
-```
+Services integrate with AI models for intelligence:
+- Agent prompts separate from business logic
+- Model provider configurable (OpenAI, local, etc.)
+- Rate limiting for API calls
+- Fallback behavior when AI unavailable
 
 ---
 
 ## Non-Functional Requirements
 
-| Requirement | Target |
-|-------------|--------|
-| Response time (health) | < 100ms |
-| Response time (AI call) | < 5s |
-| Memory per service | 256MB |
-| CPU per service | 100m |
-| Availability | 99% (dev) |
-| Cold start time | < 10s |
+### NFR-1: Performance
+
+- API response time: <500ms (p95)
+- Event processing latency: <2 seconds
+- Concurrent request handling: 100+ simultaneous users
+- Service startup time: <30 seconds
+
+### NFR-2: Scalability
+
+- Services scale horizontally (add instances)
+- Statelessness enables any instance to handle any request
+- Database connections pooled efficiently
+- Event consumers can scale independently
+
+### NFR-3: Reliability
+
+- Services health-check every 10 seconds
+- Failed requests retry up to 3 times
+- Graceful degradation when dependencies unavailable
+- No single point of failure
+
+### NFR-4: Observability
+
+- Structured logging with correlation IDs
+- Metrics for request count, latency, errors
+- Distributed tracing for service calls
+- Alert on error rates >5%
+
+### NFR-5: Security
+
+- Authentication required for all student/teacher endpoints
+- Authorization checks for teacher-only features
+- Secrets stored securely (not in code/environment variables)
+- Input validation and sanitization
+
+---
+
+## Data Requirements
+
+### Student Data
+
+- Unique identifier (UUID)
+- Name and email
+- Role (student/teacher)
+- Current progress per topic
+- Learning streak
+
+### Progress Data
+
+- Student ID
+- Topic/module reference
+- Mastery score (0-100)
+- Mastery level (Beginner/Learning/Proficient/Mastered)
+- Last updated timestamp
+
+### Exercise Data
+
+- Unique identifier
+- Module and topic reference
+- Difficulty level
+- Test cases for validation
+- Hint progression
+
+### Submission Data
+
+- Student ID
+- Exercise ID
+- Code submission
+- Result (pass/fail)
+- Timestamp
+- Hints requested
+
+### Conversation Data
+
+- Student ID
+- Messages (JSON array)
+- Associated topic
+- Timestamp
+
+---
+
+## Out of Scope
+
+This phase does NOT include:
+- Frontend implementation (see Phase 5)
+- Database migrations (handled in setup)
+- Authentication service (assumed external)
+- Container orchestration setup (assumed existing)
+- CI/CD pipelines
+
+---
+
+## Assumptions
+
+1. Container orchestration platform is available (Kubernetes-compatible)
+2. Message broker is deployed and accessible
+3. Database is provisioned with required schemas
+4. Authentication service provides user identity
+5. Service registry or discovery mechanism exists
+6. AI model API is accessible with valid credentials
+
+---
+
+## Constraints
+
+1. Services must use async patterns for I/O operations
+2. No hard-coded service URLs or dependencies
+3. All state stored externally (no in-memory session state)
+4. Services must be deployable via Skills (autonomous deployment)
+5. Cross-agent compatibility (Claude Code and Goose)
+
+---
+
+## Edge Cases
+
+1. **AI Service Unavailable**: Return cached response or graceful degradation
+2. **Database Connection Lost**: Retry with backoff, return cached data if available
+3. **Event Publishing Failure**: Log to dead-letter queue for replay
+4. **Malformed Input**: Return validation error with specific issue
+5. **Concurrent Updates**: Use optimistic locking or last-write-wins with timestamp
+6. **Long-Running Operations**: Return immediately, process asynchronously, notify via event
+7. **Struggle Detection Storm**: Rate-limit alerts to avoid notification spam
+8. **Exercise Generation Fails**: Return pre-defined fallback exercise
 
 ---
 
 ## Dependencies
 
-**Required**:
-- Kafka deployed (from Phase 3)
-- PostgreSQL deployed (from Phase 3)
-- Helm installed (from Phase 1)
-- fastapi-dapr-agent skill (available)
+### Internal Dependencies
+- Phase 3: Infrastructure (Kafka, PostgreSQL deployed)
+- Phase 2: Foundation Skills (skills for deployment exist)
 
-**Blocking**:
-- Phase 3 must be complete
-- `OPENAI_API_KEY` must be configured
-
----
-
-## Risks & Mitigations
-
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
-| OpenAI API rate limits | Medium | High | Implement retry with exponential backoff |
-| Dapr sidecar connection issues | Low | Medium | Use proper service discovery |
-| Kafka consumer lag | Medium | Medium | Monitor consumer group offsets |
-| Agent response timeout | Low | High | Set 30s timeout, fallback to cached response |
-
-### 6. Code Review Service
-
-**Port**: 8006
-**Dapr App ID**: `code-review-service`
-
-**Endpoints**:
-```python
-POST /api/v1/review/analyze
-"""
-Analyzes code for correctness, style (PEP 8), efficiency, and readability.
-
-Request:
-{
-    "conversation_id": "uuid",
-    "student_id": "uuid",
-    "code": "for i in range(5):\nprint(i)"
-}
-
-Response:
-{
-    "correctness": {
-        "has_errors": false,
-        "issues": []
-    },
-    "style": {
-        "pep8_compliant": true,
-        "violations": [],
-        "score": 95
-    },
-    "efficiency": {
-        "rating": "good",
-        "suggestions": [],
-        "time_complexity": "O(n)"
-    },
-    "readability": {
-        "score": 85,
-        "suggestions": ["Add docstring", "Use more descriptive variable names"]
-    },
-    "overall_score": 90
-}
-"""
-```
-
-**Agent**: Code Review Agent
-- Analyzes code for correctness (syntax errors, runtime errors)
-- Checks PEP 8 style compliance
-- Evaluates efficiency (time/space complexity)
-- Assesses readability (naming, comments, structure)
-- Provides constructive feedback
-- Tracks code quality scores for mastery calculation
-
-**Quality Metrics**:
-- **Correctness** (40%): Code runs without errors, produces expected output
-- **Style** (25%): PEP 8 compliance, formatting
-- **Efficiency** (20%): Algorithmic complexity, best practices
-- **Readability** (15%): Naming, comments, structure
-
-**State Management** (via Dapr):
-- Student code quality history
-- Common mistakes per topic
-- Style violation patterns
-- Improvement tracking over time
-
-**Events Published**:
-- `code.reviewed` - When code is reviewed
-- `code.quality_updated` - When quality score changes
-
-**Events Subscribed**:
-- `code.submission` - Auto-review on submission
-- `learning.triage` - Routing requests for code review
+### External Dependencies
+- AI model API (OpenAI-compatible)
+- Authentication provider
+- Monitoring/observability platform
 
 ---
 
-## Deliverables
+## Risks and Mitigations
 
-1. **6 FastAPI Services**
-   - Deployed to `learnflow` namespace
-   - Each with Dapr sidecar
-   - All health endpoints responding
-
-2. **Dapr Components**
-   - PubSub configured for Kafka
-   - State store configured for PostgreSQL
-   - Components applied to cluster
-
-3. **Database Schemas**
-   - All tables created
-   - Seed data loaded
-   - Migrations documented
-
-4. **Documentation**
-   - API documentation at `/docs` for each service
-   - Event schema documented
-   - Deployment playbook
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| AI API rate limits | High | Implement caching, fallback to local models |
+| Event delivery delays | Medium | Monitor lag, alert on threshold, replay failed events |
+| Database performance | Medium | Connection pooling, query optimization, caching |
+| Service discovery failure | High | Hardcode fallback URLs for critical services |
 
 ---
 
-## Next Phase
+## Glossary
 
-After Phase 4 completion, proceed to **Phase 5: Frontend Development** where the Next.js application with Monaco editor will be built to consume these backend services.
+| Term | Definition |
+|------|------------|
+| **Agent** | AI-powered service that handles specific tutoring tasks |
+| **Mastery** | Measure of student proficiency (0-100%) |
+| **Sidecar** | Companion process that handles cross-cutting concerns |
+| **Event** | Message published when something of interest happens |
+| **Service Mesh** | Infrastructure layer that handles service-to-service communication |
+| **Stateless** | Service maintains no session data between requests |
+
+---
+
+## References
+
+- Hackathon3.md: Complete project requirements
+- Phase 3 spec: Infrastructure deployment details
+- MCP Code Execution Pattern: Token optimization strategy

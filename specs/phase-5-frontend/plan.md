@@ -1,963 +1,276 @@
-# Phase 5: Frontend Development - Implementation Plan
+# Phase 5: Frontend User Interface - Implementation Plan
 
 **Phase**: 5
-**Focus**: Build Next.js frontend with Monaco Editor for LearnFlow
+**Focus**: Build web-based user interface for LearnFlow
 **Status**: Draft
 
 ---
 
-## Architecture Overview
+## Technical Context
 
-Building a Next.js 14 web application with:
+### System Overview
 
-- **App Router** - React Server Components
-- **Monaco Editor** - Embedded code editor with Python syntax
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Utility-first styling
-- **Zustand** - Lightweight state management
-- **Better Auth** - Authentication
+This phase implements a responsive web application serving both students and teachers. The application:
 
-### Key Pages
+1. **Renders in browsers** without requiring plugins
+2. **Communicates with backend services** via HTTP APIs
+3. **Streams real-time updates** via WebSocket or SSE
+4. **Persists user state** across page navigation
+5. **Deploys autonomously** via Skills
 
-1. **Login** - `/login` - Authentication
-2. **Student Dashboard** - `/dashboard` - Progress overview
-3. **Module Detail** - `/modules/[id]` - Module topics
-4. **Exercise Page** - `/exercise/[id]` - Monaco editor with code execution
-5. **Chat Interface** - `/chat` - AI tutoring
-6. **Teacher Dashboard** - `/teacher/dashboard` - Class analytics
+### Technology Stack
 
----
+| Layer | Technology | Rationale |
+|-------|------------|-----------|
+| **Framework** | Next.js 14+ (App Router) | React framework with SSR, file-based routing |
+| **Language** | TypeScript | Type safety for complex UI state |
+| **Styling** | Tailwind CSS | Utility-first CSS, responsive design |
+| **Editor** | Monaco Editor | VS Code's editor component, Python support |
+| **State** | Zustand | Lightweight state management |
+| **Auth** | Better Auth | Simple, flexible authentication |
+| **API** | fetch/axios | HTTP client for backend communication |
+| **Real-time** | WebSocket/SSE | Streaming chat responses |
+| **Container** | Docker | Standard packaging |
+| **Orchestration** | Kubernetes | Existing cluster from Phase 1 |
 
-## Implementation Strategy
+### Unknowns Requiring Research
 
-### Approach: Skills-Based Autonomous Build
-
-**Principle**: Use `nextjs-k8s-deploy` skill to scaffold and deploy frontend.
-
-**Build Process**:
-1. Use `nextjs-k8s-deploy` skill to generate Next.js app
-2. Install Monaco Editor and dependencies
-3. Implement pages with App Router
-4. Add API integration layer
-5. Configure authentication
-6. Deploy to Kubernetes
+- [RESEARCH-1] Monaco Editor optimal bundle strategy for code splitting
+- [RESEARCH-2] WebSocket vs SSE for chat streaming (latency/reliability)
+- [RESEARCH-3] State management pattern for complex multi-user flows
+- [RESEARCH-4] Optimal strategy for real-time struggle alerts to teachers
 
 ---
 
-## Step-by-Step Implementation
+## Constitution Check
 
-### Step 1: Prerequisites Verification
+### Applicable Principles
 
-**Goal**: Ensure backend services from Phase 4 are ready.
+From `.specify/memory/constitution.md`:
 
-**Actions**:
-- [ ] Verify all 5 backend services running
-- [ ] Verify API endpoints accessible
-- [ ] Verify Kong API Gateway configured
-- [ ] Get API base URL
+| Principle | Compliance | Notes |
+|-----------|------------|-------|
+| **Skills-First Development** | ✅ PASS | Frontend deployable via `nextjs-k8s-deploy` skill |
+| **Token Efficiency** | ✅ PASS | Code execution via MCP server (not direct integration) |
+| **Stateless Services** | ✅ PASS | State in browser/Zustand, backend remains stateless |
+| **Cross-Agent Compatibility** | ✅ PASS | Skills work with Claude Code and Goose |
+| **Event-Driven Architecture** | ✅ PASS | Frontend subscribes to struggle alerts via WebSocket |
 
-**Commands**:
-```bash
-# Check backend services
-kubectl get pods -n learnflow
+### Non-Compliant Items
 
-# Check services
-kubectl get svc -n learnflow
-
-# Test API gateway
-curl http://api-gateway:8000/health
-```
+None identified. All design decisions align with project constitution.
 
 ---
 
-### Step 2: Next.js App Scaffolding
+## Phase 0: Research & Decisions
 
-**Using nextjs-k8s-deploy Skill**:
-```bash
-python .claude/skills/nextjs-k8s-deploy/scripts/generate.py \
-    --name learnflow-frontend \
-    --typescript \
-    --tailwind \
-    --app-router
-```
+> **Output**: `research.md`
 
-**Project Structure**:
-```
-learnflow-frontend/
-├── app/
-│   ├── (auth)/
-│   ├── (student)/
-│   ├── (teacher)/
-│   ├── api/
-│   ├── layout.tsx
-│   └── page.tsx
-├── components/
-│   ├── ui/
-│   ├── student/
-│   ├── teacher/
-│   └── chat/
-├── lib/
-│   ├── api.ts
-│   ├── auth.ts
-│   └── store.ts
-├── styles/
-│   └── globals.css
-├── public/
-│   └── icons/
-├── package.json
-├── tsconfig.json
-├── tailwind.config.ts
-└── next.config.js
-```
+See [research.md](./research.md) for detailed decisions on:
+- Monaco Editor lazy loading (dynamic import)
+- SSE chosen over WebSocket (simpler, sufficient for chat)
+- Zustand store structure (user, code, chat, progress)
+- SSE for struggle alerts (teacher dashboard)
 
 ---
 
-### Step 3: Dependencies Installation
+## Phase 1: Design & Contracts
 
-**Install Required Packages**:
-```bash
-# Monaco Editor
-npm install @monaco-editor/react
+### Component Structure
 
-# State Management
-npm install zustand
+> **Output**: `data-model.md`
 
-# Authentication
-npm install better-auth
-npm install better-auth/react
+See [data-model.md](./data-model.md) for component definitions:
+- Page components (Dashboard, Chat, Exercise, etc.)
+- Reusable UI components (ProgressCard, ModuleCard, etc.)
+- State stores (userStore, codeStore, chatStore, progressStore)
+- API client functions
 
-# HTTP Client
-npm install axios
+### Page Routes
 
-# UI Components
-npm install @headlessui/react
-npm install @heroicons/react
+| Route | Page | Purpose |
+|-------|------|---------|
+| `/login` | LoginPage | User authentication |
+| `/dashboard` | StudentDashboard | Student progress overview |
+| `/modules/[id]` | ModuleDetail | Module topics and exercises |
+| `/exercise/[id]` | ExercisePage | Code editor with exercise |
+| `/chat` | ChatInterface | AI tutoring chat |
+| `/teacher/dashboard` | TeacherDashboard | Class overview and alerts |
 
-# Utilities
-npm install date-fns
-npm install clsx
-npm install tailwind-merge
-```
+### Quickstart Scenarios
 
----
+> **Output**: `quickstart.md`
 
-### Step 4: Authentication Setup
-
-**Implement Better Auth**:
-
-```typescript
-// lib/auth.ts
-import { betterAuth } from "better-auth"
-
-export const auth = betterAuth({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-  secret: process.env.AUTH_SECRET,
-  emailAndPassword: {
-    enabled: true,
-  },
-  session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-  },
-})
-
-// middleware.ts
-export { auth as middleware } from "@/lib/auth"
-export const config = {
-  matcher: ["/dashboard/:path*", "/chat/:path*", "/teacher/:path*"]
-}
-```
-
-**Login Page**:
-```tsx
-// app/(auth)/login/page.tsx
-"use client"
-
-import { authClient } from "@/lib/auth"
-import { useState } from "react"
-
-export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    await authClient.signIn.email({ email, password })
-    window.location.href = "/dashboard"
-  }
-
-  return (
-    <form onSubmit={handleLogin}>
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button type="submit">Login</button>
-    </form>
-  )
-}
-```
+See [quickstart.md](./quickstart.md) for integration test scenarios:
+1. Student logs in and views progress
+2. Student completes exercise with Monaco Editor
+3. Student chats with AI tutor
+4. Teacher views struggle alerts and assigns exercise
 
 ---
 
-### Step 5: Student Dashboard
+## Implementation Steps
 
-**Implement Dashboard**:
+### Step 1: Project Setup
 
-```tsx
-// app/(student)/dashboard/page.tsx
-"use client"
+**Files**:
+- `frontend/package.json`
+- `frontend/tsconfig.json`
+- `frontend/next.config.js`
+- `frontend/tailwind.config.ts`
+- `frontend/.env.local`
 
-import { useUserStore } from "@/lib/store"
-import { useEffect } from "react"
-import ProgressCard from "@/components/student/ProgressCard"
-import ModuleGrid from "@/components/student/ModuleGrid"
-import ActivityList from "@/components/student/ActivityList"
-
-export default function DashboardPage() {
-  const { student, fetchProgress } = useUserStore()
-
-  useEffect(() => {
-    fetchProgress()
-  }, [])
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Welcome back, {student?.name}!</h1>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          <ProgressCard progress={student?.progress} />
-          <ModuleGrid modules={student?.modules} />
-        </div>
-        <div>
-          <ActivityList activities={student?.recentActivity} />
-        </div>
-      </div>
-    </div>
-  )
-}
-```
-
-**Progress Card Component**:
-```tsx
-// components/student/ProgressCard.tsx
-interface ProgressCardProps {
-  progress: {
-    currentModule: string
-    mastery: number
-    streak: number
-  }
-}
-
-export default function ProgressCard({ progress }: ProgressCardProps) {
-  const level = getLevel(progress.mastery)
-  const color = getLevelColor(level)
-
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Current Progress</h2>
-        <span className={`px-3 py-1 rounded-full text-sm bg-${color}-100 text-${color}-800`}>
-          {level}
-        </span>
-      </div>
-
-      <div className="relative pt-1">
-        <div className="overflow-hidden h-4 text-xs flex rounded bg-gray-200">
-          <div
-            style={{ width: `${progress.mastery * 100}%` }}
-            className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-${color}-500`}
-          />
-        </div>
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-4 text-center">
-        <div>
-          <p className="text-2xl font-bold">{progress.streak}</p>
-          <p className="text-sm text-gray-500">Day Streak</p>
-        </div>
-        <div>
-          <p className="text-2xl font-bold">{Math.round(progress.mastery * 100)}%</p>
-          <p className="text-sm text-gray-500">Mastery</p>
-        </div>
-      </div>
-    </div>
-  )
-}
-```
+**Description**: Initialize Next.js project with TypeScript and Tailwind CSS.
 
 ---
 
-### Step 6: Monaco Editor Integration
+### Step 2: Authentication
 
-**Install Monaco Editor**:
-```bash
-npm install @monaco-editor/react
-```
+**Files**:
+- `frontend/app/(auth)/login/page.tsx`
+- `frontend/app/(auth)/layout.tsx`
+- `frontend/lib/auth.ts`
+- `frontend/middleware.ts`
 
-**Create Editor Component**:
-```tsx
-// components/editor/MonacoEditor.tsx
-"use client"
-
-import Editor from "@monaco-editor/react"
-import { useState } from "react"
-
-interface MonacoEditorProps {
-  defaultValue?: string
-  onChange?: (value: string) => void
-  onRun?: (code: string) => void
-  onSubmit?: (code: string) => void
-}
-
-export default function MonacoEditor({
-  defaultValue = "# Your code here",
-  onChange,
-  onRun,
-  onSubmit,
-}: MonacoEditorProps) {
-  const [code, setCode] = useState(defaultValue)
-
-  const handleEditorChange = (value: string | undefined) => {
-    const newValue = value || ""
-    setCode(newValue)
-    onChange?.(newValue)
-  }
-
-  return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 border rounded-lg overflow-hidden">
-        <Editor
-          height="100%"
-          defaultLanguage="python"
-          value={code}
-          onChange={handleEditorChange}
-          theme="vs-dark"
-          options={{
-            minimap: { enabled: false },
-            fontSize: 14,
-            tabSize: 4,
-            scrollBeyondLastLine: false,
-            automaticLayout: true,
-          }}
-        />
-      </div>
-
-      <div className="flex gap-2 mt-4">
-        <button
-          onClick={() => onRun?.(code)}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-        >
-          ▶ Run
-        </button>
-        <button
-          onClick={() => onSubmit?.(code)}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          ✓ Submit
-        </button>
-        <button
-          onClick={() => {/* Get hint */}}
-          className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-        >
-          💡 Hint
-        </button>
-      </div>
-    </div>
-  )
-}
-```
+**Description**: Implement authentication flow with role-based routing.
 
 ---
 
-### Step 7: Exercise Page
+### Step 3: Student Dashboard
 
-**Implement Exercise Page**:
+**Files**:
+- `frontend/app/(student)/dashboard/page.tsx`
+- `frontend/components/ProgressCard.tsx`
+- `frontend/components/ModuleCard.tsx`
+- `frontend/components/ModuleGrid.tsx`
+- `frontend/components/ActivityList.tsx`
 
-```tsx
-// app/(student)/exercise/[id]/page.tsx
-"use client"
-
-import { useParams } from "next/navigation"
-import { useState, useEffect } from "react"
-import MonacoEditor from "@/components/editor/MonacoEditor"
-import OutputPanel from "@/components/exercise/OutputPanel"
-import ExercisePrompt from "@/components/exercise/ExercisePrompt"
-
-export default function ExercisePage() {
-  const params = useParams()
-  const [exercise, setExercise] = useState(null)
-  const [output, setOutput] = useState("")
-  const [error, setError] = useState("")
-
-  useEffect(() => {
-    fetchExercise(params.id)
-  }, [params.id])
-
-  const fetchExercise = async (id: string) => {
-    const response = await fetch(`/api/exercise/${id}`)
-    const data = await response.json()
-    setExercise(data)
-  }
-
-  const handleRun = async (code: string) => {
-    const response = await fetch("/api/execute", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-    })
-    const result = await response.json()
-    setOutput(result.output)
-    setError(result.error)
-  }
-
-  const handleSubmit = async (code: string) => {
-    const response = await fetch(`/api/exercise/${params.id}/submit`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-    })
-    const result = await response.json()
-    if (result.passed) {
-      alert("Exercise passed! 🎉")
-    }
-  }
-
-  return (
-    <div className="h-screen flex">
-      <div className="w-1/2 p-6 overflow-y-auto">
-        <ExercisePrompt exercise={exercise} />
-      </div>
-      <div className="w-1/2 flex flex-col">
-        <div className="flex-1 p-4">
-          <MonacoEditor
-            defaultValue={exercise?.starter_code}
-            onRun={handleRun}
-            onSubmit={handleSubmit}
-          />
-        </div>
-        <div className="h-1/3 p-4 border-t">
-          <OutputPanel output={output} error={error} />
-        </div>
-      </div>
-    </div>
-  )
-}
-```
+**Description**: Build student dashboard with progress visualization.
 
 ---
 
-### Step 8: Chat Interface
+### Step 4: Code Editor (Monaco)
 
-**Implement Chat Page**:
+**Files**:
+- `frontend/app/(student)/exercise/[id]/page.tsx`
+- `frontend/components/MonacoEditor.tsx`
+- `frontend/components/EditorPanel.tsx`
+- `frontend/components/EditorToolbar.tsx`
+- `frontend/components/OutputPanel.tsx`
 
-```tsx
-// app/(student)/chat/page.tsx
-"use client"
-
-import { useState, useEffect, useRef } from "react"
-import { useChatStore } from "@/lib/store"
-
-export default function ChatPage() {
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { messages, addMessage, isTyping } = useChatStore()
-  const [input, setInput] = useState("")
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
-
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages])
-
-  const handleSend = async () => {
-    if (!input.trim()) return
-
-    addMessage({ role: "user", content: input })
-    setInput("")
-
-    // Send to backend
-    const response = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: input }),
-    })
-
-    // Stream response
-    const reader = response.body?.getReader()
-    if (reader) {
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        const chunk = new TextDecoder().decode(value)
-        addMessage({ role: "assistant", content: chunk })
-      }
-    }
-  }
-
-  return (
-    <div className="h-screen flex flex-col">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg, i) => (
-          <div
-            key={i}
-            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-2xl px-4 py-2 rounded-lg ${
-                msg.role === "user"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-800"
-              }`}
-            >
-              {msg.content}
-            </div>
-          </div>
-        ))}
-        {isTyping && (
-          <div className="text-gray-500">Agent is typing...</div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      <div className="p-4 border-t">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Ask about Python concepts, get help debugging..."
-            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            onClick={handleSend}
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-          >
-            Send
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-```
+**Description**: Integrate Monaco Editor with Python syntax highlighting.
 
 ---
 
-### Step 9: Teacher Portal
+### Step 5: Chat Interface
 
-**Implement Teacher Dashboard**:
+**Files**:
+- `frontend/app/(student)/chat/page.tsx`
+- `frontend/components/ChatLayout.tsx`
+- `frontend/components/ChatHistory.tsx`
+- `frontend/components/ChatInput.tsx`
+- `frontend/components/MessageBubble.tsx`
 
-```tsx
-// app/(teacher)/dashboard/page.tsx
-"use client"
-
-import { useEffect, useState } from "react"
-
-export default function TeacherDashboard() {
-  const [stats, setStats] = useState(null)
-  const [struggles, setStruggles] = useState([])
-
-  useEffect(() => {
-    fetchStats()
-    fetchStruggles()
-  }, [])
-
-  const fetchStats = async () => {
-    const response = await fetch("/api/teacher/stats")
-    const data = await response.json()
-    setStats(data)
-  }
-
-  const fetchStruggles = async () => {
-    const response = await fetch("/api/teacher/struggles")
-    const data = await response.json()
-    setStruggles(data)
-  }
-
-  const generateExercise = async (studentId: string) => {
-    // Generate custom exercise for struggling student
-    await fetch(`/api/teacher/generate-exercise/${studentId}`, {
-      method: "POST",
-    })
-  }
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Teacher Dashboard</h1>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <StatCard title="Total Students" value={stats?.totalStudents} />
-        <StatCard title="Active Now" value={stats?.activeNow} />
-        <StatCard title="Struggling" value={stats?.struggling} urgent />
-        <StatCard title="Avg Mastery" value={`${stats?.avgMastery}%`} />
-      </div>
-
-      {/* Struggle Alerts */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b">
-          <h2 className="text-xl font-semibold">Struggle Alerts</h2>
-        </div>
-        <div className="divide-y">
-          {struggles.map((struggle) => (
-            <div key={struggle.id} className="px-6 py-4 flex items-center justify-between">
-              <div>
-                <h3 className="font-medium">{struggle.studentName}</h3>
-                <p className="text-sm text-gray-500">{struggle.reason}</p>
-                <p className="text-sm text-gray-400">
-                  Same error: {struggle.errorCount}x • Stuck: {struggle.duration}
-                </p>
-              </div>
-              <button
-                onClick={() => generateExercise(struggle.studentId)}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                Generate Exercise
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-```
+**Description**: Build chat interface with SSE streaming.
 
 ---
 
-### Step 10: API Integration Layer
+### Step 6: Teacher Portal
 
-**Create API Client**:
+**Files**:
+- `frontend/app/(teacher)/dashboard/page.tsx`
+- `frontend/components/TeacherDashboard.tsx`
+- `frontend/components/ClassOverview.tsx`
+- `frontend/components/StruggleAlerts.tsx`
+- `frontend/components/ClassProgressTable.tsx`
 
-```typescript
-// lib/api.ts
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-
-export async function callAgent(
-  agent: string,
-  data: Record<string, unknown>
-) {
-  const response = await fetch(`${API_BASE}/api/v1/${agent}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
-  return response.json()
-}
-
-export async function getProgress(studentId: string) {
-  const response = await fetch(`${API_BASE}/api/v1/progress/${studentId}`)
-  return response.json()
-}
-
-export async function submitExercise(exerciseId: string, code: string) {
-  const response = await fetch(`${API_BASE}/api/v1/exercise/submit`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ exercise_id: exerciseId, code }),
-  })
-  return response.json()
-}
-
-export async function executeCode(code: string) {
-  const response = await fetch(`${API_BASE}/api/v1/execute`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ code }),
-  })
-  return response.json()
-}
-```
-
-**API Routes**:
-```typescript
-// app/api/execute/route.ts
-import { executeCode } from "@/lib/api"
-import { NextRequest, NextResponse } from "next/server"
-
-export async function POST(request: NextRequest) {
-  const { code } = await request.json()
-
-  // Call backend execution service
-  const result = await executeCode(code)
-
-  return NextResponse.json(result)
-}
-```
+**Description**: Build teacher dashboard with struggle alerts.
 
 ---
 
-### Step 11: State Management
+### Step 7: State Management
 
-**Create Zustand Stores**:
+**Files**:
+- `frontend/stores/userStore.ts`
+- `frontend/stores/codeStore.ts`
+- `frontend/stores/chatStore.ts`
+- `frontend/stores/progressStore.ts`
 
-```typescript
-// lib/store.ts
-import { create } from "zustand"
-
-interface User {
-  id: string
-  email: string
-  name: string
-  role: "student" | "teacher"
-}
-
-interface StudentProgress {
-  currentModule: string
-  mastery: number
-  modules: Module[]
-  recentActivity: Activity[]
-  streak: number
-}
-
-interface UserStore {
-  user: User | null
-  student: StudentProgress | null
-  setUser: (user: User) => void
-  fetchProgress: () => Promise<void>
-}
-
-export const useUserStore = create<UserStore>((set, get) => ({
-  user: null,
-  student: null,
-  setUser: (user) => set({ user }),
-  fetchProgress: async () => {
-    const { user } = get()
-    if (!user) return
-
-    const progress = await getProgress(user.id)
-    set({ student: progress })
-  },
-}))
-
-interface Message {
-  role: "user" | "assistant"
-  content: string
-  agent?: string
-}
-
-interface ChatStore {
-  messages: Message[]
-  conversationId: string | null
-  isTyping: boolean
-  addMessage: (message: Message) => void
-  setTyping: (typing: boolean) => void
-  clearChat: () => void
-}
-
-export const useChatStore = create<ChatStore>((set) => ({
-  messages: [],
-  conversationId: null,
-  isTyping: false,
-  addMessage: (message) =>
-    set((state) => ({ messages: [...state.messages, message] })),
-  setTyping: (isTyping) => set({ isTyping }),
-  clearChat: () => set({ messages: [], conversationId: null }),
-}))
-
-interface CodeStore {
-  code: string
-  output: string
-  error: string
-  setCode: (code: string) => void
-  setOutput: (output: string) => void
-  setError: (error: string) => void
-}
-
-export const useCodeStore = create<CodeStore>((set) => ({
-  code: "",
-  output: "",
-  error: "",
-  setCode: (code) => set({ code }),
-  setOutput: (output) => set({ output }),
-  setError: (error) => set({ error }),
-}))
-```
+**Description**: Implement Zustand stores for application state.
 
 ---
 
-### Step 12: Styling with Tailwind
+### Step 8: API Integration
 
-**Configure Tailwind**:
+**Files**:
+- `frontend/lib/api.ts`
+- `frontend/lib/execute.ts`
+- `frontend/app/api/proxy/[...path]/route.ts`
 
-```javascript
-// tailwind.config.ts
-import type { Config } from "tailwindcss"
-
-const config: Config = {
-  content: [
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
-  theme: {
-    extend: {
-      colors: {
-        mastery: {
-          beginner: "#ef4444",
-          learning: "#eab308",
-          proficient: "#22c55e",
-          mastered: "#3b82f6",
-        },
-      },
-      animation: {
-        "typing": "typing 1s infinite",
-      },
-      keyframes: {
-        typing: {
-          "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.5" },
-        },
-      },
-    },
-  },
-  plugins: [],
-}
-export default config
-```
-
-**Global Styles**:
-```css
-/* styles/globals.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-body {
-  color: rgb(var(--foreground-rgb));
-}
-
-.monaco-editor {
-  padding: 0 !important;
-}
-```
+**Description**: Create API client functions and proxy routes.
 
 ---
 
-### Step 13: Kubernetes Deployment
+### Step 9: Styling
 
-**Using nextjs-k8s-deploy Skill**:
-```bash
-# Deploy to Kubernetes
-./.claude/skills/nextjs-k8s-deploy/scripts/deploy.sh
+**Files**:
+- `frontend/app/globals.css`
+- `frontend/tailwind.config.ts`
+- `frontend/components/ui/` (reusable components)
 
-# Configure ingress
-./.claude/skills/nextjs-k8s-deploy/scripts/ingress.sh
-```
-
-**Dockerfile**:
-```dockerfile
-FROM node:20-alpine AS base
-
-# Dependencies
-FROM base AS deps
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-
-# Builder
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-RUN npm run build
-
-# Runner
-FROM base AS runner
-WORKDIR /app
-ENV NODE_ENV production
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
-
-EXPOSE 3000
-
-CMD ["node", "server.js"]
-```
+**Description**: Apply Tailwind CSS styling with mastery level colors.
 
 ---
 
-## Testing Strategy
+### Step 10: Kubernetes Deployment
 
-### Component Tests
-```bash
-# Test React components
-npm test
-```
+**Files**:
+- `frontend/Dockerfile`
+- `frontend/.dockerignore`
+- `frontend/k8s/deployment.yaml`
+- `frontend/k8s/service.yaml`
+- `frontend/k8s/ingress.yaml`
 
-### E2E Tests
-```bash
-# Test user flows
-npx playwright test
-```
-
-### Accessibility Tests
-```bash
-# Check a11y
-npm run lighthouse
-```
+**Description**: Build container image and deploy to Kubernetes.
 
 ---
 
-## Success Criteria Validation
+## Skills Used
 
-- [ ] Next.js app deployed to `learnflow` namespace
-- [ ] All 6 page types implemented
-- [ ] Monaco Editor embedded and functional
-- [ ] Student dashboard displays progress
-- [ ] Chat interface with AI agents working
-- [ ] Code execution sandbox working
-- [ ] Teacher portal with struggle alerts
-- [ ] JWT authentication integrated
-- [ ] Responsive design verified
-- [ ] Zero manual intervention
-
----
-
-## Rollback Plan
-
-If deployment fails:
-1. Check pod logs: `kubectl logs -n learnflow learnflow-frontend-*`
-2. Check build logs: `kubectl describe pod -n learnflow learnflow-frontend-*`
-3. Rollback: `kubectl rollout undo deployment/learnflow-frontend`
-4. Verify API connectivity
+| Skill | Purpose | When Used |
+|-------|---------|-----------|
+| `nextjs-k8s-deploy` | Deploy Next.js to Kubernetes | Step 10 |
+| `frontend-component` | Build UI components | Steps 3-6 |
 
 ---
 
 ## Dependencies
 
-**Required**:
-- Backend services deployed (Phase 4)
-- Kong API Gateway configured
-- TLS certificates (for production)
+### Internal Dependencies
+- Phase 4: Backend Services (API endpoints available)
+- Phase 3: Infrastructure (Kubernetes cluster ready)
 
-**Blocking**:
-- Phase 4 must be complete
-- API endpoints must be accessible
+### External Dependencies
+- Authentication provider (or self-hosted)
+- Code execution MCP server (from Phase 6)
+
+---
+
+## Success Criteria
+
+- [ ] Next.js application deploys to Kubernetes
+- [ ] Monaco Editor loads and functions
+- [ ] Students can complete exercises
+- [ ] Chat interface streams responses
+- [ ] Teachers receive struggle alerts
+- [ ] Responsive on desktop and tablet
+- [ ] Authentication works correctly
+- [ ] Deployment via Skills succeeds
+
+---
+
+## Next Steps
+
+1. Run `/sp.implement` to execute this plan
+2. Create ADRs for architecturally significant decisions
+3. Update AGENTS.md with frontend details

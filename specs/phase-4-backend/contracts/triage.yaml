@@ -1,0 +1,131 @@
+openapi: 3.0.3
+info:
+  title: Triage Service API
+  description: Routes student queries to appropriate specialist agents
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8001
+    description: Local development
+  - url: http://triage-service:8001
+    description: Kubernetes service
+
+tags:
+  - name: triage
+    description: Query routing operations
+  - name: health
+    description: Health check operations
+
+paths:
+  /health:
+    get:
+      tags: [health]
+      summary: Health check
+      description: Returns service health status
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  service:
+                    type: string
+                    example: triage-service
+
+  /api/v1/triage:
+    post:
+      tags: [triage]
+      summary: Route student query
+      description: Analyzes student message and routes to appropriate specialist agent
+      operationId: routeQuery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriageRequest'
+      responses:
+        '200':
+          description: Query routed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriageResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    TriageRequest:
+      type: object
+      required:
+        - conversation_id
+        - student_id
+        - message
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+          description: Unique conversation identifier
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        student_id:
+          type: string
+          format: uuid
+          description: Student identifier
+          example: "550e8400-e29b-41d4-a716-446655440001"
+        message:
+          type: string
+          description: Student's message or question
+          example: "How do for loops work in Python?"
+        context:
+          type: object
+          description: Optional context for routing
+          additionalProperties: true
+          example:
+            current_module: "basics"
+            previous_topics: ["variables", "data-types"]
+
+    TriageResponse:
+      type: object
+      properties:
+        agent:
+          type: string
+          enum: [concepts, debug, exercise, progress]
+          description: Target agent for this query
+          example: "concepts"
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Confidence score for classification
+          example: 0.95
+        reasoning:
+          type: string
+          description: Explanation of routing decision
+          example: "Query asks 'how do' which indicates concept explanation request"
+        alternative_agents:
+          type: array
+          items:
+            type: string
+          description: Other possible agents with lower confidence
+          example: ["exercise"]
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid request format"
+        detail:
+          type: string
+          example: "Field 'message' is required"

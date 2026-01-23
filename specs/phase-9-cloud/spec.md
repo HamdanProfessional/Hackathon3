@@ -2,7 +2,7 @@
 
 **Status**: Draft
 **Phase**: 9
-**Focus**: Deploy LearnFlow on a public cloud provider (Azure, GCP, or Oracle Cloud)
+**Focus**: Deploy LearnFlow on a public cloud provider
 
 ---
 
@@ -11,76 +11,145 @@
 Deploy the complete LearnFlow application to a production Kubernetes cluster on a public cloud provider. This demonstrates that the Skills and application work beyond local Minikube development.
 
 **Cloud Provider Options**:
-- **Azure Kubernetes Service (AKS)**
-- **Google Kubernetes Engine (GKE)**
-- **Oracle Container Engine for Kubernetes (OKE)**
+- Azure Kubernetes Service (AKS)
+- Google Kubernetes Engine (GKE)
+- Oracle Container Engine for Kubernetes (OKE)
+
+### What This Phase Delivers
+
+A production-ready cloud deployment that:
+1. Runs on public cloud Kubernetes (AKS/GKE/OKE)
+2. Has ingress configured with TLS/SSL certificates
+3. Has managed services for database and Kafka (optional)
+4. Has domain name configured and accessible
+5. Has monitoring and logging enabled
+6. Deploys autonomously via Skills
 
 ---
 
 ## Success Criteria
 
-- [ ] Kubernetes cluster created on cloud provider
-- [ ] All services deployed and running
-- [ ] Ingress configured with TLS/SSL
-- [ ] Domain name configured
-- [ ] Database backups enabled
-- [ ] Monitoring and logging configured
-- [ ] Zero downtime deployment
+**Measurable Outcomes**:
+
+- [ ] Kubernetes cluster created on chosen cloud provider
+- [ ] All services deployed and running (healthy status)
+- [ ] Ingress configured with TLS/SSL (valid certificate)
+- [ ] Domain name accessible from internet
+- [ ] Application loads and functions correctly
+- [ ] Monitoring and logging collecting data
 - [ ] Deployment automated via Skills
 
 ---
 
-## Architecture: Cloud
+## User Stories
 
-### Component Diagram
+### P1: User Accesses Cloud Application
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                         CLOUD PROVIDER                                 │
-│                                                                        │
-│  ┌──────────────────────────────────────────────────────────────────┐ │
-│  │                    KUBERNETES CLUSTER                             │ │
-│  │                                                                  │ │
-│  │  ┌────────────────────────────────────────────────────────────┐  │ │
-│  │  │  NAMESPACE: ingress                                        │  │ │
-│  │  │                                                            │  │ │
-│  │  │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐ │  │ │
-│  │  │  │  Nginx/Cert  │    │   External   │    │     DNS      │ │  │ │
-│  │  │  │    Manager   │    │    Load      │    │   (Cloud)    │ │  │ │
-│  │  │  │              │    │   Balancer   │    │              │ │  │ │
-│  │  │  └──────────────┘    └──────────────┘    └──────────────┘ │  │ │
-│  │  └────────────────────────────────────────────────────────────┘  │ │
-│  │                          ▼                                       │ │
-│  │  ┌────────────────────────────────────────────────────────────┐  │ │
-│  │  │  NAMESPACE: learnflow                                      │  │ │
-│  │  │                                                            │  │ │
-│  │  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐    │  │ │
-│  │  │  │   Next.js    │  │   FastAPI    │  │   MCP Srv    │    │  │ │
-│  │  │  │   Frontend   │  │  Services    │  │              │    │  │ │
-│  │  │  │              │  │  (x5)        │  │   (x4)        │    │  │ │
-│  │  │  └──────────────┘  └──────────────┘  └──────────────┘    │  │ │
-│  │  │                                                            │  │ │
-│  │  │  ┌──────────────┐  ┌──────────────┐                      │  │ │
-│  │  │  │   Kafka      │  │ PostgreSQL   │                      │  │ │
-│  │  │  │ (Managed)    │  │  (Managed)   │                      │  │ │
-│  │  │  └──────────────┘  └──────────────┘                      │  │ │
-│  │  └────────────────────────────────────────────────────────────┘  │ │
-│  └──────────────────────────────────────────────────────────────────┘ │
-│                                                                        │
-│  ┌──────────────────────────────────────────────────────────────────┐ │
-│  │                      MANAGED SERVICES                             │ │
-│  │                                                                  │ │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │ │
-│  │  │   Database   │  │    Object    │  │   Secret     │          │ │
-│  │  │   (Cloud)    │  │   Storage    │  │  Manager     │          │ │
-│  │  │              │  │              │  │              │          │ │
-│  │  └──────────────┘  └──────────────┘  └──────────────┘          │ │
-│  └──────────────────────────────────────────────────────────────────┘ │
-└────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-                           learnflow.example.com
-```
+**As a** student or teacher
+**I want** to access LearnFlow via a public URL
+**So that** I can use it from anywhere
+
+**Acceptance Criteria**:
+- [ ] Given I navigate to the domain, the application loads
+- [ ] Given I log in, my authentication persists
+- [ ] Given I complete exercises, my progress saves
+- [ ] Given the application is updated, I don't lose data
+
+### P2: Operations Team Monitors Deployment
+
+**As an** operations team member
+**I want** to monitor the application health
+**So that** I can respond to issues proactively
+
+**Acceptance Criteria**:
+- [ ] Given I check monitoring, I see resource usage metrics
+- [ ] Given an error occurs, I see an alert
+- [ ] Given I need logs, I can retrieve them easily
+- [ ] Given I need to scale, I can adjust replicas
+
+### P3: Developer Deploys Update
+
+**As a** developer
+**I want** to deploy application updates
+**So that** users get new features
+
+**Acceptance Criteria**:
+- [ ] Given I push code, CI/CD builds the image
+- [ ] Given I merge to main, Argo CD deploys automatically
+- [ ] Given deployment fails, I can rollback
+- [ ] Given deployment succeeds, no downtime occurs
+
+---
+
+## Functional Requirements
+
+### FR-1: Cloud Infrastructure
+
+Infrastructure must include:
+- Kubernetes cluster (3+ nodes for HA)
+- Container registry for images
+- Managed database (PostgreSQL) or self-hosted
+- Managed Kafka or self-hosted
+- Load balancer for ingress
+- TLS certificate management
+
+### FR-2: Ingress Configuration
+
+Ingress must provide:
+- TLS/SSL termination (Let's Encrypt or cloud provider)
+- Domain routing (custom domain)
+- Path-based routing (/, /api, etc.)
+- Rate limiting (optional)
+- DDoS protection (cloud provider managed)
+
+### FR-3: Monitoring & Logging
+
+Monitoring must include:
+- Metrics collection (CPU, memory, requests)
+- Log aggregation (all services)
+- Alerting (error rates, resource limits)
+- Dashboards (Grafana or cloud provider)
+- Distributed tracing (optional)
+
+### FR-4: Backup & Disaster Recovery
+
+Must implement:
+- Database backups (daily, retained 30 days)
+- Snapshot storage (cloud storage)
+- Recovery procedures documented
+- Backup restoration tested
+
+---
+
+## Non-Functional Requirements
+
+### NFR-1: Availability
+
+- Uptime target: 99% (excluding maintenance)
+- Rolling updates with zero downtime
+- Pod disruption budgets configured
+- Multi-AZ deployment for HA
+
+### NFR-2: Performance
+
+- Page load: <3 seconds
+- API response: <500ms (p95)
+- Resource limits defined for all services
+- Auto-scaling configured (optional)
+
+### NFR-3: Security
+
+- TLS 1.3 minimum for all endpoints
+- Secrets managed via cloud provider
+- Network policies configured
+- RBAC for Kubernetes access
+
+### NFR-4: Cost Management
+
+- Cost alerts configured
+- Resource quotas defined
+- Right-sized instances
+- Reserved instances for long-running workloads
 
 ---
 
@@ -88,592 +157,87 @@ Deploy the complete LearnFlow application to a production Kubernetes cluster on 
 
 | Feature | Azure (AKS) | Google (GKE) | Oracle (OKE) |
 |---------|-------------|--------------|---------------|
-| Free Tier | $200 credit (12 months) | $300 credit (90 days) | Always Free tier |
-| Cluster Creation | Portal, CLI, Terraform | Console, CLI, Terraform | Console, CLI, Terraform |
+| Free Tier | $200 credit (12 mo) | $300 credit (90 days) | Always Free tier |
 | Managed Kafka | Azure Event Hubs | Cloud Pub/Sub | Oracle Streaming |
-| Managed PostgreSQL | Azure Database | Cloud SQL | Autonomous Database |
+| Managed PostgreSQL | Azure Database | Cloud SQL | Autonomous DB |
 | Load Balancer | Azure LB | Cloud LB | Network LB |
-| Ingress | Azure App Gateway | Cloud Load Balancing | Network Load Balancer |
-| Container Registry | Azure Container Registry | Artifact Registry | Oracle Container Registry |
 | Monitoring | Azure Monitor | Cloud Monitoring | Application Monitoring |
 
 ---
 
-## Azure Kubernetes Service (AKS)
+## Out of Scope
 
-### Prerequisites
-
-```bash
-# Install Azure CLI
-curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-
-# Login
-az login
-
-# Install kubectl
-az aks install-cli
-
-# Verify
-az --version
-kubectl version --client
-```
-
-### Cluster Creation
-
-```bash
-# Create resource group
-az group create \
-  --name learnflow-rg \
-  --location eastus
-
-# Create AKS cluster
-az aks create \
-  --resource-group learnflow-rg \
-  --name learnflow-aks \
-  --node-count 3 \
-  --node-vm-size Standard_DS2_v2 \
-  --enable-managed-identity \
-  --enable-msi-auth-for-monitoring \
-  --generate-ssh-keys
-
-# Get credentials
-az aks get-credentials \
-  --resource-group learnflow-rg \
-  --name learnflow-aks
-
-# Verify cluster
-kubectl get nodes
-```
-
-### Azure Services
-
-| Service | Purpose | Command |
-|---------|---------|---------|
-| Azure Container Registry | Docker images | `az acr create` |
-| Azure Database for PostgreSQL | Managed database | `az postgres server create` |
-| Azure Event Hubs | Managed Kafka | `az eventhubs namespace create` |
-| Azure Key Vault | Secrets management | `az keyvault create` |
-| Azure Monitor | Monitoring | `az monitor account create` |
+This phase does NOT include:
+- Application development (see Phases 4-7)
+- Documentation (see Phase 8)
+- CI/CD automation (see Phase 10)
 
 ---
 
-## Google Kubernetes Engine (GKE)
+## Assumptions
 
-### Prerequisites
-
-```bash
-# Install Google Cloud SDK
-curl https://sdk.cloud.google.com | bash
-exec -l $SHELL
-gcloud init
-
-# Install kubectl
-gcloud components install kubectl
-
-# Verify
-gcloud version
-kubectl version --client
-```
-
-### Cluster Creation
-
-```bash
-# Create GKE cluster
-gcloud container clusters create learnflow-gke \
-  --zone=us-central1-a \
-  --num-nodes=3 \
-  --machine-type=e2-medium \
-  --enable-autoscaling \
-  --min-nodes=1 \
-  --max-nodes=5 \
-  --enable-autorepair \
-  --enable-autoupgrade
-
-# Get credentials
-gcloud container clusters get-credentials learnflow-gke \
-  --zone=us-central1-a
-
-# Verify cluster
-kubectl get nodes
-```
-
-### GCP Services
-
-| Service | Purpose | Command |
-|---------|---------|---------|
-| Artifact Registry | Docker images | `gcloud artifacts repositories create` |
-| Cloud SQL | Managed PostgreSQL | `gcloud sql instances create` |
-| Cloud Pub/Sub | Managed Kafka | `gcloud pubsub topics create` |
-| Secret Manager | Secrets management | `gcloud secrets create` |
-| Cloud Monitoring | Monitoring | `gcloud monitoring dashboards create` |
+1. Cloud provider account is set up
+2. Billing is configured
+3. Domain name is owned or can be registered
+4. CLI tools installed (az, gcloud, or oci)
 
 ---
 
-## Oracle Cloud Infrastructure (OKE)
+## Constraints
 
-### Prerequisites
-
-```bash
-# Install OCI CLI
-curl --location https://github.com/oracle/oci-cli/releases/download/v3.0.0/oci-cli-installer.sh -o oci-cli-installer.sh
-chmod +x oci-cli-installer.sh
-./oci-cli-installer.sh --accept-default-values
-
-# Configure
-oci setup config
-
-# Install kubectl
-oci ce cluster install-kubectl
-
-# Verify
-oci --version
-kubectl version --client
-```
-
-### Cluster Creation
-
-```bash
-# Create OKE cluster
-oci ce cluster create \
-  --name learnflow-oke \
-  --compartment-id $COMPARTMENT_ID \
-  --kubernetes-version 1.27.0 \
-  --node-shape VM.Standard.E4.Flex \
-  --node-pool-subnet-ids $SUBNET_ID
-
-# Get credentials
-oci ce cluster create-kubeconfig \
-  --cluster-id $CLUSTER_ID \
-  --file $HOME/.kube/config \
-  --region us-ashburn-1
-
-# Verify cluster
-kubectl get nodes
-```
-
-### OCI Services
-
-| Service | Purpose | Command |
-|---------|---------|---------|
-| Oracle Container Registry | Docker images | `oci artifact container repository create` |
-| Autonomous Database | Managed PostgreSQL | `oci db autonomous-database create` |
-| Streaming | Managed Kafka | `oci streaming stream create` |
-| Vault | Secrets management | `oci vault management vault create` |
-| Application Monitoring | Monitoring | `oci apm-synthetics monitor create` |
+1. Must use chosen cloud provider's managed services where possible
+2. Skills must work for cloud deployment
+3. Cross-agent compatibility maintained
+4. Deployment must be autonomous via Skills
 
 ---
 
-## Deployment Configuration
+## Edge Cases
 
-### Namespace and Resource Management
-
-```yaml
-# namespaces.yaml
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: learnflow
-  labels:
-    name: learnflow
-    environment: production
-
----
-apiVersion: v1
-kind: ResourceQuota
-metadata:
-  name: compute-resources
-  namespace: learnflow
-spec:
-  hard:
-    requests.cpu: "4"
-    requests.memory: 8Gi
-    limits.cpu: "8"
-    limits.memory: 16Gi
-
----
-apiVersion: v1
-kind: LimitRange
-metadata:
-  name: default-limits
-  namespace: learnflow
-spec:
-  limits:
-  - default:
-      cpu: 500m
-      memory: 512Mi
-    defaultRequest:
-      cpu: 100m
-      memory: 128Mi
-    type: Container
-```
-
-### Ingress with TLS
-
-```yaml
-# ingress.yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: learnflow-ingress
-  namespace: learnflow
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-spec:
-  ingressClassName: nginx
-  tls:
-  - hosts:
-    - learnflow.example.com
-    secretName: learnflow-tls
-  rules:
-  - host: learnflow.example.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: learnflow-frontend
-            port:
-              number: 80
-      - path: /api
-        pathType: Prefix
-        backend:
-          service:
-            name: kong-api-gateway
-            port:
-              number: 8000
-```
-
-### Persistent Storage
-
-```yaml
-# pvc.yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: kafka-pvc
-  namespace: kafka
-spec:
-  accessModes:
-  - ReadWriteOnce
-  storageClassName: standard
-  resources:
-    requests:
-      storage: 50Gi
-
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: postgres-pvc
-  namespace: postgres
-spec:
-  accessModes:
-  - ReadWriteOnce
-  storageClassName: standard
-  resources:
-    requests:
-      storage: 20Gi
-```
+1. **Cluster creation fails**: Use alternative cloud provider or region
+2. **TLS certificate expires**: Auto-renewal configured
+3. **Pod eviction**: Graceful shutdown, requests drained
+4. **Database connection failure**: Retry with backoff
+5. **Storage quota exceeded**: Alert and expand
 
 ---
 
-## Managed Services Integration
+## Dependencies
 
-### Azure Database for PostgreSQL
+### Internal Dependencies
+- Phase 7: Application working locally
 
-```bash
-# Create Azure PostgreSQL
-az postgres server create \
-  --name learnflow-postgres \
-  --resource-group learnflow-rg \
-  --location eastus \
-  --admin-user postgres \
-  --admin-password $PASSWORD \
-  --sku-name GP_Gen5_2 \
-  --version 14
-
-# Configure firewall
-az postgres server firewall-rule create \
-  --name allow-all \
-  --resource-group learnflow-rg \
-  --server learnflow-postgres \
-  --start-ip-address 0.0.0.0 \
-  --end-ip-address 255.255.255.255
-
-# Get connection string
-az postgres server show-connection-string \
-  --server-name learnflow-postgres \
-  --database-name learnflow \
-  --client psql
-```
-
-### Azure Event Hubs (Kafka Alternative)
-
-```bash
-# Create Event Hubs namespace
-az eventhubs namespace create \
-  --name learnflow-events \
-  --resource-group learnflow-rg \
-  --location eastus \
-  --sku Standard
-
-# Create Event Hub
-az eventhubs eventhub create \
-  --name learning-events \
-  --namespace-name learnflow-events \
-  --resource-group learnflow-rg \
-  --message-retention 7 \
-  --partition-count 2
-```
+### External Dependencies
+- Cloud provider account
+- Domain name registrar
+- Container registry access
 
 ---
 
-## Monitoring and Logging
+## Risks and Mitigations
 
-### Azure Monitor
-
-```bash
-# Create Log Analytics workspace
-az monitor log-analytics workspace create \
-  --name learnflow-logs \
-  --resource-group learnflow-rg \
-  --location eastus
-
-# Enable Container Insights
-az aks enable-addons \
-  --resource-group learnflow-rg \
-  --name learnflow-aks \
-  --addons monitoring \
-  --workspace-resource-id $WORKSPACE_ID
-```
-
-### GCP Cloud Monitoring
-
-```bash
-# Enable Cloud Monitoring
-gcloud monitoring app create learnflow
-
-# Install Ops Agent
-kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/opentelemetry-operations-kubernetes/main/config/otel.yaml
-```
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Cloud costs exceed budget | High | Cost alerts, resource limits, right-sizing |
+| Deployment fails | Medium | Rollback mechanism, staging environment |
+| Downtime during update | Medium | Rolling updates, pod disruption budgets |
+| Data loss | Critical | Automated backups, tested recovery |
 
 ---
 
-## Deployment Automation
+## Glossary
 
-### Using cloud-deployer Skill
-
-```bash
-claude
-> Deploy LearnFlow to Azure AKS using cloud-deployer skill
-> Configure ingress with TLS
-> Enable Azure Database for PostgreSQL
-> Set up Azure Monitor
-
-# AI will:
-# 1. Read cloud-deployer SKILL.md
-# 2. Execute cloud-specific deployment scripts
-# 3. Configure managed services
-# 4. Set up ingress and DNS
-# 5. Enable monitoring
-```
+| Term | Definition |
+|------|------------|
+| **AKS** | Azure Kubernetes Service |
+| **GKE** | Google Kubernetes Engine |
+| **OKE** | Oracle Container Engine for Kubernetes |
+| **TLS** | Transport Layer Security (SSL replacement) |
+| **Ingress** | Kubernetes API for HTTP routing |
 
 ---
 
-## Domain Configuration
+## References
 
-### DNS Setup
-
-```bash
-# Get external IP
-kubectl get svc ingress-controller -n ingress
-
-# Add A record in your DNS provider
-# learnflow.example.com → A → <EXTERNAL_IP>
-```
-
-### SSL/TLS with Let's Encrypt
-
-```bash
-# Install cert-manager
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
-
-# Create cluster issuer
-cat > cluster-issuer.yaml << 'EOF'
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: letsencrypt-prod
-spec:
-  acme:
-    server: https://acme-v02.api.letsencrypt.org/directory
-    email: admin@example.com
-    privateKeySecretRef:
-      name: letsencrypt-prod
-    solvers:
-    - http01:
-        ingress:
-          class: nginx
-EOF
-
-kubectl apply -f cluster-issuer.yaml
-```
-
----
-
-## Validation
-
-### Health Check
-
-```bash
-# Check all pods
-kubectl get pods -A
-
-# Check services
-kubectl get svc -A
-
-# Check ingress
-kubectl get ingress -n learnflow
-
-# Test application
-curl -I https://learnflow.example.com
-```
-
-### Load Test
-
-```bash
-# Install kubectl plugin for load testing
-kubectl krew install load
-
-# Run load test
-kubectl load test \
-  --url https://learnflow.example.com \
-  --requests 1000 \
-  --concurrency 50
-```
-
----
-
-## Backup and Disaster Recovery
-
-### Azure Backup
-
-```bash
-# Create Recovery Services vault
-az backup vault create \
-  --name learnflow-backup \
-  --resource-group learnflow-rg \
-  --location eastus
-
-# Enable backup for PostgreSQL
-az backup protection enable-for-azurel_database \
-  --vault-name learnflow-backup \
-  --resource-group learnflow-rg \
-  --server learnflow-postgres \
-  --database learnflow
-```
-
-### Snapshot Storage
-
-```bash
-# Create storage account
-az storage account create \
-  --name learnflowbackup \
-  --resource-group learnflow-rg \
-  --location eastus \
-  --sku Standard_LRS
-
-# Create snapshot schedule
-kubectl create -f snapshot-schedule.yaml
-```
-
----
-
-## Cost Optimization
-
-### Azure Cost Management
-
-```bash
-# Set budget alerts
-az consumption budget create \
-  --name monthly-budget \
-  --resource-group learnflow-rg \
-  --amount 100 \
-  --timegrain Monthly \
-  --category Actual
-```
-
-### Right-Sizing Recommendations
-
-```bash
-# Azure Advisor
-az advisor recommendation list
-
-# GCP Recommender
-gcloud recommender recommendations list
-```
-
----
-
-## Bonus Skills
-
-The following bonus skills can be implemented to enhance the cloud deployment:
-
-### prometheus-grafana-setup
-
-**Purpose**: Deploy Prometheus and Grafana for monitoring and alerting.
-
-**Use When**:
-- Setting up comprehensive monitoring
-- Creating dashboards for metrics visualization
-- Configuring alerting rules
-
-**Key Features**:
-- Prometheus for metrics collection
-- Grafana for visualization
-- AlertManager for notifications
-- Pre-configured dashboards for LearnFlow services
-
-### pg-data-backup-restore
-
-**Purpose**: Implement automated backup and recovery for PostgreSQL on Kubernetes.
-
-**Use When**:
-- Setting up data protection
-- Implementing disaster recovery
-- Scheduled backups required
-
-**Key Features**:
-- Automated backup scheduling
-- Point-in-time recovery
-- Backup retention policies
-- Cross-region replication (optional)
-
----
-
-## Deliverables
-
-1. **Cloud Deployment**
-   - Kubernetes cluster running
-   - All services deployed
-   - Ingress with TLS configured
-   - Domain name accessible
-
-2. **Managed Services**
-   - Managed database configured
-   - Managed Kafka or alternative
-   - Monitoring enabled
-   - Backups configured
-
-3. **Documentation**
-   - Cloud deployment guide
-   - Cost analysis
-   - Disaster recovery plan
-
----
-
-## Next Phase
-
-After Phase 9 completion, proceed to **Phase 10: Continuous Deployment** where Argo CD and GitHub Actions will be set up for GitOps-based continuous deployment.
+- Hackathon3.md: Complete project requirements
+- Phase 7 spec: Application details

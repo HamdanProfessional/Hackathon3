@@ -1,285 +1,308 @@
 # Phase 4: Backend Services - Tasks
 
 **Phase**: 4
-**Focus**: Build FastAPI microservices with Dapr sidecars and AI agent integration
+**Focus**: Build microservices with AI agent integration for LearnFlow
 
 ---
 
-## Task Breakdown
+## Phase 1: Setup (Project Initialization)
 
-### Category 1: Prerequisites & Setup
+**Goal**: Initialize project structure and verify infrastructure readiness
 
-| ID | Task | Status | Notes |
-|----|------|--------|-------|
-| 4.1.1 | Verify Kafka is running and accessible | Pending | `kubectl get pods -n kafka` |
-| 4.1.2 | Verify PostgreSQL is running and accessible | Pending | `kubectl get pods -n postgres` |
-| 4.1.3 | Create `learnflow` namespace | Pending | `kubectl create namespace learnflow` |
-| 4.1.4 | Create database connection secret | Pending | `postgres-credentials` |
-| 4.1.5 | Create OpenAI API key secret | Pending | `openai-credentials` |
-| 4.1.6 | Verify `fastapi-dapr-agent` skill exists | Pending | Check `.claude/skills/` |
-
----
-
-### Category 2: Common Foundation Code
-
-| ID | Task | Status | Notes |
-|----|------|--------|-------|
-| 4.2.1 | Create `common/models.py` with Pydantic models | Pending | StudentProgress, CodeSubmission, etc. |
-| 4.2.2 | Create `common/database.py` for DB connection | Pending | Async PostgreSQL connection |
-| 4.2.3 | Create `common/dapr_client.py` wrapper | Pending | Publish, subscribe, state operations |
-| 4.2.4 | Create `common/agent_base.py` base class | Pending | Shared agent functionality |
-| 4.2.5 | Write unit tests for common code | Pending | `pytest tests/common/` |
+**Tasks**:
+- [ ] T001 Create backend directory structure in `backend/`
+- [ ] T002 Create `backend/common/__init__.py` package
+- [ ] T003 [P] Create `backend/common/models.py` with Pydantic models
+- [ ] T004 [P] Create `backend/common/database.py` with async connection
+- [ ] T005 [P] Create `backend/common/dapr_client.py` with Dapr wrapper
+- [ ] T006 [P] Create `backend/common/agent_base.py` base class
+- [ ] T007 Create `backend/tests/__init__.py` test package
+- [ ] T008 Verify Kafka is running: `kubectl get pods -n kafka`
+- [ ] T009 Verify PostgreSQL is running: `kubectl get pods -n postgres`
+- [ ] T010 Create `learnflow` namespace: `kubectl create namespace learnflow`
+- [ ] T011 Create database connection secret `postgres-credentials`
+- [ ] T012 Create OpenAI API key secret `openai-credentials`
 
 ---
 
-### Category 3: Triage Service
+## Phase 2: Foundational (Blocking Prerequisites)
 
-| ID | Task | Status | Notes |
-|----|------|--------|-------|
-| 4.3.1 | Generate triage-service scaffold | Pending | Use `fastapi-dapr-agent` skill |
-| 4.3.2 | Implement TriageAgent class | Pending | Query classification logic |
-| 4.3.3 | Add OpenAI function calling for routing | Pending | concepts/debug/exercise/progress |
-| 4.3.4 | Implement POST /api/v1/triage endpoint | Pending | Request/response models |
-| 4.3.5 | Add Dapr pub/sub for `learning.triage` topic | Pending | Publish routing decisions |
-| 4.3.6 | Add subscriber for `code.submission` topic | Pending | Trigger triage on submission |
-| 4.3.7 | Write tests for triage logic | Pending | Unit + integration |
-| 4.3.8 | Deploy triage-service to Kubernetes | Pending | Use skill's deploy script |
-| 4.3.9 | Verify health endpoint | Pending | `curl http://triage-service:8000/health` |
+**Goal**: Set up database schema and Dapr components
 
----
-
-### Category 4: Concepts Service
-
-| ID | Task | Status | Notes |
-|----|------|--------|-------|
-| 4.4.1 | Generate concepts-service scaffold | Pending | Use `fastapi-dapr-agent` skill |
-| 4.4.2 | Create curriculum data structure | Pending | 8 modules with topics |
-| 4.4.3 | Implement ConceptsAgent class | Pending | Explain Python concepts |
-| 4.4.4 | Add mastery level adaptation | Pending | Adjust explanation complexity |
-| 4.4.5 | Implement POST /api/v1/concepts/explain | Pending | Request/response models |
-| 4.4.6 | Add code example generation | Pending | Python snippets for concepts |
-| 4.4.7 | Add state tracking for concepts covered | Pending | Via Dapr state store |
-| 4.4.8 | Add subscriber for `learning.triage` topic | Pending | Receive explanation requests |
-| 4.4.9 | Publish to `learning.concept_explained` topic | Pending | Analytics event |
-| 4.4.10 | Write tests for concepts agent | Pending | Unit + integration |
-| 4.4.11 | Deploy concepts-service to Kubernetes | Pending | Use skill's deploy script |
-| 4.4.12 | Verify health endpoint | Pending | `curl http://concepts-service:8000/health` |
+**Tasks**:
+- [ ] T013 Create `backend/migrations/001_initial_schema.up.sql`
+- [ ] T014 Create `backend/migrations/001_initial_schema.down.sql`
+- [ ] T015 Run database migrations to create tables
+- [ ] T016 Create `backend/dapr/components/pubsub.yaml` for Kafka
+- [ ] T017 Create `backend/dapr/components/statestore.yaml` for PostgreSQL
+- [ ] T018 Create `backend/dapr/components/secretstore.yaml`
+- [ ] T019 Apply Dapr components: `kubectl apply -f backend/dapr/components/`
+- [ ] T020 Verify Dapr components: `kubectl get components -n learnflow`
+- [ ] T021 Test Kafka pub/sub connectivity
+- [ ] T022 Test state store connectivity
 
 ---
 
-### Category 5: Debug Service
+## Phase 3: User Story - Query Routing (P1)
 
-| ID | Task | Status | Notes |
-|----|------|--------|-------|
-| 4.5.1 | Generate debug-service scaffold | Pending | Use `fastapi-dapr-agent` skill |
-| 4.5.2 | Create error pattern mappings | Pending | SyntaxError, NameError, etc. |
-| 4.5.3 | Implement DebugAgent class | Pending | Parse and analyze errors |
-| 4.5.4 | Implement progressive hint system | Pending | Don't give solutions directly |
-| 4.5.5 | Implement POST /api/v1/debug/analyze | Pending | Request/response models |
-| 4.5.6 | Add error frequency tracking | Pending | Detect repeated errors |
-| 4.5.7 | Implement struggle detection logic | Pending | Same error 3+ times |
-| 4.5.8 | Publish to `struggle.alert` topic | Pending | When struggle detected |
-| 4.5.9 | Publish to `code.error_analyzed` topic | Pending | Analytics event |
-| 4.5.10 | Write tests for debug agent | Pending | Unit + integration |
-| 4.5.11 | Deploy debug-service to Kubernetes | Pending | Use skill's deploy script |
-| 4.5.12 | Verify health endpoint | Pending | `curl http://debug-service:8000/health` |
+**Story**: As a student learning Python, I want my questions to be automatically routed to the right specialist so that I get relevant help without manually selecting the assistance type.
 
----
+**Independent Test Criteria**:
+- Given a student query about concepts, system routes to concepts-service
+- Given a student query about errors, system routes to debug-service
+- Given a student query about exercises, system routes to exercise-service
+- Routing completes within 500ms
 
-### Category 6: Exercise Service
-
-| ID | Task | Status | Notes |
-|----|------|--------|-------|
-| 4.6.1 | Generate exercise-service scaffold | Pending | Use `fastapi-dapr-agent` skill |
-| 4.6.2 | Create exercise template bank | Pending | 120+ exercises across modules |
-| 4.6.3 | Implement ExerciseAgent class | Pending | Generate exercises |
-| 4.6.4 | Implement POST /api/v1/exercise/generate | Pending | Generate from templates |
-| 4.6.5 | Implement test case generation | Pending | For auto-grading |
-| 4.6.6 | Implement POST /api/v1/exercise/submit | Pending | Auto-grading logic |
-| 4.6.7 | Add hint system | Pending | Progressive hints |
-| 4.6.8 | Track exercise attempts | Pending | Database storage |
-| 4.6.9 | Publish to `exercise.attempt` topic | Pending | Analytics event |
-| 4.6.10 | Publish to `exercise.completed` topic | Pending | On success |
-| 4.6.11 | Write tests for exercise agent | Pending | Unit + integration |
-| 4.6.12 | Deploy exercise-service to Kubernetes | Pending | Use skill's deploy script |
-| 4.6.13 | Verify health endpoint | Pending | `curl http://exercise-service:8000/health` |
+**Tasks**:
+- [ ] T023 [P] Use `fastapi-dapr-agent` skill to generate triage-service scaffold (Port 8001)
+- [ ] T024 [US1] Implement TriageAgent.route_query() in `backend/triage-service/agents/triage_agent.py`
+- [ ] T025 [US1] Implement query classification logic (concepts/debug/exercise/progress)
+- [ ] T026 [US1] Add OpenAI function calling for routing decision
+- [ ] T027 [US1] Implement POST /api/v1/triage endpoint in `backend/triage-service/main.py`
+- [ ] T028 [US1] Add Dapr pub/sub for `learning.triage` topic
+- [ ] T029 [US1] Add subscriber for `code.submission` topic
+- [ ] T030 [US1] Create `backend/triage-service/schemas/requests.py` with TriageRequest model
+- [ ] T031 [US1] Create `backend/triage-service/schemas/responses.py` with TriageResponse model
+- [ ] T032 [US1] Write unit tests for TriageAgent in `tests/agents/test_triage_agent.py`
+- [ ] T033 [US1] Write integration tests for triage API in `tests/integration/test_triage_flow.py`
+- [ ] T034 [US1] Deploy triage-service to Kubernetes
+- [ ] T035 [US1] Verify health endpoint: `curl http://triage-service:8000/health`
 
 ---
 
-### Category 7: Progress Service
+## Phase 4: User Story - Adaptive Concept Explanations (P1)
 
-| ID | Task | Status | Notes |
-|----|------|--------|-------|
-| 4.7.1 | Generate progress-service scaffold | Pending | Use `fastapi-dapr-agent` skill |
-| 4.7.2 | Implement ProgressAgent class | Pending | Track and calculate mastery |
-| 4.7.3 | Implement mastery calculation | Pending | Weighted formula |
-| 4.7.4 | Implement level determination | Pending | Beginner/Learning/Proficient/Mastered |
-| 4.7.5 | Implement GET /api/v1/progress/{student_id} | Pending | Retrieve progress |
-| 4.7.6 | Implement POST /api/v1/progress/update | Pending | Update after activity |
-| 4.7.7 | Add streak calculation | Pending | Consistency tracking |
-| 4.7.8 | Store progress in Dapr state | Pending | State management |
-| 4.7.9 | Publish to `learning.progress` topic | Pending | Analytics event |
-| 4.7.10 | Subscribe to `exercise.completed` topic | Pending | Update on completion |
-| 4.7.11 | Subscribe to `code.submission` topic | Pending | Track code quality |
-| 4.7.12 | Write tests for progress agent | Pending | Unit + integration |
-| 4.7.13 | Deploy progress-service to Kubernetes | Pending | Use skill's deploy script |
-| 4.7.14 | Verify health endpoint | Pending | `curl http://progress-service:8000/health` |
+**Story**: As a student, I want explanations that match my current understanding level so that I'm not overwhelmed by too-advanced or too-simple content.
 
----
+**Independent Test Criteria**:
+- Given a student with 35% mastery, explanation uses simple language
+- Given a student with 75% mastery, explanation uses technical terms
+- Explanation includes relevant code example
+- Topics align with 8-module Python curriculum
 
-### Category 8: Code Review Service
-
-| ID | Task | Status | Notes |
-|----|------|--------|-------|
-| 4.8.1 | Generate code-review-service scaffold | Pending | Use fastapi-dapr-agent skill |
-| 4.8.2 | Implement CodeReviewAgent class | Pending | Quality analysis |
-| 4.8.3 | Implement correctness check | Pending | Syntax/runtime errors |
-| 4.8.4 | Implement PEP 8 style check | Pending | pycodestyle/flake8 |
-| 4.8.5 | Implement efficiency analysis | Pending | Complexity assessment |
-| 4.8.6 | Implement readability assessment | Pending | Naming, comments |
-| 4.8.7 | Implement POST /api/v1/review/analyze | Pending | Request/response models |
-| 4.8.8 | Add quality metrics calculation | Pending | Weighted scoring |
-| 4.8.9 | Publish to code.reviewed topic | Pending | Analytics event |
-| 4.8.10 | Subscribe to code.submission topic | Pending | Auto-review |
-| 4.8.11 | Write tests for code review agent | Pending | Unit + integration |
-| 4.8.12 | Deploy code-review-service | Pending | Use skill's deploy script |
-| 4.8.13 | Verify health endpoint | Pending | `curl http://code-review-service:8000/health` |
+**Tasks**:
+- [ ] T036 [P] Use `fastapi-dapr-agent` skill to generate concepts-service scaffold (Port 8002)
+- [ ] T037 [US2] Create curriculum data structure in `backend/concepts-service/curriculum.py`
+- [ ] T038 [US2] Define 8-module Python curriculum with topics
+- [ ] T039 [US2] Implement ConceptsAgent.explain() in `backend/concepts-service/agents/concepts_agent.py`
+- [ ] T040 [US2] Implement mastery level adaptation logic
+- [ ] T041 [US2] Implement code example generation
+- [ ] T042 [US2] Implement POST /api/v1/concepts/explain endpoint
+- [ ] T043 [US2] Add Dapr state tracking for concepts covered
+- [ ] T044 [US2] Subscribe to `learning.triage` topic
+- [ ] T045 [US2] Publish to `learning.concept_explained` topic
+- [ ] T046 [US2] Write unit tests for ConceptsAgent in `tests/agents/test_concepts_agent.py`
+- [ ] T047 [US2] Deploy concepts-service to Kubernetes
+- [ ] T048 [US2] Verify health endpoint
 
 ---
 
-### Category 9: Database Setup
+## Phase 5: User Story - Progressive Debugging Hints (P1)
 
-| ID | Task | Status | Notes |
-|----|------|--------|-------|
-| 4.8.1 | Create students table | Pending | UUID primary key |
-| 4.8.2 | Create student_progress table | Pending | Composite primary key |
-| 4.8.3 | Create exercise_attempts table | Pending | Track submissions |
-| 4.8.4 | Create code_submissions table | Pending | Store code and errors |
-| 4.8.5 | Create conversations table | Pending | JSONB for messages |
-| 4.8.6 | Create migration script | Pending | Alembic or raw SQL |
-| 4.8.7 | Run migrations | Pending | Apply schema |
-| 4.8.8 | Seed test data | Pending | For testing |
-| 4.8.9 | Verify database connectivity | Pending | From all services |
+**Story**: As a student encountering an error, I want hints that guide me to the solution without giving the answer so that I learn debugging skills through practice.
 
----
+**Independent Test Criteria**:
+- Given code with SyntaxError, system identifies error type and location
+- System provides progressive hints (not direct solutions)
+- Third hint brings student closer to solution
+- System detects repeated errors (same type 3+ times)
 
-### Category 9: Dapr Configuration
-
-| ID | Task | Status | Notes |
-|----|------|--------|-------|
-| 4.9.1 | Create Dapr components directory | Pending | `dapr/components/` |
-| 4.9.2 | Create pubsub component (Kafka) | Pending | `pubsub.yaml` |
-| 4.9.3 | Create statestore component (PostgreSQL) | Pending | `statestore.yaml` |
-| 4.9.4 | Create secretstore component | Pending | `secretstore.yaml` |
-| 4.9.5 | Apply Dapr components to cluster | Pending | `kubectl apply -f dapr/components/` |
-| 4.9.6 | Verify Dapr components are running | Pending | `kubectl get components -n learnflow` |
-| 4.9.7 | Test pub/sub connectivity | Pending | Publish test message |
-| 4.9.8 | Test state store connectivity | Pending | Save/retrieve test state |
+**Tasks**:
+- [ ] T049 [P] Use `fastapi-dapr-agent` skill to generate debug-service scaffold (Port 8003)
+- [ ] T050 [US3] Create error pattern mappings in `backend/debug-service/error_patterns.py`
+- [ ] T051 [US3] Map SyntaxError, NameError, TypeError, etc.
+- [ ] T052 [US3] Implement DebugAgent.analyze() in `backend/debug-service/agents/debug_agent.py`
+- [ ] T053 [US3] Implement progressive hint system (3 levels)
+- [ ] T054 [US3] Implement POST /api/v1/debug/analyze endpoint
+- [ ] T055 [US3] Add error frequency tracking
+- [ ] T056 [US3] Implement struggle detection logic (same error 3+ times)
+- [ ] T057 [US3] Publish to `struggle.alert` topic when struggle detected
+- [ ] T058 [US3] Publish to `code.error_analyzed` topic
+- [ ] T059 [US3] Write unit tests for DebugAgent in `tests/agents/test_debug_agent.py`
+- [ ] T060 [US3] Deploy debug-service to Kubernetes
+- [ ] T061 [US3] Verify health endpoint
 
 ---
 
-### Category 10: Kubernetes Deployment
+## Phase 6: User Story - Auto-Graded Exercises (P1)
 
-| ID | Task | Status | Notes |
-|----|------|--------|-------|
-| 4.10.1 | Build Docker images for all services | Pending | 5 services |
-| 4.10.2 | Push images to registry | Pending | Docker Hub or local |
-| 4.10.3 | Create Kubernetes manifests | Pending | Deployment + Service |
-| 4.10.4 | Deploy triage-service | Pending | With Dapr sidecar |
-| 4.10.5 | Deploy concepts-service | Pending | With Dapr sidecar |
-| 4.10.6 | Deploy debug-service | Pending | With Dapr sidecar |
-| 4.10.7 | Deploy exercise-service | Pending | With Dapr sidecar |
-| 4.10.8 | Deploy progress-service | Pending | With Dapr sidecar |
-| 4.10.9 | Verify all pods are running | Pending | `kubectl get pods -n learnflow` |
-| 4.10.10 | Verify Dapr sidecars are running | Pending | 2 containers per pod |
-| 4.10.11 | Verify all health endpoints | Pending | `curl` each service |
-| 4.10.12 | Verify service-to-service communication | Pending | Via Dapr invocation |
+**Story**: As a student, I want immediate feedback on coding exercises so that I know if I understand the concept and can correct mistakes.
 
----
+**Independent Test Criteria**:
+- Given exercise request, system generates appropriate challenge
+- Exercise difficulty matches student's current module and mastery
+- Submission is auto-graded against test cases
+- Feedback includes pass/fail status and hints
+- Completed exercises update progress tracking
 
-### Category 11: Testing
-
-| ID | Task | Status | Notes |
-|----|------|--------|-------|
-| 4.11.1 | Write unit tests for TriageAgent | Pending | `pytest tests/agents/test_triage.py` |
-| 4.11.2 | Write unit tests for ConceptsAgent | Pending | `pytest tests/agents/test_concepts.py` |
-| 4.11.3 | Write unit tests for DebugAgent | Pending | `pytest tests/agents/test_debug.py` |
-| 4.11.4 | Write unit tests for ExerciseAgent | Pending | `pytest tests/agents/test_exercise.py` |
-| 4.11.5 | Write unit tests for ProgressAgent | Pending | `pytest tests/agents/test_progress.py` |
-| 4.11.6 | Write integration tests for triage-service | Pending | End-to-end API tests |
-| 4.11.7 | Write integration tests for concepts-service | Pending | End-to-end API tests |
-| 4.11.8 | Write integration tests for debug-service | Pending | End-to-end API tests |
-| 4.11.9 | Write integration tests for exercise-service | Pending | End-to-end API tests |
-| 4.11.10 | Write integration tests for progress-service | Pending | End-to-end API tests |
-| 4.11.11 | Run all tests | Pending | `pytest` |
-| 4.11.12 | Verify test coverage > 80% | Pending | `pytest --cov` |
+**Tasks**:
+- [ ] T062 [P] Use `fastapi-dapr-agent` skill to generate exercise-service scaffold (Port 8004)
+- [ ] T063 [US4] Create exercise template bank in `backend/exercise-service/exercise_bank.py`
+- [ ] T064 [US4] Create 120+ exercises across 8 modules
+- [ ] T065 [US4] Define difficulty levels per exercise
+- [ ] T066 [US4] Implement ExerciseAgent.generate() in `backend/exercise-service/agents/exercise_agent.py`
+- [ ] T067 [US4] Implement test case generation
+- [ ] T068 [US4] Implement POST /api/v1/exercise/generate endpoint
+- [ ] T069 [US4] Implement POST /api/v1/exercise/submit endpoint
+- [ ] T070 [US4] Implement grader in `backend/exercise-service/grader.py`
+- [ ] T071 [US4] Add hint system (progressive)
+- [ ] T072 [US4] Track exercise attempts in database
+- [ ] T073 [US4] Publish to `exercise.attempt` topic
+- [ ] T074 [US4] Publish to `exercise.completed` topic on success
+- [ ] T075 [US4] Write unit tests for ExerciseAgent in `tests/agents/test_exercise_agent.py`
+- [ ] T076 [US4] Write integration tests for exercise flow
+- [ ] T077 [US4] Deploy exercise-service to Kubernetes
+- [ ] T078 [US4] Verify health endpoint
 
 ---
 
-### Category 12: Validation & Cleanup
+## Phase 7: User Story - Mastery Progress Tracking (P2)
 
-| ID | Task | Status | Notes |
-|----|------|--------|-------|
-| 4.12.1 | Verify all success criteria met | Pending | Check spec.md |
-| 4.12.2 | Run end-to-end smoke test | Pending | Full flow test |
-| 4.12.3 | Check resource usage | Pending | CPU/memory |
-| 4.12.4 | Check logs for errors | Pending | All services |
-| 4.12.5 | Document API endpoints | Pending | OpenAPI docs |
-| 4.12.6 | Clean up test resources | Pending | Remove test data |
-| 4.12.7 | Create deployment summary | Pending | For documentation |
+**Story**: As a student, I want to see my overall progress and mastery levels so that I know what I've learned and what to focus on next.
+
+**Independent Test Criteria**:
+- System calculates mastery score per topic using weighted formula
+- Mastery level displayed (Beginner/Learning/Proficient/Mastered)
+- Progress updates after each activity (exercise, quiz, code submission)
+- Streak tracking for consistency (days active in last 30 days)
+
+**Tasks**:
+- [ ] T079 [P] Use `fastapi-dapr-agent` skill to generate progress-service scaffold (Port 8005)
+- [ ] T080 [US5] Implement ProgressAgent in `backend/progress-service/agents/progress_agent.py`
+- [ ] T081 [US5] Implement mastery calculation in `backend/progress-service/mastery.py`
+- [ ] T082 [US5] Implement weighted formula: exercise 40%, quiz 30%, code quality 20%, streak 10%
+- [ ] T083 [US5] Implement level determination (0-40% Beginner, 41-70% Learning, etc.)
+- [ ] T084 [US5] Implement GET /api/v1/progress/{student_id} endpoint
+- [ ] T085 [US5] Implement POST /api/v1/progress/update endpoint
+- [ ] T086 [US5] Add streak calculation logic
+- [ ] T087 [US5] Store progress in Dapr state
+- [ ] T088 [US5] Publish to `learning.progress` topic
+- [ ] T089 [US5] Subscribe to `exercise.completed` topic
+- [ ] T090 [US5] Subscribe to `code.submission` topic
+- [ ] T091 [US5] Write unit tests for ProgressAgent in `tests/agents/test_progress_agent.py`
+- [ ] T092 [US5] Deploy progress-service to Kubernetes
+- [ ] T093 [US5] Verify health endpoint
+
+---
+
+## Phase 8: User Story - Code Quality Analysis (P2)
+
+**Story**: As a student, I want feedback on my code quality beyond just correctness so that I learn to write clean, maintainable Python.
+
+**Independent Test Criteria**:
+- Given code submission, system analyzes for correctness
+- System checks style compliance (PEP 8)
+- System assesses efficiency (time/space complexity)
+- System evaluates readability (naming, comments, structure)
+- Overall quality score (0-100) provided with breakdown
+
+**Tasks**:
+- [ ] T094 [P] Use `fastapi-dapr-agent` skill to generate code-review-service scaffold (Port 8006)
+- [ ] T095 [US6] Implement CodeReviewAgent in `backend/code-review-service/agents/code_review_agent.py`
+- [ ] T096 [US6] Implement correctness check in `backend/code-review-service/analyzers.py`
+- [ ] T097 [US6] Implement PEP 8 style check (pycodestyle/flake8)
+- [ ] T098 [US6] Implement efficiency analysis
+- [ ] T099 [US6] Implement readability assessment
+- [ ] T100 [US6] Implement POST /api/v1/review/analyze endpoint
+- [ ] T101 [US6] Add quality metrics calculation
+- [ ] T102 [US6] Publish to `code.reviewed` topic
+- [ ] T103 [US6] Subscribe to `code.submission` topic for auto-review
+- [ ] T104 [US6] Write unit tests for CodeReviewAgent in `tests/agents/test_code_review_agent.py`
+- [ ] T105 [US6] Deploy code-review-service to Kubernetes
+- [ ] T106 [US6] Verify health endpoint
+
+---
+
+## Phase 9: User Story - Struggle Detection (P3)
+
+**Story**: As a teacher, I want alerts when students are struggling so that I can provide targeted help before they give up.
+
+**Independent Test Criteria**:
+- System detects struggle triggers (same error 3+ times, stuck >10 min, quiz <50%)
+- Alert includes student ID, topic, and struggle type
+- Teacher dashboard shows active struggles
+- System allows teacher to assign remedial exercises
+
+**Tasks**:
+- [ ] T107 [US7] Add struggle detection to debug-service (same error 3+ times)
+- [ ] T108 [US7] Add time-based struggle detection (>10 min on exercise)
+- [ ] T109 [US7] Publish to `struggle.alert` topic
+- [ ] T110 [US7] Create struggles table in database
+- [ ] T111 [US7] Implement GET /api/v1/progress/struggles endpoint in progress-service
+- [ ] T112 [US7] Filter struggles by class_id for teachers
+- [ ] T113 [US7] Implement POST /api/v1/progress/struggles/assign endpoint (assign remedial)
+- [ ] T114 [US7] Write tests for struggle detection
+- [ ] T115 [US7] Test struggle alert flow end-to-end
+
+---
+
+## Phase 10: Polish & Cross-Cutting Concerns
+
+**Goal**: Finalize deployment, testing, and documentation
+
+**Tasks**:
+- [ ] T116 Create `backend/k8s/namespace.yaml`
+- [ ] T117 Create `backend/k8s/configmap.yaml` for shared configuration
+- [ ] T118 Create `backend/k8s/secrets.yaml` for sensitive data
+- [ ] T119 Deploy all services to Kubernetes
+- [ ] T120 Verify all pods are running: `kubectl get pods -n learnflow`
+- [ ] T121 Verify Dapr sidecars are running (2 containers per pod)
+- [ ] T122 Verify all health endpoints
+- [ ] T123 Run full test suite: `pytest tests/`
+- [ ] T124 Verify test coverage >80%: `pytest --cov`
+- [ ] T125 Run integration tests from quickstart.md
+- [ ] T126 Create API documentation from OpenAPI specs
+- [ ] T127 Update AGENTS.md with service details
+- [ ] T128 Create deployment summary
 
 ---
 
 ## Task Dependencies
 
 ```
-Category 1 (Prerequisites)
+Phase 1 (Setup)
     │
     ▼
-Category 2 (Common Foundation)
+Phase 2 (Foundational)
     │
-    ├─▶ Category 3 (Triage Service)
+    ├─▶ Phase 3 (Query Routing - US1)
     │
-    ├─▶ Category 4 (Concepts Service)
+    ├─▶ Phase 4 (Concept Explanations - US2)
     │
-    ├─▶ Category 5 (Debug Service)
+    ├─▶ Phase 5 (Debugging Hints - US3)
     │
-    ├─▶ Category 6 (Exercise Service)
+    ├─▶ Phase 6 (Exercises - US4)
     │
-    └─▶ Category 7 (Progress Service)
+    ├─▶ Phase 7 (Progress Tracking - US5)
+    │
+    ├─▶ Phase 8 (Code Review - US6)
+    │
+    └─▶ Phase 9 (Struggle Detection - US7)
           │
           ▼
-    Category 8 (Database) ──▶ Category 9 (Dapr Config)
-          │                      │
-          └──────────┬───────────┘
-                     ▼
-              Category 10 (K8s Deployment)
-                     │
-                     ▼
-              Category 11 (Testing)
-                     │
-                     ▼
-              Category 12 (Validation)
+    Phase 10 (Polish)
 ```
 
 ---
 
-## Status Tracking
+## Parallel Execution Opportunities
 
-- **Total Tasks**: 119
-- **Completed**: 0
-- **In Progress**: 0
-- **Pending**: 119
-- **Blocked**: 0
+**Phase 1**:
+- T003, T004, T005, T006 can run in parallel (common models)
+
+**Phase 3-8**:
+- Each user story phase can proceed independently after Phase 2
+- T023, T036, T049, T062, T079, T094 (service scaffolds) can all run in parallel
 
 ---
 
-## Notes
+## MVP Scope
 
-- Use `fastapi-dapr-agent` skill for service scaffolding
-- All services must follow Dapr sidecar pattern
-- AI agents use AsyncOpenAI SDK
-- State management via Dapr state store
-- Event streaming via Dapr pub/sub (Kafka)
-- All services must have health check endpoint
-- Zero manual intervention - autonomous deployment via Skills
+**Minimum Viable Product**: Phases 1-4 (Setup, Foundational, Query Routing, Concept Explanations)
+
+This delivers:
+- Infrastructure ready
+- Query routing working
+- Concept explanations adaptive to mastery level
+
+**Additional Phases**: Add debugging, exercises, progress tracking, code review, struggle detection for complete feature set.
