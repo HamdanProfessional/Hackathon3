@@ -11,7 +11,7 @@ if sys.platform == "win32":
 # Run Kafka connection test
 result = subprocess.run([
     "kubectl", "run", "-i", "--rm", "--restart=Never",
-    "python:3.11-slim", "-n", "learnflow", "--",
+    "kafka-test", "--image=python:3.11-slim", "-n", "learnflow", "--",
     "sh", "-c",
     "pip install confluent-kafka 2>&1 | tail -3 && " +
     "python -c \"" +

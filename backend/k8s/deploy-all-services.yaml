@@ -1,6 +1,5 @@
 # LearnFlow Backend Services - Complete Deployment
-# This file demonstrates Skills Autonomy - single file deploys all 6 services
-# Part of Hackathon 3 Skills Autonomy demonstration
+# Updated for DigitalOcean Kubernetes with correct configuration
 
 apiVersion: v1
 kind: Namespace
@@ -13,11 +12,29 @@ metadata:
   name: learnflow-config
   namespace: learnflow
 data:
-  OPENAI_MODEL: "gpt-4"
+  LLM_PROVIDER: "glm"
+  LLM_MODEL: "glm-4.7"
   LOG_LEVEL: "INFO"
-  KAFKA_BROKER: "kafka.kafka.svc.cluster.local:9092"
+  KAFKA_BROKER: "redpanda.redpanda-system.svc.cluster.local:9093"
+  POSTGRES_HOST: "postgres-postgresql.postgres.svc.cluster.local"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DATABASE: "learnflow"
+  POSTGRES_USER: "learnflow"
 ---
 # Triage Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: triage-service
+  namespace: learnflow
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8001
+    targetPort: 8001
+  selector:
+    app: triage-service
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -26,7 +43,7 @@ metadata:
   labels:
     app: triage-service
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: triage-service
@@ -37,16 +54,19 @@ spec:
       annotations:
         dapr.io/enabled: "true"
         dapr.io/app-id: "triage-service"
-        dapr.io/app-port: "8000"
+        dapr.io/app-port: "8001"
         dapr.io/enable-api-logging: "true"
     spec:
       containers:
       - name: triage-service
-        image: learnflow/triage-service:v1
-        imagePullPolicy: Never  # Use local images for Minikube
+        image: python:3.11-slim
+        command: ["sh", "-c", "pip install fastapi uvicorn dapr openai pydantic sqlmodel psycopg2-binary && cd /app && python main.py"]
+        imagePullPolicy: Always
         ports:
-        - containerPort: 8000
+        - containerPort: 8001
         env:
+        - name: PORT
+          value: "8001"
         - name: OPENAI_API_KEY
           valueFrom:
             secretKeyRef:
