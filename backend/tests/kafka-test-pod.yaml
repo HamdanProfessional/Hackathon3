@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kafka-test
+  namespace: learnflow
+spec:
+  containers:
+  - name: kafka-test
+    image: python:3.11-slim
+    command: ["/bin/sh", "-c"]
+    args:
+    - |-
+      pip install confluent-kafka && python3 -c "
+from confluent_kafka import Producer
+import json
+config = {'bootstrap.servers': 'redpanda.redpanda-system.svc.cluster.local:9093', 'client.id': 'test', 'acks': 'all'}
+p = Producer(config)
+p.produce('learning.progress', b'test', b'{\"test\": true}')
+p.flush(10)
+print('Kafka SUCCESS')
+      "
+    restartPolicy: Never
