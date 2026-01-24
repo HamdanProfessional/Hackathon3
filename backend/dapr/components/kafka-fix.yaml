@@ -1,0 +1,71 @@
+# Dapr Components for LearnFlow
+# Fixed Kafka/Redpanda configuration
+
+---
+# Option 1: Direct Pod Connection (Most Reliable)
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: kafka-pubsub
+  namespace: learnflow
+spec:
+  type: pubsub.kafka
+  version: v1
+  metadata:
+  - name: brokers
+    value: "redpanda-0.redpanda.redpanda-system.svc.cluster.local:9093"
+  - name: consumerGroup
+    value: "learnflow-group"
+  - name: authRequired
+    value: "false"
+  - name: autoEnableSsl
+    value: "false"
+  - name: disableLeaderElection
+    value: "false"
+  - name: initialOffset
+    value: "newest"
+  - name: maxMessageBytes
+    value: "1024000"
+
+---
+# Option 2: Alternative using Service IP
+# (Uncomment and apply if Option 1 doesn't work)
+# apiVersion: dapr.io/v1alpha1
+# kind: Component
+# metadata:
+#   name: kafka-pubsub
+#   namespace: learnflow
+# spec:
+#   type: pubsub.kafka
+#   version: v1
+#   metadata:
+#   - name: brokers
+#     value: "10.150.0.73:9093"  # Direct pod IP from: kubectl get pod -n redpanda-system redpanda-0 -o wide
+#   - name: consumerGroup
+#     value: "learnflow-group"
+#   - name: authRequired
+#     value: "false"
+#   - name: autoEnableSsl
+#     value: "false"
+
+---
+# PostgreSQL State Store (Recreated)
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: postgres-state
+  namespace: learnflow
+spec:
+  type: state.postgresql
+  version: v1
+  metadata:
+  - name: connectionString
+    value: "host=postgres-postgresql.postgres.svc.cluster.local port=5432 user=learnflow password=learnflow123 dbname=learnflow sslmode=disable"
+  - name: tableName
+    value: "state_store"
+  - name: keyPrefix
+    value: "none"
+  - name: maxConns
+    value: "10"
+  - name: queryExecMode
+    value: "close"

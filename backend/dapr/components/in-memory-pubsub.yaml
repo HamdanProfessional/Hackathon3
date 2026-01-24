@@ -1,0 +1,24 @@
+# Dapr In-Memory PubSub (for testing)
+# This allows Dapr sidecars to run without Kafka connection issues
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: messagebus
+  namespace: learnflow
+spec:
+  type: pubsub.in-memory
+  version: v1
+  metadata:
+  - name: "topic1"
+    value: "learning.triage"
+  - name: "topic2"
+    value: "learning.concept"
+  - name: "topic3"
+    value: "code.debug"
+  - name: "topic4"
+    value: "exercise.attempt"
+  - name: "topic5"
+    value: "learning.progress"
+  - name: "topic6"
+    value: "struggle.alert"

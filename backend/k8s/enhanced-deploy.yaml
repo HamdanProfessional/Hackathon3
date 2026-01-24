@@ -340,6 +340,9 @@ data:
     dapr_app = DaprApp(app)
     agent = TriageAgent()
 
+    # Dapr configuration - using in-memory pubsub for now
+    PUBSUB_NAME = "messagebus"  # Changed from "kafka-pubsub"
+
     @app.get("/")
     async def root():
         return {

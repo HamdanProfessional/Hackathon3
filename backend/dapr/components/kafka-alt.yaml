@@ -1,0 +1,27 @@
+# Dapr Kafka Component - Alternative Configurations for Redpanda
+
+---
+# Configuration 1: Using External Service Port
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: kafka-pubsub
+  namespace: learnflow
+spec:
+  type: pubsub.kafka
+  version: v1
+  metadata:
+  - name: brokers
+    value: "redpanda-external.redpanda-system.svc.cluster.local:9094"
+  - name: consumerGroup
+    value: "learnflow-group"
+  - name: authRequired
+    value: "false"
+  - name: autoEnableSsl
+    value: "false"
+  - name: disableLeaderElection
+    value: "true"
+  - name: startOffset
+    value: "newest"
+  - name: maxMessageBytes
+    value: "1048576"
