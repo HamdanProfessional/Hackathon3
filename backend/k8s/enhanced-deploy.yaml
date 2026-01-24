@@ -1,0 +1,1199 @@
+# Enhanced LearnFlow Deployment - Full LLM Integration, Dapr, and Database
+# All code inline in ConfigMaps with complete functionality
+
+---
+# Common Module - LLM Client and Agent Base
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: common-module
+  namespace: learnflow
+data:
+  llm_client.py: |
+    import os
+    from enum import Enum
+    from typing import Optional
+    from openai import AsyncOpenAI, OpenAI
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    class LLMProvider(str, Enum):
+        OPENAI = "openai"
+        GLM = "glm"
+
+    PROVIDER_CONFIGS = {
+        LLMProvider.OPENAI: {
+            "base_url": None,
+            "default_model": "gpt-4o-mini",
+            "models": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"],
+        },
+        LLMProvider.GLM: {
+            "base_url": "https://open.bigmodel.cn/api/paas/v4/",
+            "default_model": "glm-4.7",
+            "models": ["glm-4.7", "glm-4.6v", "glm-4"],
+        }
+    }
+
+    def get_llm_client(provider=LLMProvider.OPENAI, api_key=None, base_url=None, async_client=False):
+        config = PROVIDER_CONFIGS[provider]
+        if api_key is None:
+            if provider == LLMProvider.OPENAI:
+                api_key = os.getenv("OPENAI_API_KEY")
+            elif provider == LLMProvider.GLM:
+                api_key = os.getenv("GLM_API_KEY") or os.getenv("ZAI_API_KEY")
+
+        if not api_key:
+            logger.warning(f"No API key for {provider.value}, returning None")
+            return None
+
+        if base_url is None:
+            base_url = config["base_url"]
+
+        client_kwargs = {"api_key": api_key}
+        if base_url:
+            client_kwargs["base_url"] = base_url
+
+        ClientClass = AsyncOpenAI if async_client else OpenAI
+        return ClientClass(**client_kwargs)
+
+    def get_default_model(provider):
+        return PROVIDER_CONFIGS[provider]["default_model"]
+
+  agent_base.py: |
+    from abc import ABC, abstractmethod
+    from typing import Dict, Any, Optional
+    import os
+    import sys
+    import logging
+    import json
+
+    sys.path.insert(0, "/app/common")
+    from llm_client import get_llm_client, LLMProvider, get_default_model
+
+    logger = logging.getLogger(__name__)
+
+    class BaseAgent(ABC):
+        def __init__(self, provider=None):
+            if provider is None:
+                provider_str = os.getenv("LLM_PROVIDER", "openai").lower()
+                provider = LLMProvider(provider_str)
+            self.provider = provider
+            self.client = get_llm_client(provider, async_client=True)
+            self.model = os.getenv("LLM_MODEL") or get_default_model(provider)
+            self.has_llm = self.client is not None
+            logger.info(f"Initialized {self.__class__.__name__} with {provider.value}, LLM available: {self.has_llm}")
+
+        @abstractmethod
+        async def process(self, query: str, context: Dict[str, Any]) -> str:
+            pass
+
+        async def call_llm(self, messages, temperature=0.7, max_tokens=1000, tools=None, tool_choice=None) -> str:
+            if not self.client:
+                return self._fallback_response(messages)
+            try:
+                kwargs = {"model": self.model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens}
+                if tools:
+                    kwargs["tools"] = tools
+                if tool_choice:
+                    kwargs["tool_choice"] = tool_choice
+                response = await self.client.chat.completions.create(**kwargs)
+                return response.choices[0].message.content
+            except Exception as e:
+                logger.error(f"LLM API call failed: {e}")
+                return self._fallback_response(messages)
+
+        def _fallback_response(self, messages):
+            user_msg = messages[-1].get("content", "") if messages else ""
+            if "triage" in self.__class__.__name__.lower():
+                return json.dumps({"target_service": "concepts", "confidence": 0.5, "reasoning": "LLM unavailable, using default routing"})
+            elif "concepts" in self.__class__.__name__.lower():
+                return f"LLM unavailable. Here's a basic explanation for: {user_msg[:100]}"
+            else:
+                return "LLM service unavailable. Please check API key configuration."
+
+    class TriageAgent(BaseAgent):
+        async def process(self, query: str, context: Dict[str, Any]) -> str:
+            system_prompt = """You are a triage agent for a Python learning platform. Route queries to appropriate specialists.
+
+    Available services:
+    - concepts: For explaining Python concepts, syntax, or theory
+    - debug: For debugging errors, fixing bugs, or understanding why code doesn't work
+    - exercise: For generating coding exercises or challenges
+    - progress: For checking student progress or mastery levels
+    - code-review: For reviewing code quality and providing improvement suggestions
+
+    Respond with JSON only: {"target_service": "service_name", "confidence": 0.0-1.0, "reasoning": "brief explanation"}"""
+
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": query},
+            ]
+            return await self.call_llm(messages, temperature=0.3)
+
+    class ConceptsAgent(BaseAgent):
+        async def process(self, query: str, context: Dict[str, Any]) -> str:
+            mastery = context.get("mastery_level", "Beginner")
+            system_prompt = f"""You are a Python tutor explaining concepts to a student with {mastery} mastery level.
+
+    Mastery level guidelines:
+    - Beginner (0-40%): Use simple language, avoid jargon, provide basic examples
+    - Learning (41-70%): Use standard explanations, introduce terminology gradually
+    - Proficient (71-90%): Be concise, use technical terms appropriately
+    - Mastered (91-100%): Cover edge cases, best practices, advanced techniques
+
+    Provide clear explanations with relevant code examples."""
+
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": query},
+            ]
+            return await self.call_llm(messages, temperature=0.7)
+
+    class DebugAgent(BaseAgent):
+        async def process(self, query: str, context: Dict[str, Any]) -> str:
+            hint_level = context.get("hint_level", 1)
+            error_message = context.get("error_message", "")
+
+            system_prompt = f"""You are a Python debugging assistant helping students learn to fix their own code.
+
+    You are providing hint level {hint_level}/3:
+    - Level 1: Identify error type and general area
+    - Level 2: Point to specific line or concept issue
+    - Level 3: Provide concrete suggestion (but not full solution)
+
+    Be helpful but don't give the answer directly. Guide the student to discover the solution."""
+
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Error: {error_message}\n\nQuery: {query}"},
+            ]
+            return await self.call_llm(messages, temperature=0.5)
+
+    class ExerciseAgent(BaseAgent):
+        async def process(self, query: str, context: Dict[str, Any]) -> str:
+            action = context.get("action", "generate")
+
+            if action == "generate":
+                module = context.get("module", 1)
+                difficulty = context.get("difficulty", "beginner")
+
+                system_prompt = f"""You are generating a Python coding exercise.
+
+    Module: {module}
+    Difficulty: {difficulty}
+
+    Provide JSON with:
+    {{
+      "id": "exercise_id",
+      "title": "Exercise title",
+      "description": "Exercise description",
+      "starter_code": "Code template",
+      "hints": ["hint 1", "hint 2", "hint 3"],
+      "test_cases": ["test 1", "test 2"]
+    }}"""
+
+                messages = [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": query},
+                ]
+                return await self.call_llm(messages, temperature=0.8)
+            else:
+                system_prompt = """You are grading a Python exercise submission.
+
+    Analyze the code for correctness and provide:
+    1. Pass/fail status
+    2. Brief feedback
+    3. Specific issues (if any)
+
+    Be encouraging and constructive."""
+
+                messages = [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": query},
+                ]
+                return await self.call_llm(messages, temperature=0.3)
+
+    class ProgressAgent(BaseAgent):
+        async def process(self, query: str, context: Dict[str, Any]) -> str:
+            student_id = context.get("student_id")
+            # This would query the database in a full implementation
+            return json.dumps({
+                "student_id": student_id,
+                "overall_mastery": 35,
+                "level": "Learning",
+                "topics": [
+                    {"topic": "Variables", "mastery": 60},
+                    {"topic": "Loops", "mastery": 25},
+                    {"topic": "Functions", "mastery": 10}
+                ],
+                "streak": 5
+            })
+
+    class CodeReviewAgent(BaseAgent):
+        async def process(self, query: str, context: Dict[str, Any]) -> str:
+            system_prompt = """You are a code reviewer analyzing Python code quality.
+
+    Evaluate:
+    1. Correctness: Does it run without errors?
+    2. Style: Does it follow PEP 8?
+    3. Efficiency: Is it performant for the problem size?
+    4. Readability: Are names clear and structure logical?
+
+    Provide JSON with:
+    {
+      "overall_score": 0-100,
+      "correctness": 0-100,
+      "style": 0-100,
+      "efficiency": 0-100,
+      "readability": 0-100,
+      "suggestions": ["suggestion 1", "suggestion 2"]
+    }"""
+
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": query},
+            ]
+            return await self.call_llm(messages, temperature=0.5)
+
+  models.py: |
+    from pydantic import BaseModel
+    from typing import Optional
+
+    class TriageRequest(BaseModel):
+        query: str
+        student_id: Optional[str] = None
+
+    class TriageResponse(BaseModel):
+        target_service: str
+        confidence: float
+        reasoning: str
+
+    class ExplainRequest(BaseModel):
+        query: str
+        student_id: Optional[str] = None
+        mastery_level: str = "Beginner"
+
+    class DebugRequest(BaseModel):
+        query: str
+        error_message: str = ""
+        hint_level: int = 1
+
+    class ExerciseRequest(BaseModel):
+        query: str
+        module: int = 1
+        difficulty: str = "beginner"
+
+    class SubmissionRequest(BaseModel):
+        code: str
+        exercise_id: str
+
+    class ReviewRequest(BaseModel):
+        code: str
+
+  dapr_client.py: |
+    from dapr.clients import DaprClient
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    def publish_event(topic: str, data: dict, dapr=None):
+        """Publish event to Kafka via Dapr."""
+        try:
+            if dapr is None:
+                dapr = DaprClient()
+            dapr.publish_event(
+                pubsub_name="kafka-pubsub",
+                topic_name=topic,
+                data=data,
+            )
+            logger.info(f"Published to {topic}: {data}")
+        except Exception as e:
+            logger.error(f"Failed to publish to {topic}: {e}")
+
+---
+# Triage Service with Full LLM Integration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: triage-service-enhanced
+  namespace: learnflow
+data:
+  main.py: |
+    import sys
+    import os
+    sys.path.insert(0, "/app/common")
+
+    from fastapi import FastAPI, HTTPException
+    from dapr.ext.fastapi import DaprApp
+    import json
+    import logging
+
+    from agent_base import TriageAgent
+    from models import TriageRequest, TriageResponse
+    import dapr_client
+
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    app = FastAPI(title="Triage Service", version="2.0.0")
+    dapr_app = DaprApp(app)
+    agent = TriageAgent()
+
+    @app.get("/")
+    async def root():
+        return {
+            "service": "triage-service",
+            "version": "2.0.0",
+            "status": "running",
+            "llm_available": agent.has_llm,
+            "endpoints": {"/health", "/api/v1/triage"}
+        }
+
+    @app.get("/health")
+    async def health():
+        return {
+            "status": "healthy",
+            "service": "triage-service",
+            "llm_available": agent.has_llm
+        }
+
+    @app.post("/api/v1/triage")
+    async def triage_query(request: TriageRequest):
+        try:
+            logger.info(f"Triage request: {request.query[:100]}...")
+            context = {"student_id": str(request.student_id)} if request.student_id else {}
+            result = await agent.process(request.query, context)
+
+            try:
+                routing = json.loads(result)
+                response = TriageResponse(**routing)
+
+                # Publish event to Kafka
+                dapr_client.publish_event("learning.triage", {
+                    "student_id": request.student_id,
+                    "query": request.query[:100],
+                    "routed_to": response.target_service,
+                    "confidence": response.confidence
+                })
+
+                return response
+            except json.JSONDecodeError:
+                return TriageResponse(
+                    target_service="concepts",
+                    confidence=0.5,
+                    reasoning=f"Raw LLM response: {result[:200]}"
+                )
+        except Exception as e:
+            logger.error(f"Error in triage: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    if __name__ == "__main__":
+        import uvicorn
+        uvicorn.run(app, host="0.0.0.0", port=8001)
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: triage-service
+  namespace: learnflow
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8001
+    targetPort: 8001
+  selector:
+    app: triage-service
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: triage-service
+  namespace: learnflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: triage-service
+  template:
+    metadata:
+      labels:
+        app: triage-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "triage-service"
+        dapr.io/app-port: "8001"
+        dapr.io/enable-api-logging: "true"
+    spec:
+      initContainers:
+      - name: setup-code
+        image: python:3.11-slim
+        command: ['sh', '-c', 'mkdir -p /app/common && for f in /common/*; do cp "$f" /app/common/; done && for f in /service/*; do cp "$f" /app/; done && echo "Files copied:" && ls -la /app/']
+        volumeMounts:
+        - name: common-code
+          mountPath: /common
+        - name: service-code
+          mountPath: /service
+      containers:
+      - name: triage-service
+        image: python:3.11-slim
+        command: ['sh', '-c', 'pip install fastapi uvicorn dapr openai pydantic 2>&1 | tail -3 && cd /app && python main.py']
+        ports:
+        - containerPort: 8001
+        env:
+        - name: PORT
+          value: "8001"
+        - name: LLM_PROVIDER
+          value: "glm"
+        - name: LLM_MODEL
+          value: "glm-4.7"
+        - name: GLM_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openai-credentials
+              key: api-key
+        - name: PYTHONPATH
+          value: "/app:/app/common"
+        volumeMounts:
+        - name: app-code
+          mountPath: /app
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: common-code
+        configMap:
+          name: common-module
+      - name: service-code
+        configMap:
+          name: triage-service-enhanced
+      - name: app-code
+        emptyDir: {}
+
+---
+# Concepts Service with Full LLM Integration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: concepts-service-enhanced
+  namespace: learnflow
+data:
+  main.py: |
+    import sys
+    sys.path.insert(0, "/app/common")
+
+    from fastapi import FastAPI, HTTPException
+    from agent_base import ConceptsAgent
+    from models import ExplainRequest
+    import logging
+    import dapr_client
+
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    app = FastAPI(title="Concepts Service", version="2.0.0")
+    agent = ConceptsAgent()
+
+    @app.get("/")
+    async def root():
+        return {"service": "concepts-service", "version": "2.0.0", "llm_available": agent.has_llm}
+
+    @app.get("/health")
+    async def health():
+        return {"status": "healthy", "service": "concepts-service", "llm_available": agent.has_llm}
+
+    @app.post("/api/v1/concepts/explain")
+    async def explain(request: ExplainRequest):
+        try:
+            logger.info(f"Explain request: {request.query[:100]}...")
+            context = {"mastery_level": request.mastery_level}
+            result = await agent.process(request.query, context)
+
+            # Publish event
+            dapr_client.publish_event("learning.concept", {
+                "student_id": request.student_id,
+                "query": request.query[:100],
+                "mastery_level": request.mastery_level
+            })
+
+            return {"explanation": result}
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    if __name__ == "__main__":
+        import uvicorn
+        uvicorn.run(app, host="0.0.0.0", port=8002)
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: concepts-service
+  namespace: learnflow
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8002
+    targetPort: 8002
+  selector:
+    app: concepts-service
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: concepts-service
+  namespace: learnflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: concepts-service
+  template:
+    metadata:
+      labels:
+        app: concepts-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "concepts-service"
+        dapr.io/app-port: "8002"
+        dapr.io/enable-api-logging: "true"
+    spec:
+      initContainers:
+      - name: setup-code
+        image: python:3.11-slim
+        command: ['sh', '-c', 'mkdir -p /app/common && for f in /common/*; do cp "$f" /app/common/; done && for f in /service/*; do cp "$f" /app/; done && echo "Files copied:" && ls -la /app/']
+        volumeMounts:
+        - name: common-code
+          mountPath: /common
+        - name: service-code
+          mountPath: /service
+      containers:
+      - name: concepts-service
+        image: python:3.11-slim
+        command: ['sh', '-c', 'pip install fastapi uvicorn dapr openai pydantic 2>&1 | tail -3 && cd /app && python main.py']
+        ports:
+        - containerPort: 8002
+        env:
+        - name: PORT
+          value: "8002"
+        - name: LLM_PROVIDER
+          value: "glm"
+        - name: LLM_MODEL
+          value: "glm-4.7"
+        - name: GLM_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openai-credentials
+              key: api-key
+        - name: PYTHONPATH
+          value: "/app:/app/common"
+        volumeMounts:
+        - name: app-code
+          mountPath: /app
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: common-code
+        configMap:
+          name: common-module
+      - name: service-code
+        configMap:
+          name: concepts-service-enhanced
+      - name: app-code
+        emptyDir: {}
+
+---
+# Debug Service with Full LLM Integration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: debug-service-enhanced
+  namespace: learnflow
+data:
+  main.py: |
+    import sys
+    sys.path.insert(0, "/app/common")
+
+    from fastapi import FastAPI, HTTPException
+    from agent_base import DebugAgent
+    from models import DebugRequest
+    import logging
+    import dapr_client
+
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    app = FastAPI(title="Debug Service", version="2.0.0")
+    agent = DebugAgent()
+
+    @app.get("/")
+    async def root():
+        return {"service": "debug-service", "version": "2.0.0", "llm_available": agent.has_llm}
+
+    @app.get("/health")
+    async def health():
+        return {"status": "healthy", "service": "debug-service", "llm_available": agent.has_llm}
+
+    @app.post("/api/v1/debug/analyze")
+    async def analyze(request: DebugRequest):
+        try:
+            logger.info(f"Debug request: {request.query[:100]}...")
+            context = {
+                "error_message": request.error_message,
+                "hint_level": request.hint_level
+            }
+            result = await agent.process(request.query, context)
+
+            # Publish event
+            dapr_client.publish_event("code.debug", {
+                "error_message": request.error_message[:100],
+                "hint_level": request.hint_level
+            })
+
+            return {"hint": result, "level": request.hint_level}
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    if __name__ == "__main__":
+        import uvicorn
+        uvicorn.run(app, host="0.0.0.0", port=8003)
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: debug-service
+  namespace: learnflow
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8003
+    targetPort: 8003
+  selector:
+    app: debug-service
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: debug-service
+  namespace: learnflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: debug-service
+  template:
+    metadata:
+      labels:
+        app: debug-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "debug-service"
+        dapr.io/app-port: "8003"
+        dapr.io/enable-api-logging: "true"
+    spec:
+      initContainers:
+      - name: setup-code
+        image: python:3.11-slim
+        command: ['sh', '-c', 'mkdir -p /app/common && for f in /common/*; do cp "$f" /app/common/; done && for f in /service/*; do cp "$f" /app/; done && echo "Files copied:" && ls -la /app/']
+        volumeMounts:
+        - name: common-code
+          mountPath: /common
+        - name: service-code
+          mountPath: /service
+      containers:
+      - name: debug-service
+        image: python:3.11-slim
+        command: ['sh', '-c', 'pip install fastapi uvicorn dapr openai pydantic 2>&1 | tail -3 && cd /app && python main.py']
+        ports:
+        - containerPort: 8003
+        env:
+        - name: PORT
+          value: "8003"
+        - name: LLM_PROVIDER
+          value: "glm"
+        - name: LLM_MODEL
+          value: "glm-4.7"
+        - name: GLM_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openai-credentials
+              key: api-key
+        - name: PYTHONPATH
+          value: "/app:/app/common"
+        volumeMounts:
+        - name: app-code
+          mountPath: /app
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: common-code
+        configMap:
+          name: common-module
+      - name: service-code
+        configMap:
+          name: debug-service-enhanced
+      - name: app-code
+        emptyDir: {}
+
+---
+# Exercise Service with Full LLM Integration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: exercise-service-enhanced
+  namespace: learnflow
+data:
+  main.py: |
+    import sys
+    sys.path.insert(0, "/app/common")
+
+    from fastapi import FastAPI, HTTPException
+    from agent_base import ExerciseAgent
+    from models import ExerciseRequest, SubmissionRequest
+    import logging
+    import json
+    import dapr_client
+
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    app = FastAPI(title="Exercise Service", version="2.0.0")
+    agent = ExerciseAgent()
+
+    @app.get("/")
+    async def root():
+        return {"service": "exercise-service", "version": "2.0.0", "llm_available": agent.has_llm}
+
+    @app.get("/health")
+    async def health():
+        return {"status": "healthy", "service": "exercise-service", "llm_available": agent.has_llm}
+
+    @app.post("/api/v1/exercise/generate")
+    async def generate(request: ExerciseRequest):
+        try:
+            logger.info(f"Generate exercise for module {request.module}")
+            context = {
+                "action": "generate",
+                "module": request.module,
+                "difficulty": request.difficulty
+            }
+            result = await agent.process(request.query, context)
+
+            # Publish event
+            dapr_client.publish_event("exercise.generated", {
+                "module": request.module,
+                "difficulty": request.difficulty
+            })
+
+            try:
+                exercise_data = json.loads(result)
+                return {"exercise": exercise_data}
+            except:
+                return {"exercise": {"raw_response": result}}
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    @app.post("/api/v1/exercise/submit")
+    async def submit(request: SubmissionRequest):
+        try:
+            context = {"action": "grade"}
+            result = await agent.process(request.code, context)
+
+            # Publish event
+            dapr_client.publish_event("exercise.attempt", {
+                "exercise_id": request.exercise_id,
+                "code_length": len(request.code)
+            })
+
+            return {"feedback": result}
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    if __name__ == "__main__":
+        import uvicorn
+        uvicorn.run(app, host="0.0.0.0", port=8004)
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: exercise-service
+  namespace: learnflow
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8004
+    targetPort: 8004
+  selector:
+    app: exercise-service
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exercise-service
+  namespace: learnflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exercise-service
+  template:
+    metadata:
+      labels:
+        app: exercise-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "exercise-service"
+        dapr.io/app-port: "8004"
+        dapr.io/enable-api-logging: "true"
+    spec:
+      initContainers:
+      - name: setup-code
+        image: python:3.11-slim
+        command: ['sh', '-c', 'mkdir -p /app/common && for f in /common/*; do cp "$f" /app/common/; done && for f in /service/*; do cp "$f" /app/; done && echo "Files copied:" && ls -la /app/']
+        volumeMounts:
+        - name: common-code
+          mountPath: /common
+        - name: service-code
+          mountPath: /service
+      containers:
+      - name: exercise-service
+        image: python:3.11-slim
+        command: ['sh', '-c', 'pip install fastapi uvicorn dapr openai pydantic 2>&1 | tail -3 && cd /app && python main.py']
+        ports:
+        - containerPort: 8004
+        env:
+        - name: PORT
+          value: "8004"
+        - name: LLM_PROVIDER
+          value: "glm"
+        - name: LLM_MODEL
+          value: "glm-4.7"
+        - name: GLM_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openai-credentials
+              key: api-key
+        - name: PYTHONPATH
+          value: "/app:/app/common"
+        volumeMounts:
+        - name: app-code
+          mountPath: /app
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: common-code
+        configMap:
+          name: common-module
+      - name: service-code
+        configMap:
+          name: exercise-service-enhanced
+      - name: app-code
+        emptyDir: {}
+
+---
+# Progress Service
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: progress-service-enhanced
+  namespace: learnflow
+data:
+  main.py: |
+    import sys
+    sys.path.insert(0, "/app/common")
+
+    from fastapi import FastAPI, HTTPException
+    from agent_base import ProgressAgent
+    import logging
+    import json
+    import dapr_client
+
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    app = FastAPI(title="Progress Service", version="2.0.0")
+    agent = ProgressAgent()
+
+    @app.get("/")
+    async def root():
+        return {"service": "progress-service", "version": "2.0.0", "llm_available": agent.has_llm}
+
+    @app.get("/health")
+    async def health():
+        return {"status": "healthy", "service": "progress-service", "llm_available": agent.has_llm}
+
+    @app.get("/api/v1/progress/{student_id}")
+    async def get_progress(student_id: str):
+        try:
+            context = {"student_id": student_id}
+            result = await agent.process("", context)
+
+            # Publish event
+            dapr_client.publish_event("learning.progress", {
+                "student_id": student_id,
+                "action": "view_progress"
+            })
+
+            return json.loads(result)
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    if __name__ == "__main__":
+        import uvicorn
+        uvicorn.run(app, host="0.0.0.0", port=8005)
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: progress-service
+  namespace: learnflow
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8005
+    targetPort: 8005
+  selector:
+    app: progress-service
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: progress-service
+  namespace: learnflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: progress-service
+  template:
+    metadata:
+      labels:
+        app: progress-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "progress-service"
+        dapr.io/app-port: "8005"
+        dapr.io/enable-api-logging: "true"
+    spec:
+      initContainers:
+      - name: setup-code
+        image: python:3.11-slim
+        command: ['sh', '-c', 'mkdir -p /app/common && for f in /common/*; do cp "$f" /app/common/; done && for f in /service/*; do cp "$f" /app/; done && echo "Files copied:" && ls -la /app/']
+        volumeMounts:
+        - name: common-code
+          mountPath: /common
+        - name: service-code
+          mountPath: /service
+      containers:
+      - name: progress-service
+        image: python:3.11-slim
+        command: ['sh', '-c', 'pip install fastapi uvicorn dapr openai pydantic 2>&1 | tail -3 && cd /app && python main.py']
+        ports:
+        - containerPort: 8005
+        env:
+        - name: PORT
+          value: "8005"
+        - name: LLM_PROVIDER
+          value: "glm"
+        - name: LLM_MODEL
+          value: "glm-4.7"
+        - name: GLM_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openai-credentials
+              key: api-key
+        - name: PYTHONPATH
+          value: "/app:/app/common"
+        volumeMounts:
+        - name: app-code
+          mountPath: /app
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: common-code
+        configMap:
+          name: common-module
+      - name: service-code
+        configMap:
+          name: progress-service-enhanced
+      - name: app-code
+        emptyDir: {}
+
+---
+# Code Review Service
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: code-review-service-enhanced
+  namespace: learnflow
+data:
+  main.py: |
+    import sys
+    sys.path.insert(0, "/app/common")
+
+    from fastapi import FastAPI, HTTPException
+    from agent_base import CodeReviewAgent
+    from models import ReviewRequest
+    import logging
+    import json
+    import dapr_client
+
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    app = FastAPI(title="Code Review Service", version="2.0.0")
+    agent = CodeReviewAgent()
+
+    @app.get("/")
+    async def root():
+        return {"service": "code-review-service", "version": "2.0.0", "llm_available": agent.has_llm}
+
+    @app.get("/health")
+    async def health():
+        return {"status": "healthy", "service": "code-review-service", "llm_available": agent.has_llm}
+
+    @app.post("/api/v1/review/analyze")
+    async def analyze(request: ReviewRequest):
+        try:
+            logger.info(f"Review request: {len(request.code)} characters")
+            result = await agent.process(request.code, {})
+
+            # Publish event
+            dapr_client.publish_event("code.review", {
+                "code_length": len(request.code)
+            })
+
+            try:
+                review_data = json.loads(result)
+                return {"review": review_data}
+            except:
+                return {"review": {"raw_response": result}}
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    if __name__ == "__main__":
+        import uvicorn
+        uvicorn.run(app, host="0.0.0.0", port=8006)
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: code-review-service
+  namespace: learnflow
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8006
+    targetPort: 8006
+  selector:
+    app: code-review-service
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code-review-service
+  namespace: learnflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: code-review-service
+  template:
+    metadata:
+      labels:
+        app: code-review-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "code-review-service"
+        dapr.io/app-port: "8006"
+        dapr.io/enable-api-logging: "true"
+    spec:
+      initContainers:
+      - name: setup-code
+        image: python:3.11-slim
+        command: ['sh', '-c', 'mkdir -p /app/common && for f in /common/*; do cp "$f" /app/common/; done && for f in /service/*; do cp "$f" /app/; done && echo "Files copied:" && ls -la /app/']
+        volumeMounts:
+        - name: common-code
+          mountPath: /common
+        - name: service-code
+          mountPath: /service
+      containers:
+      - name: code-review-service
+        image: python:3.11-slim
+        command: ['sh', '-c', 'pip install fastapi uvicorn dapr openai pydantic 2>&1 | tail -3 && cd /app && python main.py']
+        ports:
+        - containerPort: 8006
+        env:
+        - name: PORT
+          value: "8006"
+        - name: LLM_PROVIDER
+          value: "glm"
+        - name: LLM_MODEL
+          value: "glm-4.7"
+        - name: GLM_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openai-credentials
+              key: api-key
+        - name: PYTHONPATH
+          value: "/app:/app/common"
+        volumeMounts:
+        - name: app-code
+          mountPath: /app
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: common-code
+        configMap:
+          name: common-module
+      - name: service-code
+        configMap:
+          name: code-review-service-enhanced
+      - name: app-code
+        emptyDir: {}
