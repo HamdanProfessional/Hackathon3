@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import ClassOverview from '@/components/ClassOverview';
 import StruggleAlerts from '@/components/StruggleAlerts';
 import type { ClassOverview as ClassOverviewType, StruggleAlert } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { api } from '@/lib/api';
+import { Activity, Wifi, WifiOff } from 'lucide-react';
 
 // Mock data for demonstration
 const mockClassOverview: ClassOverviewType = {
@@ -72,31 +73,117 @@ export default function TeacherDashboardPage() {
   const [classOverview, setClassOverview] = useState<ClassOverviewType | null>(null);
   const [alerts, setAlerts] = useState<StruggleAlert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLive, setIsLive] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+
+  // Refs to store EventSource instances for cleanup
+  const alertsEventSource = useRef<EventSource | null>(null);
+  const statsEventSource = useRef<EventSource | null>(null);
 
   useEffect(() => {
+    const classId = 'class-1'; // In production, get from user context
+
     const loadData = async () => {
       setIsLoading(true);
 
-      // Try to fetch from API
       try {
-        // For demo purposes, use mock data
-        setClassOverview(mockClassOverview);
-        setAlerts(mockStruggleAlerts);
+        // Try to fetch from API, fall back to mock data
+        const overviewResponse = await api.getClassOverview(classId);
+        if (overviewResponse.success && overviewResponse.data) {
+          setClassOverview(overviewResponse.data);
+        } else {
+          setClassOverview(mockClassOverview);
+        }
 
-        // In production, you would call:
-        // const overviewResponse = await api.getClassOverview('class-1');
-        // const alertsResponse = await api.getStruggleAlerts('class-1', false);
+        const alertsResponse = await api.getStruggleAlerts(classId, false);
+        if (alertsResponse.success && alertsResponse.data) {
+          setAlerts(alertsResponse.data.alerts || []);
+        } else {
+          setAlerts(mockStruggleAlerts);
+        }
       } catch (error) {
         console.error('Failed to load data:', error);
+        // Fall back to mock data
+        setClassOverview(mockClassOverview);
+        setAlerts(mockStruggleAlerts);
       }
 
       setIsLoading(false);
     };
 
     loadData();
+
+    // Set up SSE for real-time alerts
+    const setupSSE = () => {
+      // Subscribe to struggle alerts stream
+      try {
+        alertsEventSource.current = api.subscribeToStruggleAlerts(
+          classId,
+          (alert) => {
+            // New alert received
+            setAlerts((prev) => {
+              // Check if alert already exists
+              const exists = prev.some((a) => a.id === alert.id);
+              if (!exists) {
+                // Play notification sound (optional)
+                try {
+                  const audio = new Audio('/notification.mp3');
+                  audio.volume = 0.3;
+                  audio.play().catch(() => {
+                    // Ignore autoplay errors
+                  });
+                } catch {
+                  // Ignore audio errors
+                }
+                return [alert, ...prev];
+              }
+              return prev;
+            });
+            setLastUpdate(new Date());
+          },
+          (error) => {
+            console.error('SSE alerts error:', error);
+            setIsLive(false);
+          }
+        );
+
+        // Subscribe to class stats stream
+        statsEventSource.current = api.subscribeToClassStats(
+          classId,
+          (stats) => {
+            setClassOverview(stats);
+            setLastUpdate(new Date());
+          },
+          (error) => {
+            console.error('SSE stats error:', error);
+            setIsLive(false);
+          }
+        );
+
+        setIsLive(true);
+      } catch (error) {
+        console.error('Failed to set up SSE:', error);
+        setIsLive(false);
+      }
+    };
+
+    // Start SSE after initial data loads
+    const sseTimeout = setTimeout(setupSSE, 1000);
+
+    // Cleanup function
+    return () => {
+      clearTimeout(sseTimeout);
+      if (alertsEventSource.current) {
+        alertsEventSource.current.close();
+      }
+      if (statsEventSource.current) {
+        statsEventSource.current.close();
+      }
+    };
   }, []);
 
-  const handleResolveAlert = (alertId: string) => {
+  const handleResolveAlert = async (alertId: string) => {
+    await api.resolveAlert(alertId);
     setAlerts((prev) => prev.filter((alert) => alert.id !== alertId));
   };
 
@@ -113,16 +200,40 @@ export default function TeacherDashboardPage() {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Welcome Header */}
+      {/* Welcome Header with Live Indicator */}
       <div className="glass rounded-xl p-6 shadow-elevated">
         <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gradient">
-              Teacher Dashboard
-            </h1>
+          <div className="flex-1">
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-gradient">
+                Teacher Dashboard
+              </h1>
+              <div className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
+                isLive
+                  ? 'bg-success/20 text-success border border-success/30 animate-pulse'
+                  : 'bg-muted text-muted-foreground border border-border'
+              }`}>
+                {isLive ? (
+                  <>
+                    <Activity className="h-3 w-3 animate-pulse" />
+                    <span>Live</span>
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="h-3 w-3" />
+                    <span>Offline</span>
+                  </>
+                )}
+              </div>
+            </div>
             <p className="mt-2 text-muted-foreground">
               Monitor your class progress and help struggling students
             </p>
+            {lastUpdate && (
+              <p className="mt-1 text-xs text-muted-foreground/70">
+                Last updated: {lastUpdate.toLocaleTimeString()}
+              </p>
+            )}
           </div>
           <div className="hidden sm:block">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl icon-nebula-purple">
@@ -150,9 +261,11 @@ export default function TeacherDashboardPage() {
             </svg>
           </span>
           Struggle Alerts
-          <span className="rounded-full bg-destructive/20 border border-destructive/30 px-3 py-1 text-sm font-semibold text-destructive">
-            {alerts.length}
-          </span>
+          {alerts.length > 0 && (
+            <span className="rounded-full bg-destructive/20 border border-destructive/30 px-3 py-1 text-sm font-semibold text-destructive">
+              {alerts.length}
+            </span>
+          )}
         </h2>
         <StruggleAlerts alerts={alerts} onResolve={handleResolveAlert} />
       </div>

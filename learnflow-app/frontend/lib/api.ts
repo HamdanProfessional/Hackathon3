@@ -402,6 +402,140 @@ export async function deleteConversation(
 }
 
 // ============================================================================
+// SSE (Server-Sent Events) SUPPORT
+// ============================================================================
+
+/**
+ * Subscribe to struggle alerts via SSE
+ * Returns an EventSource that can be closed when done
+ */
+export function subscribeToStruggleAlerts(
+  classId: string,
+  onAlert: (alert: StruggleAlert) => void,
+  onError?: (error: Event) => void
+): EventSource {
+  const token = getAuthToken();
+  const url = new URL(`${SERVICES.progress}/api/v1/alerts/stream`, window.location.origin);
+  url.searchParams.set('classId', classId);
+  if (token) {
+    url.searchParams.set('token', token);
+  }
+
+  const eventSource = new EventSource(url.toString());
+
+  eventSource.onmessage = (event) => {
+    try {
+      const alert = JSON.parse(event.data);
+      onAlert(alert);
+    } catch (error) {
+      console.error('Failed to parse SSE data:', error);
+    }
+  };
+
+  eventSource.onerror = (error) => {
+    if (onError) {
+      onError(error);
+    }
+    // EventSource will automatically reconnect
+  };
+
+  return eventSource;
+}
+
+/**
+ * Subscribe to class stats updates via SSE
+ */
+export function subscribeToClassStats(
+  classId: string,
+  onStats: (stats: ClassOverview) => void,
+  onError?: (error: Event) => void
+): EventSource {
+  const token = getAuthToken();
+  const url = new URL(`${SERVICES.progress}/api/v1/class/${classId}/stats/stream`, window.location.origin);
+  if (token) {
+    url.searchParams.set('token', token);
+  }
+
+  const eventSource = new EventSource(url.toString());
+
+  eventSource.onmessage = (event) => {
+    try {
+      const stats = JSON.parse(event.data);
+      onStats(stats);
+    } catch (error) {
+      console.error('Failed to parse SSE data:', error);
+    }
+  };
+
+  eventSource.onerror = (error) => {
+    if (onError) {
+      onError(error);
+    }
+  };
+
+  return eventSource;
+}
+
+// ============================================================================
+// TEACHER EXERCISE GENERATION
+// ============================================================================
+
+/**
+ * Generate a custom exercise for a student
+ */
+export async function generateExerciseForStudent(
+  studentId: string,
+  moduleId: string,
+  difficulty: 'beginner' | 'intermediate' | 'advanced',
+  topic?: string
+): Promise<ApiResponse<{ exercise: Exercise }>> {
+  return apiRequest(`${SERVICES.exercise}/api/v1/teacher/exercise/generate`, {
+    method: 'POST',
+    body: JSON.stringify({
+      studentId,
+      moduleId,
+      difficulty,
+      topic,
+    }),
+  });
+}
+
+/**
+ * Assign an exercise to a student
+ */
+export async function assignExerciseToStudent(
+  studentId: string,
+  exerciseId: string,
+  note?: string
+): Promise<ApiResponse<{ message: string }>> {
+  return apiRequest(`${SERVICES.progress}/api/v1/teacher/assign`, {
+    method: 'POST',
+    body: JSON.stringify({
+      studentId,
+      exerciseId,
+      note,
+    }),
+  });
+}
+
+/**
+ * Get student work history
+ */
+export async function getStudentWorkHistory(
+  studentId: string,
+  limit: number = 20
+): Promise<ApiResponse<{
+  submissions: Array<{
+    exerciseId: string;
+    code: string;
+    result: ExerciseResult;
+    submittedAt: string;
+  }>;
+}>> {
+  return apiRequest(`${SERVICES.progress}/api/v1/teacher/student/${studentId}/work?limit=${limit}`);
+}
+
+// ============================================================================
 // EXPORT ALL SERVICES
 // ============================================================================
 
@@ -436,6 +570,13 @@ export const api = {
   getClassOverview,
   getStruggleAlerts,
   resolveAlert,
+  generateExerciseForStudent,
+  assignExerciseToStudent,
+  getStudentWorkHistory,
+
+  // SSE
+  subscribeToStruggleAlerts,
+  subscribeToClassStats,
 
   // Chat
   createConversation,
