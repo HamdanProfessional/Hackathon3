@@ -1,0 +1,8 @@
+# LearnFlow Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: learnflow
+  labels:
+    name: learnflow
+    app: learnflow

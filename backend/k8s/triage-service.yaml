@@ -1,0 +1,125 @@
+# Triage Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: triage-service
+  namespace: learnflow
+  labels:
+    app: triage-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: triage-service
+  template:
+    metadata:
+      labels:
+        app: triage-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "triage-service"
+        dapr.io/app-port: "8001"
+        dapr.io/enable-api-logging: "true"
+        dapr.io/log-level: "info"
+        dapr.io/max-concurrency: "10"
+    spec:
+      imagePullSecrets:
+      - name: ghcr-registry
+      containers:
+      - name: triage-service
+        image: ghcr.io/hamdanprofessional/learnflow-triage-service:v1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8001
+          name: http
+          protocol: TCP
+        env:
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: learnflow-config
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: learnflow-config
+              key: DB_PORT
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: learnflow-config
+              key: DB_NAME
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: learnflow-config
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: connection-string
+        # LLM Provider Configuration (supports both GLM and OpenAI)
+        - name: LLM_PROVIDER
+          valueFrom:
+            configMapKeyRef:
+              name: learnflow-config
+              key: LLM_PROVIDER
+        - name: LLM_MODEL
+          valueFrom:
+            configMapKeyRef:
+              name: learnflow-config
+              key: LLM_MODEL
+        - name: GLM_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: llm-secret
+              key: GLM_API_KEY
+              optional: true
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: llm-secret
+              key: OPENAI_API_KEY
+              optional: true
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: learnflow-config
+              key: LOG_LEVEL
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: triage-service
+  namespace: learnflow
+  labels:
+    app: triage-service
+spec:
+  type: ClusterIP
+  selector:
+    app: triage-service
+  ports:
+  - port: 8001
+    targetPort: 8001
+    protocol: TCP
+    name: http

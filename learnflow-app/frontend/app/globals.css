@@ -1,0 +1,654 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Nebula Space Theme - Cosmic Dark Mode (Default) */
+    --background: 240 20% 8%;      /* #0f111a - Deep space dark */
+    --foreground: 240 10% 95%;     /* #f1f3f7 - Starlight white */
+
+    --card: 250 25% 12%;           /* #181529 - Cosmic purple-gray */
+    --card-foreground: 240 10% 95%;
+
+    --popover: 250 25% 12%;
+    --popover-foreground: 240 10% 95%;
+
+    --primary: 265 85% 65%;        /* #8b5cf6 - Nebula violet */
+    --primary-foreground: 240 20% 8%;
+
+    --secondary: 240 20% 16%;      /* #1e2133 - Dark space blue */
+    --secondary-foreground: 240 10% 95%;
+
+    --muted: 240 20% 14%;          /* #1a1d2e - Muted space */
+    --muted-foreground: 240 10% 60%; /* #8b92b0 - Dim starlight */
+
+    --accent: 280 75% 60%;         /* #a855f7 - Cosmic purple */
+    --accent-foreground: 240 20% 8%;
+
+    --destructive: 0 78% 58%;      /* #ef4444 - Red nebula */
+    --destructive-foreground: 240 10% 98%;
+
+    --border: 250 25% 20%;         /* #2a2640 - Nebula border */
+    --input: 250 25% 20%;
+    --ring: 265 85% 65%;
+
+    --success: 152 65% 50%;        /* #22c55e - Green star */
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 55%;         /* #f59e0b - Orange star */
+    --warning-foreground: 0 0% 100%;
+    --info: 199 85% 55%;           /* #0ea5e9 - Blue nebula */
+    --info-foreground: 0 0% 100%;
+
+    /* Nebula-specific colors */
+    --cosmic-purple: 265 85% 65%;
+    --cosmic-blue: 220 85% 60%;
+    --cosmic-pink: 320 80% 60%;
+    --cosmic-cyan: 185 80% 55%;
+
+    --radius: 0.6rem;
+  }
+
+  .light {
+    /* Light Mode for accessibility */
+    --background: 240 10% 96%;
+    --foreground: 240 10% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 12%;
+
+    --primary: 265 85% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 10% 92%;
+    --secondary-foreground: 240 10% 12%;
+
+    --muted: 240 10% 90%;
+    --muted-foreground: 240 10% 40%;
+
+    --accent: 280 75% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 78% 58%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 10% 82%;
+    --input: 240 10% 82%;
+    --ring: 265 85% 60%;
+
+    --success: 152 65% 50%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 0 0% 100%;
+    --info: 199 85% 55%;
+    --info-foreground: 0 0% 100%;
+
+    --cosmic-purple: 265 85% 60%;
+    --cosmic-blue: 220 85% 55%;
+    --cosmic-pink: 320 80% 55%;
+    --cosmic-cyan: 185 80% 50%;
+
+    --radius: 0.6rem;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  /* Nebula cosmic shadows */
+  .shadow-nebula {
+    box-shadow: 0 0 30px hsl(var(--cosmic-purple) / 0.3),
+                0 0 60px hsl(var(--cosmic-blue) / 0.2);
+  }
+
+  .shadow-glow-purple {
+    box-shadow: 0 0 20px hsl(var(--cosmic-purple) / 0.5),
+                0 0 40px hsl(var(--cosmic-purple) / 0.3);
+  }
+
+  .shadow-glow-blue {
+    box-shadow: 0 0 20px hsl(var(--cosmic-blue) / 0.5),
+                0 0 40px hsl(var(--cosmic-blue) / 0.3);
+  }
+
+  .shadow-glow-cyan {
+    box-shadow: 0 0 20px hsl(var(--cosmic-cyan) / 0.5),
+                0 0 40px hsl(var(--cosmic-cyan) / 0.3);
+  }
+
+  /* Standard shadows for nebula theme */
+  .shadow-subtle {
+    box-shadow: 0 2px 8px hsl(240 20% 8% / 0.4);
+  }
+
+  .shadow-card {
+    box-shadow: 0 4px 16px hsl(240 20% 8% / 0.5);
+  }
+
+  .shadow-elevated {
+    box-shadow: 0 8px 32px hsl(240 20% 8% / 0.6);
+  }
+
+  /* Nebula gradients */
+  .gradient-nebula {
+    background: linear-gradient(135deg,
+      hsl(var(--cosmic-purple)) 0%,
+      hsl(var(--cosmic-blue)) 50%,
+      hsl(var(--cosmic-cyan)) 100%);
+  }
+
+  .gradient-cosmic {
+    background: linear-gradient(135deg,
+      hsl(var(--cosmic-pink)) 0%,
+      hsl(var(--cosmic-purple)) 50%,
+      hsl(var(--cosmic-blue)) 100%);
+  }
+
+  .gradient-stellar {
+    background: linear-gradient(to right,
+      hsl(var(--cosmic-purple) / 0.8),
+      hsl(var(--cosmic-blue) / 0.8),
+      hsl(var(--cosmic-cyan) / 0.8));
+  }
+
+  /* Hover effects */
+  .hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px hsl(240 20% 8% / 0.5);
+  }
+
+  .hover-glow {
+    transition: box-shadow 0.3s ease;
+  }
+
+  .hover-glow:hover {
+    box-shadow: 0 0 30px hsl(var(--cosmic-purple) / 0.6);
+  }
+
+  /* Status indicators */
+  .status-online {
+    background: hsl(var(--success));
+    box-shadow: 0 0 0 2px hsl(var(--background)),
+                0 0 8px hsl(var(--success) / 0.6);
+  }
+
+  .status-offline {
+    background: hsl(var(--muted-foreground));
+    box-shadow: 0 0 0 2px hsl(var(--background));
+  }
+
+  .status-busy {
+    background: hsl(var(--destructive));
+    box-shadow: 0 0 0 2px hsl(var(--background)),
+                0 0 8px hsl(var(--destructive) / 0.6);
+  }
+
+  /* Icon containers - nebula themed */
+  .icon-container-primary {
+    background: hsl(var(--primary) / 0.15);
+    color: hsl(var(--primary));
+  }
+
+  .icon-container-accent {
+    background: hsl(var(--accent) / 0.15);
+    color: hsl(var(--accent));
+  }
+
+  .icon-container-success {
+    background: hsl(var(--success) / 0.15);
+    color: hsl(var(--success));
+  }
+
+  .icon-container-warning {
+    background: hsl(var(--warning) / 0.15);
+    color: hsl(var(--warning));
+  }
+
+  .icon-container-destructive {
+    background: hsl(var(--destructive) / 0.15);
+    color: hsl(var(--destructive));
+  }
+
+  .icon-container-secondary {
+    background: hsl(var(--secondary) / 0.5);
+    color: hsl(var(--foreground));
+  }
+
+  /* Cosmic icon containers */
+  .icon-nebula-purple {
+    background: hsl(var(--cosmic-purple) / 0.15);
+    color: hsl(var(--cosmic-purple));
+  }
+
+  .icon-nebula-blue {
+    background: hsl(var(--cosmic-blue) / 0.15);
+    color: hsl(var(--cosmic-blue));
+  }
+
+  .icon-nebula-cyan {
+    background: hsl(var(--cosmic-cyan) / 0.15);
+    color: hsl(var(--cosmic-cyan));
+  }
+
+  .icon-nebula-pink {
+    background: hsl(var(--cosmic-pink) / 0.15);
+    color: hsl(var(--cosmic-pink));
+  }
+
+  /* Badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .badge-primary {
+    background: hsl(var(--primary) / 0.2);
+    color: hsl(var(--primary));
+    border: 1px solid hsl(var(--primary) / 0.3);
+  }
+
+  .badge-success {
+    background: hsl(var(--success) / 0.2);
+    color: hsl(var(--success));
+    border: 1px solid hsl(var(--success) / 0.3);
+  }
+
+  .badge-warning {
+    background: hsl(var(--warning) / 0.2);
+    color: hsl(var(--warning));
+    border: 1px solid hsl(var(--warning) / 0.3);
+  }
+
+  .badge-destructive {
+    background: hsl(var(--destructive) / 0.2);
+    color: hsl(var(--destructive));
+    border: 1px solid hsl(var(--destructive) / 0.3);
+  }
+
+  /* Mastery levels - nebula themed */
+  .mastery-beginner {
+    background: hsl(var(--destructive) / 0.2);
+    color: hsl(var(--destructive));
+    border: 1px solid hsl(var(--destructive) / 0.3);
+  }
+
+  .mastery-learning {
+    background: hsl(var(--warning) / 0.2);
+    color: hsl(var(--warning));
+    border: 1px solid hsl(var(--warning) / 0.3);
+  }
+
+  .mastery-proficient {
+    background: hsl(var(--success) / 0.2);
+    color: hsl(var(--success));
+    border: 1px solid hsl(var(--success) / 0.3);
+  }
+
+  .mastery-mastered {
+    background: linear-gradient(135deg,
+      hsl(var(--cosmic-purple) / 0.3),
+      hsl(var(--cosmic-blue) / 0.3));
+    color: hsl(var(--cosmic-purple));
+    border: 1px solid hsl(var(--cosmic-purple) / 0.4);
+  }
+
+  /* Difficulty levels */
+  .difficulty-easy {
+    background: hsl(var(--success) / 0.2);
+    color: hsl(var(--success));
+  }
+
+  .difficulty-medium {
+    background: hsl(var(--warning) / 0.2);
+    color: hsl(var(--warning));
+  }
+
+  .difficulty-hard {
+    background: hsl(var(--destructive) / 0.2);
+    color: hsl(var(--destructive));
+  }
+
+  /* Glass effect - nebula themed */
+  .glass {
+    background: hsl(var(--card) / 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  .glass-dark {
+    background: hsl(var(--background) / 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsl(var(--border) / 0.6);
+  }
+
+  /* Custom scrollbar - nebula themed */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg,
+      hsl(var(--cosmic-purple) / 0.6),
+      hsl(var(--cosmic-blue) / 0.6));
+    border-radius: 5px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg,
+      hsl(var(--cosmic-purple) / 0.8),
+      hsl(var(--cosmic-blue) / 0.8));
+  }
+
+  /* Text gradient */
+  .text-gradient {
+    background: linear-gradient(135deg,
+      hsl(var(--cosmic-purple)),
+      hsl(var(--cosmic-blue)),
+      hsl(var(--cosmic-cyan)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Border glow */
+  .border-glow {
+    border: 1px solid hsl(var(--cosmic-purple) / 0.4);
+    box-shadow: 0 0 20px hsl(var(--cosmic-purple) / 0.2),
+                inset 0 0 20px hsl(var(--cosmic-purple) / 0.1);
+  }
+
+  .border-glow-blue {
+    border: 1px solid hsl(var(--cosmic-blue) / 0.4);
+    box-shadow: 0 0 20px hsl(var(--cosmic-blue) / 0.2),
+                inset 0 0 20px hsl(var(--cosmic-blue) / 0.1);
+  }
+
+  /* ========================================
+     STARFIELD BACKGROUND - Cosmic Nebula
+     ======================================== */
+
+  /* Starfield container */
+  .starfield {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  /* Star layers for parallax effect */
+  .stars {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .stars-small {
+    background-image:
+      radial-gradient(1px 1px at 5% 5%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 10% 15%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 15% 25%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 20% 35%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 25% 45%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 30% 55%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 35% 65%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 40% 75%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 45% 85%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 50% 95%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 55% 10%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 60% 20%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 65% 30%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 70% 40%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 75% 50%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 80% 60%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 85% 70%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 90% 80%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 95% 90%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 100% 8%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 8% 50%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 18% 62%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 28% 78%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 38% 88%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 48% 12%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 58% 28%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 68% 42%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 78% 58%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 88% 72%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 98% 92%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 12% 22%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 22% 38%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 32% 52%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 42% 68%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 52% 82%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 62% 96%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 72% 18%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 82% 32%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 92% 48%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 3% 66%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 13% 78%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 23% 92%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 33% 6%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 43% 16%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 53% 26%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 63% 36%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 73% 46%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 83% 56%, white 100%, transparent 100%),
+      radial-gradient(1px 1px at 93% 66%, white 100%, transparent 100%);
+    background-size: 200% 200%;
+    animation: twinkle 8s ease-in-out infinite alternate;
+  }
+
+  .stars-medium {
+    background-image:
+      radial-gradient(2px 2px at 8% 12%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 18% 28%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 28% 44%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 38% 60%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 48% 76%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 58% 92%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 68% 8%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 78% 24%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 88% 40%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 98% 56%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 13% 72%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 23% 88%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 33% 4%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 43% 20%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 53% 36%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 63% 52%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 73% 68%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 83% 84%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 93% 100%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 5% 48%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 15% 64%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 25% 80%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 35% 96%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+      radial-gradient(2px 2px at 45% 12%, rgba(255, 255, 255, 0.8) 100%, transparent 100%);
+    background-size: 250% 250%;
+    animation: twinkle 12s ease-in-out infinite alternate-reverse;
+  }
+
+  .stars-large {
+    background-image:
+      radial-gradient(3px 3px at 10% 20%, rgba(167, 139, 250, 0.9) 100%, transparent 100%),
+      radial-gradient(3px 3px at 25% 40%, rgba(96, 165, 250, 0.9) 100%, transparent 100%),
+      radial-gradient(3px 3px at 40% 60%, rgba(34, 211, 238, 0.9) 100%, transparent 100%),
+      radial-gradient(3px 3px at 55% 80%, rgba(167, 139, 250, 0.9) 100%, transparent 100%),
+      radial-gradient(3px 3px at 70% 10%, rgba(96, 165, 250, 0.9) 100%, transparent 100%),
+      radial-gradient(3px 3px at 85% 30%, rgba(34, 211, 238, 0.9) 100%, transparent 100%),
+      radial-gradient(3px 3px at 95% 50%, rgba(167, 139, 250, 0.9) 100%, transparent 100%),
+      radial-gradient(3px 3px at 15% 70%, rgba(96, 165, 250, 0.9) 100%, transparent 100%),
+      radial-gradient(3px 3px at 30% 90%, rgba(34, 211, 238, 0.9) 100%, transparent 100%),
+      radial-gradient(3px 3px at 45% 15%, rgba(167, 139, 250, 0.9) 100%, transparent 100%),
+      radial-gradient(3px 3px at 60% 35%, rgba(96, 165, 250, 0.9) 100%, transparent 100%),
+      radial-gradient(3px 3px at 75% 55%, rgba(34, 211, 238, 0.9) 100%, transparent 100%),
+      radial-gradient(3px 3px at 90% 75%, rgba(167, 139, 250, 0.9) 100%, transparent 100%),
+      radial-gradient(3px 3px at 20% 95%, rgba(96, 165, 250, 0.9) 100%, transparent 100%),
+      radial-gradient(3px 3px at 35% 5%, rgba(34, 211, 238, 0.9) 100%, transparent 100%);
+    background-size: 300% 300%;
+    animation: twinkle 15s ease-in-out infinite alternate;
+  }
+
+  /* Twinkling animation */
+  @keyframes twinkle {
+    0% {
+      opacity: 0.3;
+      transform: translateY(0);
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.3;
+      transform: translateY(-10px);
+    }
+  }
+
+  /* Shooting stars */
+  .shooting-star {
+    position: absolute;
+    width: 150px;
+    height: 2px;
+    background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.8),
+      white);
+    border-radius: 50%;
+    filter: drop-shadow(0 0 8px white) drop-shadow(0 0 15px rgba(167, 139, 250, 0.6));
+    opacity: 0;
+    animation: shooting-star 8s ease-in-out infinite;
+  }
+
+  .shooting-star:nth-child(1) {
+    top: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    animation-delay: 2s;
+    animation-duration: 6s;
+  }
+
+  .shooting-star:nth-child(2) {
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%);
+    animation-delay: 5s;
+    animation-duration: 7s;
+  }
+
+  .shooting-star:nth-child(3) {
+    top: 70%;
+    left: 50%;
+    transform: translateX(-50%);
+    animation-delay: 8s;
+    animation-duration: 9s;
+  }
+
+  @keyframes shooting-star {
+    0% {
+      transform: translateX(0) translateY(0) rotate(-45deg) scaleX(0);
+      opacity: 0;
+    }
+    5% {
+      transform: translateX(-50px) translateY(50px) rotate(-45deg) scaleX(1);
+      opacity: 1;
+    }
+    15% {
+      transform: translateX(-200px) translateY(200px) rotate(-45deg) scaleX(0);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(-200px) translateY(200px) rotate(-45deg) scaleX(0);
+      opacity: 0;
+    }
+  }
+
+  /* Nebula glow effect */
+  .nebula-glow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 40%, hsl(var(--cosmic-purple) / 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 40% at 80% 20%, hsl(var(--cosmic-blue) / 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse 70% 50% at 60% 80%, hsl(var(--cosmic-cyan) / 0.05) 0%, transparent 50%),
+      radial-gradient(ellipse 50% 30% at 40% 60%, hsl(var(--cosmic-pink) / 0.04) 0%, transparent 50%);
+    animation: nebula-drift 30s ease-in-out infinite alternate;
+  }
+
+  @keyframes nebula-drift {
+    0% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(20px, -20px) scale(1.05);
+    }
+    100% {
+      transform: translate(-20px, 20px) scale(0.95);
+    }
+  }
+
+  /* Floating dust particles */
+  .dust-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      radial-gradient(1px 1px at 5% 15%, rgba(167, 139, 250, 0.4) 100%, transparent 100%),
+      radial-gradient(1px 1px at 25% 35%, rgba(96, 165, 250, 0.4) 100%, transparent 100%),
+      radial-gradient(1px 1px at 45% 55%, rgba(34, 211, 238, 0.4) 100%, transparent 100%),
+      radial-gradient(1px 1px at 65% 75%, rgba(167, 139, 250, 0.4) 100%, transparent 100%),
+      radial-gradient(1px 1px at 85% 95%, rgba(96, 165, 250, 0.4) 100%, transparent 100%);
+    background-size: 400% 400%;
+    animation: dust-float 60s linear infinite;
+  }
+
+  @keyframes dust-float {
+    0% {
+      transform: translate(0, 0);
+    }
+    100% {
+      transform: translate(-100px, -100px);
+    }
+  }
+}

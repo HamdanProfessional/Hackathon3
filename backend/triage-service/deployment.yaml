@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: triage-service
+  namespace: learnflow
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: triage-service
+  template:
+    metadata:
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "triage-service"
+        dapr.io/app-port: "8000"
+        dapr.io/enable-api-logging: "true"
+    spec:
+      containers:
+      - name: triage-service
+        image: triage-service:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: learnflow-secrets
+              key: openai-api-key
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: triage-service
+  namespace: learnflow
+spec:
+  selector:
+    app: triage-service
+  ports:
+  - port: 8000
+    targetPort: 8000

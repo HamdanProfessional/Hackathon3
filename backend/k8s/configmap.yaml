@@ -1,0 +1,26 @@
+# LearnFlow ConfigMap for shared configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: learnflow-config
+  namespace: learnflow
+data:
+  # Database configuration
+  DB_HOST: "postgres-postgresql.postgres.svc.cluster.local"
+  DB_PORT: "5432"
+  DB_NAME: "learnflow"
+  DB_USER: "learnflow"
+
+  # LLM Provider Configuration
+  # Options: "openai" or "glm"
+  LLM_PROVIDER: "glm"
+  # Model names (optional - defaults are gpt-4o-mini for openai, glm-4.7 for glm)
+  # LLM_MODEL: "gpt-4o-mini"  # for OpenAI
+  LLM_MODEL: "glm-4.7"  # for GLM 4.7
+
+  # Service configuration
+  LOG_LEVEL: "INFO"
+
+  # Dapr configuration
+  PUBSUB_NAME: "kafka-pubsub"
+  STATE_STORE_NAME: "postgres-state"
