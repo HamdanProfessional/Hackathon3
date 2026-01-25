@@ -1,0 +1,107 @@
+---
+# MCP Kubernetes Server - RBAC Configuration
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mcp-k8s-server
+  namespace: learnflow
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mcp-k8s-server
+  namespace: learnflow
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/log"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["services", "endpoints"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mcp-k8s-server
+  namespace: learnflow
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: mcp-k8s-server
+subjects:
+- kind: ServiceAccount
+  name: mcp-k8s-server
+  namespace: learnflow
+---
+# MCP Kubernetes Server Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-k8s-server
+  namespace: learnflow
+  labels:
+    app: mcp-k8s-server
+    tier: mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-k8s-server
+  template:
+    metadata:
+      labels:
+        app: mcp-k8s-server
+        tier: mcp
+    spec:
+      serviceAccountName: mcp-k8s-server
+      containers:
+      - name: mcp-k8s-server
+        image: mcp-k8s-server:v5
+        imagePullPolicy: Never
+        command: ["python", "main.py"]
+        env:
+        - name: DEFAULT_NAMESPACE
+          value: "learnflow"
+        - name: LOG_LEVEL
+          value: "INFO"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+        volumeMounts:
+        - name: kubeconfig
+          mountPath: /home/mcpuser/.kube
+          readOnly: true
+      volumes:
+      - name: kubeconfig
+        configMap:
+          name: kubeconfig
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubeconfig
+  namespace: learnflow
+data:
+  config: |
+    apiVersion: v1
+    kind: Config
+    preferences: {}
+    clusters:
+    - name: in-cluster
+      cluster:
+        server: https://kubernetes.default.svc
+        certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    users:
+    - name: mcp-k8s-server
+      user:
+        tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    contexts:
+    - name: default
+      context:
+        cluster: in-cluster
+        user: mcp-k8s-server
+    current-context: default

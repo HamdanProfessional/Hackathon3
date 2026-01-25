@@ -1,0 +1,54 @@
+---
+# MCP Code Execution Server Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-code-exec-server
+  namespace: learnflow
+  labels:
+    app: mcp-code-exec-server
+    tier: mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-code-exec-server
+  template:
+    metadata:
+      labels:
+        app: mcp-code-exec-server
+        tier: mcp
+    spec:
+      containers:
+      - name: mcp-code-exec-server
+        image: mcp-code-exec-server:v6
+        imagePullPolicy: Never
+        command: ["python", "main.py"]
+        env:
+        - name: DEFAULT_TIMEOUT
+          value: "5"
+        - name: MAX_TIMEOUT
+          value: "10"
+        - name: DEFAULT_MEMORY_LIMIT
+          value: "50"
+        - name: ALLOW_NETWORK
+          value: "false"
+        - name: ALLOW_FILE_ACCESS
+          value: "false"
+        - name: LOG_LEVEL
+          value: "INFO"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          capabilities:
+            drop:
+            - ALL
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
