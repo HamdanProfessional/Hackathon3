@@ -55,6 +55,22 @@ export default {
       }
     ]
   ],
+  "themes": [
+    [
+      "C:\\Users\\User\\Desktop\\PIAIC_HACKATHON_1\\Hackathon_3\\docs-site\\node_modules\\@easyops-cn\\docusaurus-search-local\\dist\\server\\server\\index.js",
+      {
+        "hashed": true,
+        "highlightSearchTermsOnTargetPage": true,
+        "explicitSearchResultPath": true,
+        "indexDocs": true,
+        "indexPages": true,
+        "indexBlog": false,
+        "docsRouteBasePath": "/",
+        "searchResultLimits": 8,
+        "searchResultContextMaxLength": 50
+      }
+    ]
+  ],
   "themeConfig": {
     "image": "img/docusaurus-social-card.jpg",
     "colorMode": {
@@ -206,7 +222,6 @@ export default {
     "static"
   ],
   "customFields": {},
-  "themes": [],
   "scripts": [],
   "headTags": [],
   "stylesheets": [],
