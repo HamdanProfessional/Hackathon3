@@ -127,12 +127,12 @@ const config: Config = {
           title: 'More',
           items: [
             {
-              label: 'MCP Integration',
-              to: '/mcp-integration-complete',
-            },
-            {
               label: 'Skills Catalog',
               to: '/SKILLS_CATALOG',
+            },
+            {
+              label: 'Architecture',
+              to: '/architecture-complete',
             },
           ],
         },

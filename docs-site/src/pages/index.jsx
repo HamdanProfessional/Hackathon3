@@ -13,7 +13,7 @@ function HomepageHeader() {
         <div className="hero__buttons" style={{marginTop: '2rem'}}>
           <Link
             className="button button--primary button--lg"
-            to="/intro">
+            to="/overview">
             Get Started
           </Link>
           <Link

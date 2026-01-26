@@ -17,22 +17,15 @@
 
 ###  Architecture
 - [Complete Architecture Guide](docs/architecture-complete.md)
-- [Event-Driven Design](docs/architecture-complete.md#event-driven-architecture)
-- [Microservices Overview](docs/architecture-complete.md#microservices)
 
 ###  Development
 - [Skills Catalog](docs/SKILLS_CATALOG.md)
-- [MCP Integration](docs/mcp-integration-complete.md)
-- [Cross-Agent Compatibility](docs/cross-agent-compatibility.md)
+- [Architecture Guide](docs/architecture-complete.md)
 
 ###  Deployment
 - [Phase 3: Infrastructure](docs/phase-3-complete.md)
 - [Phase 4: Backend Services](docs/phase-4-final-complete.md)
 - [Skills Autonomy Demo](docs/skills-autonomy-demo.md)
-
-###  Testing & Compliance
-- [Phase 2 Test Results](docs/PHASE_2_TEST_RESULTS.md)
-- [Hackathon 3 Compliance](docs/hackathon3-compliance-report.md)
 
 ---
 
@@ -187,7 +180,6 @@ Concepts  Debug  Exercise Progress Code Review
 
 | Phase | Document | Description |
 |-------|----------|-------------|
-| **Phase 2** | [Test Results](docs/PHASE_2_TEST_RESULTS.md) | Foundation Skills validation |
 | **Phase 3** | [Infrastructure Complete](docs/phase-3-complete.md) | Kafka and PostgreSQL deployment |
 | **Phase 4** | [Backend Complete](docs/phase-4-final-complete.md) | All 6 microservices deployed |
 | **Phase 4** | [Backend Continued](docs/phase-4-continued-summary.md) | Additional backend work |
@@ -198,14 +190,10 @@ Concepts  Debug  Exercise Progress Code Review
 | Document | Topics Covered |
 |----------|----------------|
 | [Architecture Complete](docs/architecture-complete.md) | Full system architecture, microservices, event flows |
-| [MCP Integration](docs/mcp-integration-complete.md) | MCP Server setup, 16 tools, FastMCP API |
 | [Skills Catalog](docs/SKILLS_CATALOG.md) | All available Skills for autonomous deployment |
-| [Cross-Agent Compatibility](docs/cross-agent-compatibility.md) | Claude Code + Goose compatibility |
-| [Skills Autonomy](docs/skills-autonomy-complete.md) | Token efficiency, autonomous builds |
 | [Skills Autonomy Demo](docs/skills-autonomy-demo.md) | Practical demonstration |
 | [Kafka Client](docs/kafka-client-complete.md) | Kafka Python client setup |
 | [Kafka Redpanda Fix](docs/kafka-redpanda-fix-summary.md) | Redpanda deployment troubleshooting |
-| [Hackathon Compliance](docs/hackathon3-compliance-report.md) | Requirements compliance report |
 
 ---
 
@@ -348,9 +336,6 @@ MIT License - See LICENSE file for details
 ## Links
 
 - [GitHub Repository](https://github.com/learnflow/learnflow)
-- [AGENTS.md](../AGENTS.md) - AI agent documentation
-- [CLAUDE.md](../CLAUDE.md) - Project constitution
-- [Requirements](../requirements.md) - Hackathon 3 requirements
 
 ---
 
