@@ -11,6 +11,14 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '2mb',
     },
   },
+  async rewrites() {
+    return [
+      {
+        source: '/docs/:path*',
+        destination: 'http://localhost:3003/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
