@@ -1,0 +1,101 @@
+{{- if .Values.backend.enabled }}
+{{- range $serviceName, $serviceConfig := .Values.backend.services }}
+{{- if $serviceConfig.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "learnflow.fullname" $ }}-{{ $serviceName }}
+  labels:
+    {{- include "learnflow.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $serviceName }}
+spec:
+  replicas: {{ $serviceConfig.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "learnflow.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: {{ $serviceName }}
+  template:
+    metadata:
+      annotations:
+        {{- with $.Values.backend.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "learnflow.labels" $ | nindent 8 }}
+        app.kubernetes.io/component: {{ $serviceName }}
+    spec:
+      {{- with $.Values.backend.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "learnflow.fullname" $ }}
+      securityContext:
+        {{- toYaml $.Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: {{ $serviceName }}
+        securityContext:
+          {{- toYaml $.Values.securityContext | nindent 10 }}
+        image: "{{ $.Values.global.imageRegistry }}/{{ $.Values.backend.image.repository }}:{{ $.Values.backend.image.tag | default $.Chart.AppVersion }}"
+        imagePullPolicy: {{ $.Values.backend.image.pullPolicy }}
+        command: ["python", "-m", "uvicorn", "services.{{ $serviceName }}.main:app", "--host", "0.0.0.0", "--port", "{{ $serviceConfig.port }}"]
+        ports:
+        - name: http
+          containerPort: {{ $serviceConfig.port }}
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          {{- toYaml $.Values.backend.resources | nindent 10 }}
+        env:
+        - name: PORT
+          value: "{{ $serviceConfig.port }}"
+        - name: DATABASE_URL
+          value: {{ include "learnflow.databaseUrl" $ }}
+        - name: KAFKA_BROKERS
+          value: {{ $.Values.configMap.kafkaBrokers | replace "{{ .Release.Namespace }}" $.Release.Namespace }}
+        {{- with $.Values.backend.env }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with $.Values.backend.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.backend.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.backend.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "learnflow.fullname" $ }}-{{ $serviceName }}
+  labels:
+    {{- include "learnflow.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $serviceName }}
+spec:
+  type: ClusterIP
+  ports:
+  - port: {{ $serviceConfig.port }}
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    {{- include "learnflow.selectorLabels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $serviceName }}
+{{- end }}
+{{- end }}
+{{- end }}

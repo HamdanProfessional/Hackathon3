@@ -1,0 +1,125 @@
+# Production environment values for LearnFlow
+
+# Override global settings for production
+global:
+  imageRegistry: ghcr.io
+
+# Frontend - Production
+frontend:
+  enabled: true
+  replicaCount: 3
+  image:
+    repository: your-org/learnflow-frontend
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    hosts:
+      - host: learnflow.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: learnflow-tls
+        hosts:
+          - learnflow.example.com
+
+  env:
+    - name: NODE_ENV
+      value: "production"
+
+# Backend - Production
+backend:
+  enabled: true
+  image:
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  services:
+    triage:
+      enabled: true
+      replicaCount: 2
+    concepts:
+      enabled: true
+      replicaCount: 2
+    debug:
+      enabled: true
+      replicaCount: 2
+    exercise:
+      enabled: true
+      replicaCount: 2
+    progress:
+      enabled: true
+      replicaCount: 2
+    code_review:
+      enabled: true
+      replicaCount: 2
+
+# MCP Servers - Production
+mcpServers:
+  enabled: true
+  codeExecution:
+    enabled: true
+    replicaCount: 2
+  database:
+    enabled: true
+    replicaCount: 2
+
+# PostgreSQL - Production
+postgresql:
+  enabled: true
+  auth:
+    password: "CHANGE_ME_IN_PRODUCTION"
+  persistence:
+    enabled: true
+    size: 50Gi
+    storageClass: "fast-ssd"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+
+# Kafka - Production
+kafka:
+  enabled: true
+  persistence:
+    enabled: true
+    size: 20Gi
+    storageClass: "fast-ssd"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi

@@ -51,40 +51,40 @@
 
 [data-theme='light'] {
   /* Docusaurus Built-in Variables - Light Mode with Nebula Accents */
-  --ifm-background-color: #f8fafc;
+  --ifm-background-color: #f5f3ff;
   --ifm-background-surface-color: #ffffff;
-  --ifm-color-primary: #8b5cf6;
-  --ifm-color-primary-dark: #7c3aed;
-  --ifm-color-primary-darker: #6d28d9;
-  --ifm-color-primary-darkest: #5b21b6;
+  --ifm-color-primary: #7c3aed;
+  --ifm-color-primary-dark: #6d28d9;
+  --ifm-color-primary-darker: #5b21b6;
+  --ifm-color-primary-darkest: #4c1d95;
   --ifm-color-primary-light: #a78bfa;
   --ifm-color-primary-lighter: #c4b5fd;
   --ifm-color-primary-lightest: #ddd6fe;
-  --ifm-color-primary-contrast-background: #8b5cf6;
+  --ifm-color-primary-contrast-background: #7c3aed;
   --ifm-color-primary-contrast-foreground: #ffffff;
   --ifm-color-primary-inverse: #1e293b;
   --ifm-font-color-base: #1e293b;
   --ifm-font-color-secondary: #64748b;
   --ifm-font-color-tertiary: #94a3b8;
-  --ifm-font-color-contrast: #000000;
-  --ifm-link-color: #8b5cf6;
-  --ifm-link-hover-color: #7c3aed;
-  --ifm-border-color: #e2e8f0;
+  --ifm-font-color-contrast: #0f172a;
+  --ifm-link-color: #7c3aed;
+  --ifm-link-hover-color: #6d28d9;
+  --ifm-border-color: #e9e5f5;
   --ifm-card-border-radius: 12px;
   --ifm-code-font-size: 95%;
 
   /* Custom Nebula Variables */
-  --nebula-bg: #f8fafc;
+  --nebula-bg: #f5f3ff;
   --nebula-bg-secondary: #ffffff;
   --nebula-card-bg: #ffffff;
-  --nebula-border: #e2e8f0;
-  --nebula-glow: rgba(139, 92, 246, 0.2);
-  --nebula-glow-strong: rgba(139, 92, 246, 0.3);
+  --nebula-border: #e9e5f5;
+  --nebula-glow: rgba(139, 92, 246, 0.15);
+  --nebula-glow-strong: rgba(139, 92, 246, 0.25);
 
   /* Gradient text colors */
-  --nebula-gradient-1: #8b5cf6;
-  --nebula-gradient-2: #60a5fa;
-  --nebula-gradient-3: #22d3ee;
+  --nebula-gradient-1: #7c3aed;
+  --nebula-gradient-2: #3b82f6;
+  --nebula-gradient-3: #06b6d4;
 }
 
 /* ============================================
@@ -196,6 +196,18 @@ h1, h2, h3, h4, h5, h6 {
   background-clip: text;
 }
 
+[data-theme='light'] h1 {
+  background: linear-gradient(135deg, var(--nebula-gradient-1), var(--nebula-gradient-2), var(--nebula-gradient-3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme='light'] h2,
+[data-theme='light'] h3 {
+  color: #1e293b !important;
+}
+
 /* ============================================
    TABLES - Nebula Styling
    ============================================ */
@@ -203,21 +215,38 @@ h1, h2, h3, h4, h5, h6 {
 table {
   border: 1px solid var(--ifm-border-color) !important;
   border-radius: 8px !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
   overflow: hidden;
   transition: border-color 0.3s ease;
+  display: table;
 }
 
 th {
   background: var(--nebula-glow-strong) !important;
   color: var(--ifm-font-color-base) !important;
   border-bottom: 1px solid var(--ifm-border-color) !important;
+  border-right: 1px solid var(--ifm-border-color) !important;
   transition: background-color 0.3s ease;
 }
 
+th:last-child {
+  border-right: none !important;
+}
+
 td {
-  border: 1px solid var(--ifm-border-color) !important;
+  border-bottom: 1px solid var(--ifm-border-color) !important;
+  border-right: 1px solid var(--ifm-border-color) !important;
   color: var(--ifm-font-color-base) !important;
   transition: border-color 0.3s ease, color 0.3s ease;
+}
+
+td:last-child {
+  border-right: none !important;
+}
+
+tr:last-child td {
+  border-bottom: none !important;
 }
 
 [data-theme='dark'] td {
@@ -229,7 +258,26 @@ td {
 }
 
 [data-theme='light'] tr:nth-child(even) td {
-  background: #f1f5f9 !important;
+  background: #f9f7ff !important;
+}
+
+[data-theme='light'] th {
+  background: #f3f0ff !important;
+  border-bottom-color: #e9e5f5 !important;
+  border-right-color: #e9e5f5 !important;
+}
+
+[data-theme='light'] td {
+  border-bottom-color: #e9e5f5 !important;
+  border-right-color: #e9e5f5 !important;
+  background: #ffffff !important;
+}
+
+/* Table wrapper to prevent full-width borders */
+.table-wrapper {
+  display: inline-block;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 /* ============================================
@@ -237,15 +285,15 @@ td {
    ============================================ */
 
 .code-block {
-  background: var(--nebula-bg-secondary) !important;
+  background: #1a1d2e !important;
   border: 1px solid var(--ifm-border-color) !important;
   border-radius: 8px !important;
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 code {
-  background: var(--nebula-glow) !important;
-  color: var(--ifm-color-primary) !important;
+  background: #1a1d2e !important;
+  color: #e2e8f0 !important;
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 0.9em;
@@ -253,9 +301,37 @@ code {
 }
 
 pre code {
-  background: transparent !important;
+  background: #1a1d2e !important;
   color: var(--ifm-font-color-base) !important;
   padding: 0;
+}
+
+/* Inline code should have different styling */
+:not(pre) > code {
+  background: var(--nebula-glow) !important;
+  color: var(--ifm-color-primary) !important;
+}
+
+/* Light mode code block overrides */
+[data-theme='light'] .code-block {
+  background: #1e1b2e !important;
+  border-color: #c4b5fd !important;
+}
+
+[data-theme='light'] code {
+  background: #ede9fe !important;
+  color: #5b21b6 !important;
+}
+
+[data-theme='light'] pre code {
+  background: #1e1b2e !important;
+  color: #e2e8f0 !important;
+}
+
+[data-theme='light'] :not(pre) > code {
+  background: #ede9fe !important;
+  color: #5b21b6 !important;
+  border: 1px solid #c4b5fd !important;
 }
 
 /* ============================================
@@ -382,50 +458,241 @@ pre code {
    SEARCH - Nebula Styling
    ============================================ */
 
-.DocSearch-Button,
-.DocSearch-modal {
-  background: var(--nebula-bg-secondary) !important;
+/* Search button in navbar */
+.DocSearch-Button {
+  background: rgba(24, 21, 41, 0.8) !important;
   border: 1px solid var(--ifm-border-color) !important;
   color: var(--ifm-font-color-secondary) !important;
-  transition: all 0.2s ease;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.3s ease !important;
 }
 
 .DocSearch-Button:hover,
 .DocSearch-Button:focus {
   background: var(--nebula-glow) !important;
   border-color: var(--ifm-color-primary) !important;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3) !important;
+  transform: translateY(-1px) !important;
 }
 
-.DocSearch-Hit {
-  background: var(--nebula-bg-secondary) !important;
-  border-color: var(--ifm-border-color) !important;
-}
-
-.DocSearch-Hit[aria-selected='true'] {
-  background: var(--nebula-glow) !important;
-}
-
-.DocSearch-Hit-title {
-  color: var(--ifm-font-color-base) !important;
-}
-
-.DocSearch-Hit-path {
+.DocSearch-Button .DocSearch-Search-Icon {
   color: var(--ifm-font-color-secondary) !important;
 }
 
+.DocSearch-Button .DocSearch-Button-Placeholder {
+  color: var(--ifm-font-color-secondary) !important;
+}
+
+.DocSearch-Button .DocSearch-Button-Keys {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-radius: 4px !important;
+}
+
+.DocSearch-Button .DocSearch-Button-Key {
+  background: transparent !important;
+  border: 1px solid var(--ifm-border-color) !important;
+  color: var(--ifm-font-color-secondary) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Search modal */
+.DocSearch-Modal {
+  background: rgba(15, 17, 26, 0.95) !important;
+  border: 1px solid var(--ifm-border-color) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(139, 92, 246, 0.2) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+/* Search bar */
 .DocSearch-SearchBar {
-  background: var(--nebula-bg-secondary) !important;
-  border-color: var(--ifm-border-color) !important;
+  background: rgba(24, 21, 41, 0.6) !important;
+  border: 2px solid var(--ifm-border-color) !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.DocSearch-SearchBar:focus-within {
+  border-color: var(--ifm-color-primary) !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 20px rgba(139, 92, 246, 0.3) !important;
+}
+
+.DocSearch-SearchIcon {
+  color: var(--ifm-font-color-secondary) !important;
+}
+
+.DocSearch-LoadingIndicator {
+  color: var(--ifm-color-primary) !important;
 }
 
 .DocSearch-Input {
   color: var(--ifm-font-color-base) !important;
+  background: transparent !important;
 }
 
-.DocSearch-Modal {
-  background: var(--nebula-bg) !important;
-  border-color: var(--ifm-border-color) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+.DocSearch-Input::placeholder {
+  color: var(--ifm-font-color-secondary) !important;
+}
+
+.DocSearch-Reset {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid var(--ifm-border-color) !important;
+  border-radius: 6px !important;
+  color: var(--ifm-font-color-secondary) !important;
+  transition: all 0.2s ease !important;
+}
+
+.DocSearch-Reset:hover {
+  background: var(--nebula-glow) !important;
+  border-color: var(--ifm-color-primary) !important;
+  color: var(--ifm-color-primary) !important;
+}
+
+/* Search results - header */
+.DocSearch-Dropdown {
+  background: transparent !important;
+}
+
+.DocSearch-Hits {
+  padding: 8px !important;
+}
+
+.DocSearch-Hits-title {
+  color: var(--ifm-font-color-secondary) !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  padding: 12px 16px 8px !important;
+}
+
+/* Search result items */
+.DocSearch-Hit {
+  background: rgba(24, 21, 41, 0.6) !important;
+  border: 1px solid var(--ifm-border-color) !important;
+  border-radius: 8px !important;
+  margin-bottom: 8px !important;
+  padding: 12px !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.DocSearch-Hit:hover {
+  background: rgba(24, 21, 41, 0.8) !important;
+  border-color: var(--ifm-color-primary) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2) !important;
+}
+
+.DocSearch-Hit[aria-selected='true'] {
+  background: var(--nebula-glow) !important;
+  border-color: var(--ifm-color-primary) !important;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3) !important;
+}
+
+.DocSearch-Hit-icon {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid var(--ifm-border-color) !important;
+  border-radius: 6px !important;
+}
+
+.DocSearch-Hit-content-wrapper {
+  padding-left: 12px !important;
+}
+
+.DocSearch-Hit-title {
+  color: var(--ifm-font-color-base) !important;
+  font-weight: 500 !important;
+}
+
+.DocSearch-Hit-path {
+  color: var(--ifm-font-color-secondary) !important;
+  font-size: 0.85em !important;
+}
+
+.DocSearch-Hit-text {
+  color: var(--ifm-font-color-secondary) !important;
+}
+
+.DocSearch-Hit-text mark {
+  background: var(--nebula-glow) !important;
+  color: var(--ifm-color-primary) !important;
+  border-radius: 2px !important;
+  padding: 0 2px !important;
+}
+
+.DocSearch-Hit-action {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid var(--ifm-border-color) !important;
+  border-radius: 6px !important;
+  color: var(--ifm-font-color-secondary) !important;
+  transition: all 0.2s ease !important;
+}
+
+.DocSearch-Hit-action:hover {
+  background: var(--nebula-glow) !important;
+  border-color: var(--ifm-color-primary) !important;
+  color: var(--ifm-color-primary) !important;
+}
+
+/* Search footer */
+.DocSearch-Footer {
+  background: rgba(24, 21, 41, 0.4) !important;
+  border-top: 1px solid var(--ifm-border-color) !important;
+  padding: 12px 16px !important;
+}
+
+.DocSearch-Commands {
+  color: var(--ifm-font-color-secondary) !important;
+}
+
+.DocSearch-Commands-Key {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid var(--ifm-border-color) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Empty state */
+.DocSearch-NoResults {
+  color: var(--ifm-font-color-secondary) !important;
+}
+
+.DocSearch-NoResults-Prefill-List {
+  background: rgba(24, 21, 41, 0.6) !important;
+  border: 1px solid var(--ifm-border-color) !important;
+  border-radius: 8px !important;
+}
+
+.DocSearch-NoResults-Prefill-ListItem {
+  border-bottom: 1px solid var(--ifm-border-color) !important;
+  color: var(--ifm-font-color-secondary) !important;
+  transition: all 0.2s ease !important;
+}
+
+.DocSearch-NoResults-Prefill-ListItem:hover {
+  background: var(--nebula-glow) !important;
+  color: var(--ifm-color-primary) !important;
+}
+
+.DocSearch-NoResults-Prefill-ListItem:last-child {
+  border-bottom: none !important;
+}
+
+/* Screen reader only */
+.DocSearch-Screen-Only {
+  display: none !important;
+}
+
+/* Search container in navbar */
+.navbar__search {
+  margin: 0 8px;
 }
 
 /* ============================================
@@ -539,4 +806,294 @@ pre code {
 
 .theme-toggle-button:hover {
   background: var(--nebula-glow-strong) !important;
+}
+
+/* ============================================
+   STARFIELD BACKGROUND - Cosmic Nebula
+   ============================================ */
+
+/* Starfield container */
+.starfield {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Star layers for parallax effect */
+.stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.stars-small {
+  background-image:
+    radial-gradient(1px 1px at 5% 5%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 10% 15%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 15% 25%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 20% 35%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 25% 45%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 30% 55%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 35% 65%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 40% 75%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 45% 85%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 50% 95%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 55% 10%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 60% 20%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 65% 30%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 70% 40%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 75% 50%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 80% 60%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 85% 70%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 90% 80%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 95% 90%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 100% 8%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 8% 50%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 18% 62%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 28% 78%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 38% 88%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 48% 12%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 58% 28%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 68% 42%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 78% 58%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 88% 72%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 98% 92%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 12% 22%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 22% 38%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 32% 52%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 42% 68%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 52% 82%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 62% 96%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 72% 18%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 82% 32%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 92% 48%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 3% 66%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 13% 78%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 23% 92%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 33% 6%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 43% 16%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 53% 26%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 63% 36%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 73% 46%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 83% 56%, white 100%, transparent 100%),
+    radial-gradient(1px 1px at 93% 66%, white 100%, transparent 100%);
+  background-size: 200% 200%;
+  animation: twinkle 8s ease-in-out infinite alternate;
+}
+
+.stars-medium {
+  background-image:
+    radial-gradient(2px 2px at 8% 12%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 18% 28%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 28% 44%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 38% 60%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 48% 76%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 58% 92%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 68% 8%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 78% 24%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 88% 40%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 98% 56%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 13% 72%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 23% 88%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 33% 4%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 43% 20%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 53% 36%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 63% 52%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 73% 68%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 83% 84%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 93% 100%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 5% 48%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 15% 64%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 25% 80%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 35% 96%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
+    radial-gradient(2px 2px at 45% 12%, rgba(255, 255, 255, 0.8) 100%, transparent 100%);
+  background-size: 250% 250%;
+  animation: twinkle 12s ease-in-out infinite alternate-reverse;
+}
+
+.stars-large {
+  background-image:
+    radial-gradient(3px 3px at 10% 20%, rgba(167, 139, 250, 0.9) 100%, transparent 100%),
+    radial-gradient(3px 3px at 25% 40%, rgba(96, 165, 250, 0.9) 100%, transparent 100%),
+    radial-gradient(3px 3px at 40% 60%, rgba(34, 211, 238, 0.9) 100%, transparent 100%),
+    radial-gradient(3px 3px at 55% 80%, rgba(167, 139, 250, 0.9) 100%, transparent 100%),
+    radial-gradient(3px 3px at 70% 10%, rgba(96, 165, 250, 0.9) 100%, transparent 100%),
+    radial-gradient(3px 3px at 85% 30%, rgba(34, 211, 238, 0.9) 100%, transparent 100%),
+    radial-gradient(3px 3px at 95% 50%, rgba(167, 139, 250, 0.9) 100%, transparent 100%),
+    radial-gradient(3px 3px at 15% 70%, rgba(96, 165, 250, 0.9) 100%, transparent 100%),
+    radial-gradient(3px 3px at 30% 90%, rgba(34, 211, 238, 0.9) 100%, transparent 100%),
+    radial-gradient(3px 3px at 45% 15%, rgba(167, 139, 250, 0.9) 100%, transparent 100%),
+    radial-gradient(3px 3px at 60% 35%, rgba(96, 165, 250, 0.9) 100%, transparent 100%),
+    radial-gradient(3px 3px at 75% 55%, rgba(34, 211, 238, 0.9) 100%, transparent 100%),
+    radial-gradient(3px 3px at 90% 75%, rgba(167, 139, 250, 0.9) 100%, transparent 100%),
+    radial-gradient(3px 3px at 20% 95%, rgba(96, 165, 250, 0.9) 100%, transparent 100%),
+    radial-gradient(3px 3px at 35% 5%, rgba(34, 211, 238, 0.9) 100%, transparent 100%);
+  background-size: 300% 300%;
+  animation: twinkle 15s ease-in-out infinite alternate;
+}
+
+/* Twinkling animation */
+@keyframes twinkle {
+  0% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.3;
+    transform: translateY(-10px);
+  }
+}
+
+/* Shooting stars */
+.shooting-star {
+  position: absolute;
+  width: 150px;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255, 255, 255, 0.8),
+    white);
+  border-radius: 50%;
+  filter: drop-shadow(0 0 8px white) drop-shadow(0 0 15px rgba(167, 139, 250, 0.6));
+  opacity: 0;
+  animation: shooting-star 8s ease-in-out infinite;
+}
+
+.shooting-star:nth-child(1) {
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 2s;
+  animation-duration: 6s;
+}
+
+.shooting-star:nth-child(2) {
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 5s;
+  animation-duration: 7s;
+}
+
+.shooting-star:nth-child(3) {
+  top: 70%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 8s;
+  animation-duration: 9s;
+}
+
+@keyframes shooting-star {
+  0% {
+    transform: translateX(0) translateY(0) rotate(-45deg) scaleX(0);
+    opacity: 0;
+  }
+  5% {
+    transform: translateX(-50px) translateY(50px) rotate(-45deg) scaleX(1);
+    opacity: 1;
+  }
+  15% {
+    transform: translateX(-200px) translateY(200px) rotate(-45deg) scaleX(0);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-200px) translateY(200px) rotate(-45deg) scaleX(0);
+    opacity: 0;
+  }
+}
+
+/* Nebula glow effect */
+.nebula-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(96, 165, 250, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 70% 50% at 60% 80%, rgba(34, 211, 238, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 30% at 40% 60%, rgba(244, 114, 182, 0.04) 0%, transparent 50%);
+  animation: nebula-drift 30s ease-in-out infinite alternate;
+}
+
+@keyframes nebula-drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(20px, -20px) scale(1.05);
+  }
+  100% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+}
+
+/* Floating dust particles */
+.dust-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(1px 1px at 5% 15%, rgba(167, 139, 250, 0.4) 100%, transparent 100%),
+    radial-gradient(1px 1px at 25% 35%, rgba(96, 165, 250, 0.4) 100%, transparent 100%),
+    radial-gradient(1px 1px at 45% 55%, rgba(34, 211, 238, 0.4) 100%, transparent 100%),
+    radial-gradient(1px 1px at 65% 75%, rgba(167, 139, 250, 0.4) 100%, transparent 100%),
+    radial-gradient(1px 1px at 85% 95%, rgba(96, 165, 250, 0.4) 100%, transparent 100%);
+  background-size: 400% 400%;
+  animation: dust-float 60s linear infinite;
+}
+
+@keyframes dust-float {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(-100px, -100px);
+  }
+}
+
+/* Ensure main content is above starfield */
+#__docusaurus {
+  position: relative;
+  z-index: 10;
+}
+
+/* Hide starfield in light mode for better readability */
+[data-theme='light'] .starfield {
+  opacity: 1;
+}
+
+[data-theme='light'] .stars-small,
+[data-theme='light'] .stars-medium,
+[data-theme='light'] .stars-large {
+  opacity: 0.6;
+}
+
+[data-theme='light'] .shooting-star {
+  opacity: 0.4;
+}
+
+[data-theme='light'] .nebula-glow {
+  opacity: 0.7;
+}
+
+[data-theme='light'] .dust-particles {
+  opacity: 0.5;
 }

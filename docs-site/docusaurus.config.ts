@@ -109,8 +109,12 @@ const config: Config = {
               to: '/',
             },
             {
-              label: 'Architecture',
-              to: '/architecture-complete',
+              label: 'Quick Start',
+              to: '/getting-started/quickstart',
+            },
+            {
+              label: 'API Reference',
+              to: '/api-reference',
             },
           ],
         },
@@ -129,10 +133,6 @@ const config: Config = {
             {
               label: 'Skills Catalog',
               to: '/SKILLS_CATALOG',
-            },
-            {
-              label: 'Architecture',
-              to: '/architecture-complete',
             },
           ],
         },

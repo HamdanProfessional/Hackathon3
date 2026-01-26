@@ -1,0 +1,100 @@
+# Development environment values for LearnFlow
+
+# Override global settings for development
+global:
+  imageRegistry: ghcr.io
+
+# Frontend - Development
+frontend:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: your-org/learnflow-frontend
+    tag: "dev"
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  ingress:
+    enabled: false  # Use port-forwarding for local dev
+
+  env:
+    - name: NODE_ENV
+      value: "development"
+
+# Backend - Development
+backend:
+  enabled: true
+  image:
+    tag: "dev"
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  services:
+    triage:
+      enabled: true
+      replicaCount: 1
+    concepts:
+      enabled: true
+      replicaCount: 1
+    debug:
+      enabled: true
+      replicaCount: 1
+    exercise:
+      enabled: true
+      replicaCount: 1
+    progress:
+      enabled: true
+      replicaCount: 1
+    code_review:
+      enabled: true
+      replicaCount: 1
+
+# MCP Servers - Development
+mcpServers:
+  enabled: true
+  codeExecution:
+    enabled: true
+    replicaCount: 1
+  database:
+    enabled: true
+    replicaCount: 1
+
+# PostgreSQL - Development
+postgresql:
+  enabled: true
+  auth:
+    password: "learnflow123"  # Only for development!
+  persistence:
+    enabled: false  # Use emptyDir for dev
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# Kafka - Development
+kafka:
+  enabled: true
+  persistence:
+    enabled: false  # Use emptyDir for dev
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 512Mi

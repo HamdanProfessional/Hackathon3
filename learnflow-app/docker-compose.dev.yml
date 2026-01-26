@@ -1,0 +1,258 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: learnflow-postgres-dev
+    environment:
+      POSTGRES_DB: learnflow
+      POSTGRES_USER: learnflow
+      POSTGRES_PASSWORD: learnflow123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U learnflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - learnflow-dev
+
+  # Kafka (Redpanda for easier local development)
+  kafka:
+    image: redpandadata/redpanda:v23.1.8
+    container_name: learnflow-kafka-dev
+    command:
+      - redpanda start
+      - --smp 1
+      - --reserve-memory 0M
+      - --overprovisioned
+      - --node-id 0
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://localhost:9092,external://localhost:19092
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr internal://localhost:8082,external://localhost:18082
+    ports:
+      - "19092:19092"
+      - "18082:18082"
+    volumes:
+      - kafka_data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster info | grep -q 'Metadata:'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - learnflow-dev
+
+  # Triage Service
+  triage-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.service
+      target: triage
+    container_name: learnflow-triage-dev
+    environment:
+      DATABASE_URL: postgresql+asyncpg://learnflow:learnflow123@postgres:5432/learnflow
+      KAFKA_BROKERS: kafka:9092
+      PORT: 8001
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - learnflow-dev
+    volumes:
+      - ./backend:/app
+      - /app/.venv  # Prevent overwriting local venv
+
+  # Concepts Service
+  concepts-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.service
+      target: concepts
+    container_name: learnflow-concepts-dev
+    environment:
+      DATABASE_URL: postgresql+asyncpg://learnflow:learnflow123@postgres:5432/learnflow
+      KAFKA_BROKERS: kafka:9092
+      PORT: 8002
+    ports:
+      - "8002:8002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - learnflow-dev
+    volumes:
+      - ./backend:/app
+      - /app/.venv
+
+  # Debug Service
+  debug-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.service
+      target: debug
+    container_name: learnflow-debug-dev
+    environment:
+      DATABASE_URL: postgresql+asyncpg://learnflow:learnflow123@postgres:5432/learnflow
+      KAFKA_BROKERS: kafka:9092
+      PORT: 8003
+    ports:
+      - "8003:8003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - learnflow-dev
+    volumes:
+      - ./backend:/app
+      - /app/.venv
+
+  # Exercise Service
+  exercise-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.service
+      target: exercise
+    container_name: learnflow-exercise-dev
+    environment:
+      DATABASE_URL: postgresql+asyncpg://learnflow:learnflow123@postgres:5432/learnflow
+      KAFKA_BROKERS: kafka:9092
+      PORT: 8004
+    ports:
+      - "8004:8004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - learnflow-dev
+    volumes:
+      - ./backend:/app
+      - /app/.venv
+
+  # Progress Service
+  progress-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.service
+      target: progress
+    container_name: learnflow-progress-dev
+    environment:
+      DATABASE_URL: postgresql+asyncpg://learnflow:learnflow123@postgres:5432/learnflow
+      KAFKA_BROKERS: kafka:9092
+      PORT: 8005
+    ports:
+      - "8005:8005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - learnflow-dev
+    volumes:
+      - ./backend:/app
+      - /app/.venv
+
+  # Code Review Service
+  code-review-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.service
+      target: code_review
+    container_name: learnflow-code-review-dev
+    environment:
+      DATABASE_URL: postgresql+asyncpg://learnflow:learnflow123@postgres:5432/learnflow
+      KAFKA_BROKERS: kafka:9092
+      PORT: 8006
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    ports:
+      - "8006:8006"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - learnflow-dev
+    volumes:
+      - ./backend:/app
+      - /app/.venv
+
+  # MCP Code Execution Server
+  mcp-code-exec:
+    build:
+      context: ./backend/mcp-servers/code-execution-mcp
+      dockerfile: Dockerfile
+    container_name: learnflow-mcp-code-exec-dev
+    environment:
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "9000:9000"
+    networks:
+      - learnflow-dev
+
+  # MCP Database Server
+  mcp-database:
+    build:
+      context: ./backend/mcp-servers/database-mcp
+      dockerfile: Dockerfile
+    container_name: learnflow-mcp-database-dev
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: learnflow
+      DATABASE_USER: learnflow
+      DATABASE_PASSWORD: learnflow123
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "9001:9001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - learnflow-dev
+
+  # Frontend (Development Mode)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: learnflow-frontend-dev
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - learnflow-dev
+    depends_on:
+      - triage-service
+
+volumes:
+  postgres_data:
+    driver: local
+  kafka_data:
+    driver: local
+
+networks:
+  learnflow-dev:
+    driver: bridge

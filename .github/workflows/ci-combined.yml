@@ -1,0 +1,40 @@
+name: Combined CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend-ci:
+    name: Backend CI
+    uses: ./.github/workflows/ci-backend.yml
+
+  frontend-ci:
+    name: Frontend CI
+    uses: ./.github/workflows/ci-frontend.yml
+
+  mcp-servers-ci:
+    name: MCP Servers CI
+    uses: ./.github/workflows/ci-mcp-servers.yml
+
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [backend-ci, frontend-ci, mcp-servers-ci]
+    if: always()
+
+    steps:
+      - name: Check all jobs status
+        run: |
+          echo "Backend CI: ${{ needs.backend-ci.result }}"
+          echo "Frontend CI: ${{ needs.frontend-ci.result }}"
+          echo "MCP Servers CI: ${{ needs.mcp-servers-ci.result }}"
+
+      - name: Fail if any job failed
+        if: |
+          needs.backend-ci.result == 'failure' ||
+          needs.frontend-ci.result == 'failure' ||
+          needs.mcp-servers-ci.result == 'failure'
+        run: exit 1
