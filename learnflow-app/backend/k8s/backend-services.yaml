@@ -1,0 +1,304 @@
+---
+# Triage Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: triage-service
+  namespace: learnflow
+  labels:
+    app: triage-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: triage-service
+  template:
+    metadata:
+      labels:
+        app: triage-service
+    spec:
+      containers:
+      - name: triage
+        image: learnflow-backend:latest
+        imagePullPolicy: IfNotPresent
+        command: ["python", "-m", "uvicorn", "services.triage.main:app", "--host", "0.0.0.0", "--port", "8001"]
+        ports:
+        - containerPort: 8001
+        env:
+        - name: PORT
+          value: "8001"
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: learnflow-config
+              key: database-url
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+            memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: triage-service
+  namespace: learnflow
+spec:
+  selector:
+    app: triage-service
+  ports:
+  - port: 8001
+    targetPort: 8001
+  type: ClusterIP
+
+---
+# Concepts Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: concepts-service
+  namespace: learnflow
+  labels:
+    app: concepts-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: concepts-service
+  template:
+    metadata:
+      labels:
+        app: concepts-service
+    spec:
+      containers:
+      - name: concepts
+        image: learnflow-backend:latest
+        imagePullPolicy: IfNotPresent
+        command: ["python", "-m", "uvicorn", "services.concepts.main:app", "--host", "0.0.0.0", "--port", "8002"]
+        ports:
+        - containerPort: 8002
+        env:
+        - name: PORT
+          value: "8002"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+            memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: concepts-service
+  namespace: learnflow
+spec:
+  selector:
+    app: concepts-service
+  ports:
+  - port: 8002
+    targetPort: 8002
+  type: ClusterIP
+
+---
+# Debug Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: debug-service
+  namespace: learnflow
+  labels:
+    app: debug-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: debug-service
+  template:
+    metadata:
+      labels:
+        app: debug-service
+    spec:
+      containers:
+      - name: debug
+        image: learnflow-backend:latest
+        imagePullPolicy: IfNotPresent
+        command: ["python", "-m", "uvicorn", "services.debug.main:app", "--host", "0.0.0.0", "--port", "8003"]
+        ports:
+        - containerPort: 8003
+        env:
+        - name: PORT
+          value: "8003"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+            memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: debug-service
+  namespace: learnflow
+spec:
+  selector:
+    app: debug-service
+  ports:
+  - port: 8003
+    targetPort: 8003
+  type: ClusterIP
+
+---
+# Exercise Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exercise-service
+  namespace: learnflow
+  labels:
+    app: exercise-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exercise-service
+  template:
+    metadata:
+      labels:
+        app: exercise-service
+    spec:
+      containers:
+      - name: exercise
+        image: learnflow-backend:latest
+        imagePullPolicy: IfNotPresent
+        command: ["python", "-m", "uvicorn", "services.exercise.main:app", "--host", "0.0.0.0", "--port", "8004"]
+        ports:
+        - containerPort: 8004
+        env:
+        - name: PORT
+          value: "8004"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+            memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: exercise-service
+  namespace: learnflow
+spec:
+  selector:
+    app: exercise-service
+  ports:
+  - port: 8004
+    targetPort: 8004
+  type: ClusterIP
+
+---
+# Progress Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: progress-service
+  namespace: learnflow
+  labels:
+    app: progress-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: progress-service
+  template:
+    metadata:
+      labels:
+        app: progress-service
+    spec:
+      containers:
+      - name: progress
+        image: learnflow-backend:latest
+        imagePullPolicy: IfNotPresent
+        command: ["python", "-m", "uvicorn", "services.progress.main:app", "--host", "0.0.0.0", "--port", "8005"]
+        ports:
+        - containerPort: 8005
+        env:
+        - name: PORT
+          value: "8005"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+            memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: progress-service
+  namespace: learnflow
+spec:
+  selector:
+    app: progress-service
+  ports:
+  - port: 8005
+    targetPort: 8005
+  type: ClusterIP
+
+---
+# Code Review Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code-review-service
+  namespace: learnflow
+  labels:
+    app: code-review-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: code-review-service
+  template:
+    metadata:
+      labels:
+        app: code-review-service
+    spec:
+      containers:
+      - name: code-review
+        image: learnflow-backend:latest
+        imagePullPolicy: IfNotPresent
+        command: ["python", "-m", "uvicorn", "services.code_review.main:app", "--host", "0.0.0.0", "--port", "8006"]
+        ports:
+        - containerPort: 8006
+        env:
+        - name: PORT
+          value: "8006"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+            memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: code-review-service
+  namespace: learnflow
+spec:
+  selector:
+    app: code-review-service
+  ports:
+  - port: 8006
+    targetPort: 8006
+  type: ClusterIP
