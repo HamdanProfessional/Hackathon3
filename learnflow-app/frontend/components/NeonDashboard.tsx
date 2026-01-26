@@ -170,7 +170,7 @@ export function NeonDashboard() {
               value="12,847"
               change="+12.5%"
               trend="up"
-              icon="👥"
+              icon="US"
               glowColor="cyan"
             />
             <StatCard
@@ -178,7 +178,7 @@ export function NeonDashboard() {
               value="1,429"
               change="+8.2%"
               trend="up"
-              icon="⚡"
+              icon="AS"
               glowColor="magenta"
             />
             <StatCard
@@ -186,7 +186,7 @@ export function NeonDashboard() {
               value="87.3%"
               change="-2.1%"
               trend="down"
-              icon="📊"
+              icon="CR"
               glowColor="green"
             />
             <StatCard
@@ -194,7 +194,7 @@ export function NeonDashboard() {
               value="24m 32s"
               change="+5.4%"
               trend="up"
-              icon="⏱️"
+              icon="TM"
               glowColor="cyan"
             />
           </div>

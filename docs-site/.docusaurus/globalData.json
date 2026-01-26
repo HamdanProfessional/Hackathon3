@@ -1,0 +1,80 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/",
+          "mainDocId": "intro",
+          "docs": [
+            {
+              "id": "architecture-complete",
+              "path": "/architecture-complete",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "intro",
+              "path": "/",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "kafka-client-complete",
+              "path": "/kafka-client-complete",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "kafka-redpanda-fix-summary",
+              "path": "/kafka-redpanda-fix-summary",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "overview",
+              "path": "/overview",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "phase-3-complete",
+              "path": "/phase-3-complete",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "phase-4-complete",
+              "path": "/phase-4-complete"
+            },
+            {
+              "id": "phase-4-continued-summary",
+              "path": "/phase-4-continued-summary"
+            },
+            {
+              "id": "phase-4-final-complete",
+              "path": "/phase-4-final-complete",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "SKILLS_CATALOG",
+              "path": "/SKILLS_CATALOG",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "skills-autonomy-demo",
+              "path": "/skills-autonomy-demo"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "mainSidebar": {
+              "link": {
+                "path": "/",
+                "label": "Welcome"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

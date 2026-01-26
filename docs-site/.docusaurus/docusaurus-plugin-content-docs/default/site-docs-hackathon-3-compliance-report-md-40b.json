@@ -1,0 +1,20 @@
+{
+  "id": "hackathon3-compliance-report",
+  "title": "Hackathon 3 Compliance Report",
+  "description": "Generated: 2026-01-23",
+  "source": "@site/docs/hackathon3-compliance-report.md",
+  "sourceDirName": ".",
+  "slug": "/hackathon3-compliance-report",
+  "permalink": "/hackathon3-compliance-report",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/learnflow/docs/tree/main/docs/hackathon3-compliance-report.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Phase 2 Test Results",
+    "permalink": "/PHASE_2_TEST_RESULTS"
+  }
+}

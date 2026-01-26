@@ -1,0 +1,20 @@
+{
+  "id": "kafka-redpanda-fix-summary",
+  "title": "Kafka/Redpanda Connection Fix - Summary",
+  "description": "Date: 2026-01-24",
+  "source": "@site/docs/kafka-redpanda-fix-summary.md",
+  "sourceDirName": ".",
+  "slug": "/kafka-redpanda-fix-summary",
+  "permalink": "/kafka-redpanda-fix-summary",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/learnflow/docs/tree/main/docs/kafka-redpanda-fix-summary.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Kafka Client Setup",
+    "permalink": "/kafka-client-complete"
+  }
+}

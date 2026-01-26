@@ -8,14 +8,14 @@ import { Label } from '@/components/ui/label';
 import { api } from '@/lib/api';
 
 const modules = [
-  { id: 'python-basics', name: 'Python Basics', icon: '🐍' },
-  { id: 'control-flow', name: 'Control Flow', icon: '🔀' },
-  { id: 'functions', name: 'Functions', icon: '⚡' },
-  { id: 'data-structures', name: 'Data Structures', icon: '📦' },
-  { id: 'file-operations', name: 'File Operations', icon: '📁' },
-  { id: 'error-handling', name: 'Error Handling', icon: '🐛' },
-  { id: 'oop', name: 'Object-Oriented Programming', icon: '🏛️' },
-  { id: 'advanced-python', name: 'Advanced Python', icon: '🚀' },
+  { id: 'python-basics', name: 'Python Basics', icon: 'Py' },
+  { id: 'control-flow', name: 'Control Flow', icon: 'CF' },
+  { id: 'functions', name: 'Functions', icon: 'Fn' },
+  { id: 'data-structures', name: 'Data Structures', icon: 'DS' },
+  { id: 'file-operations', name: 'File Operations', icon: 'FO' },
+  { id: 'error-handling', name: 'Error Handling', icon: 'EH' },
+  { id: 'oop', name: 'Object-Oriented Programming', icon: 'OOP' },
+  { id: 'advanced-python', name: 'Advanced Python', icon: 'Adv' },
 ];
 
 const difficulties = [

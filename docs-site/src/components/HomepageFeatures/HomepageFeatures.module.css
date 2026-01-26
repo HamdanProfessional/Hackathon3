@@ -1,0 +1,35 @@
+.features {
+  display: flex;
+  align-items: center;
+  padding: 2rem 0;
+  width: 100%;
+}
+
+.featureSvg {
+  height: 200px;
+  width: 200px;
+}
+
+.feature {
+  padding: 1.5rem;
+  border: 1px solid var(--ifm-border-color);
+  border-radius: var(--ifm-card-border-radius);
+  margin: 1rem;
+  background: var(--nebula-card-bg);
+  transition: all 0.3s ease;
+}
+
+.feature:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.2);
+  border-color: var(--ifm-color-primary);
+}
+
+.feature h3 {
+  color: var(--ifm-color-primary);
+  margin-bottom: 0.5rem;
+}
+
+.feature p {
+  color: var(--ifm-font-color-secondary);
+}

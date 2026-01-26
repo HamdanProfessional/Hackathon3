@@ -1,0 +1,542 @@
+/**
+ * Nebula Space Theme for LearnFlow Docusaurus Documentation
+ * Matching the frontend's cosmic design system with proper light/dark mode support
+ */
+
+/* ============================================
+   DARK MODE (Default) - Nebula Theme
+   ============================================ */
+
+[data-theme='dark'] {
+  /* Docusaurus Built-in Variables - Override for Nebula Theme */
+  --ifm-background-color: #0f111a;
+  --ifm-background-surface-color: #151823;
+  --ifm-color-primary: #8b5cf6;
+  --ifm-color-primary-dark: #7c3aed;
+  --ifm-color-primary-darker: #6d28d9;
+  --ifm-color-primary-darkest: #5b21b6;
+  --ifm-color-primary-light: #a78bfa;
+  --ifm-color-primary-lighter: #c4b5fd;
+  --ifm-color-primary-lightest: #ddd6fe;
+  --ifm-color-primary-contrast-background: #8b5cf6;
+  --ifm-color-primary-contrast-foreground: #ffffff;
+  --ifm-color-primary-inverse: #f1f3f7;
+  --ifm-font-color-base: #f1f3f7;
+  --ifm-font-color-secondary: #8b92b0;
+  --ifm-font-color-tertiary: #6b7280;
+  --ifm-font-color-contrast: #ffffff;
+  --ifm-link-color: #a78bfa;
+  --ifm-link-hover-color: #c4b5fd;
+  --ifm-border-color: #2a2640;
+  --ifm-card-border-radius: 12px;
+  --ifm-code-font-size: 95%;
+
+  /* Custom Nebula Variables */
+  --nebula-bg: #0f111a;
+  --nebula-bg-secondary: #151823;
+  --nebula-card-bg: rgba(24, 21, 41, 0.6);
+  --nebula-border: #2a2640;
+  --nebula-glow: rgba(139, 92, 246, 0.3);
+  --nebula-glow-strong: rgba(139, 92, 246, 0.5);
+
+  /* Gradient text colors */
+  --nebula-gradient-1: #8b5cf6;
+  --nebula-gradient-2: #60a5fa;
+  --nebula-gradient-3: #22d3ee;
+}
+
+/* ============================================
+   LIGHT MODE - Nebula Theme (Accessible)
+   ============================================ */
+
+[data-theme='light'] {
+  /* Docusaurus Built-in Variables - Light Mode with Nebula Accents */
+  --ifm-background-color: #f8fafc;
+  --ifm-background-surface-color: #ffffff;
+  --ifm-color-primary: #8b5cf6;
+  --ifm-color-primary-dark: #7c3aed;
+  --ifm-color-primary-darker: #6d28d9;
+  --ifm-color-primary-darkest: #5b21b6;
+  --ifm-color-primary-light: #a78bfa;
+  --ifm-color-primary-lighter: #c4b5fd;
+  --ifm-color-primary-lightest: #ddd6fe;
+  --ifm-color-primary-contrast-background: #8b5cf6;
+  --ifm-color-primary-contrast-foreground: #ffffff;
+  --ifm-color-primary-inverse: #1e293b;
+  --ifm-font-color-base: #1e293b;
+  --ifm-font-color-secondary: #64748b;
+  --ifm-font-color-tertiary: #94a3b8;
+  --ifm-font-color-contrast: #000000;
+  --ifm-link-color: #8b5cf6;
+  --ifm-link-hover-color: #7c3aed;
+  --ifm-border-color: #e2e8f0;
+  --ifm-card-border-radius: 12px;
+  --ifm-code-font-size: 95%;
+
+  /* Custom Nebula Variables */
+  --nebula-bg: #f8fafc;
+  --nebula-bg-secondary: #ffffff;
+  --nebula-card-bg: #ffffff;
+  --nebula-border: #e2e8f0;
+  --nebula-glow: rgba(139, 92, 246, 0.2);
+  --nebula-glow-strong: rgba(139, 92, 246, 0.3);
+
+  /* Gradient text colors */
+  --nebula-gradient-1: #8b5cf6;
+  --nebula-gradient-2: #60a5fa;
+  --nebula-gradient-3: #22d3ee;
+}
+
+/* ============================================
+   GLOBAL STYLES
+   ============================================ */
+
+html {
+  background-color: var(--ifm-background-color);
+}
+
+body {
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ============================================
+   NAVBAR - Nebula Styling
+   ============================================ */
+
+.navbar {
+  background: var(--nebula-bg) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--ifm-border-color) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.navbar__item {
+  color: var(--ifm-font-color-base) !important;
+  transition: color 0.2s ease;
+}
+
+.navbar__item:hover {
+  color: var(--ifm-color-primary) !important;
+}
+
+.navbar__link--active {
+  color: var(--ifm-color-primary) !important;
+}
+
+/* ============================================
+   SIDEBAR - Nebula Styling
+   ============================================ */
+
+.sidebar {
+  background: var(--nebula-bg-secondary) !important;
+  border-right: 1px solid var(--ifm-border-color) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.menu__link {
+  color: var(--ifm-font-color-secondary) !important;
+  transition: color 0.2s ease;
+}
+
+.menu__link:hover {
+  color: var(--ifm-color-primary) !important;
+  background: var(--nebula-glow) !important;
+}
+
+.menu__link--active {
+  color: var(--ifm-color-primary) !important;
+  background: var(--nebula-glow-strong) !important;
+  border-left: 3px solid var(--ifm-color-primary);
+}
+
+.menu__list-item {
+  border-left: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+/* ============================================
+   CARDS - Nebula Glass Effect
+   ============================================ */
+
+.card {
+  background: var(--nebula-card-bg) !important;
+  border: 1px solid var(--ifm-border-color) !important;
+  border-radius: var(--ifm-card-border-radius) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.3s ease;
+}
+
+[data-theme='dark'] .card {
+  box-shadow: 0 8px 32px rgba(15, 17, 26, 0.6) !important;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15) !important;
+  border-color: var(--ifm-color-primary) !important;
+}
+
+/* ============================================
+   HEADINGS - Nebula Gradient
+   ============================================ */
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--ifm-font-color-base) !important;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+[data-theme='dark'] h1 {
+  background: linear-gradient(135deg, var(--nebula-gradient-1), var(--nebula-gradient-2), var(--nebula-gradient-3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================
+   TABLES - Nebula Styling
+   ============================================ */
+
+table {
+  border: 1px solid var(--ifm-border-color) !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+}
+
+th {
+  background: var(--nebula-glow-strong) !important;
+  color: var(--ifm-font-color-base) !important;
+  border-bottom: 1px solid var(--ifm-border-color) !important;
+  transition: background-color 0.3s ease;
+}
+
+td {
+  border: 1px solid var(--ifm-border-color) !important;
+  color: var(--ifm-font-color-base) !important;
+  transition: border-color 0.3s ease, color 0.3s ease;
+}
+
+[data-theme='dark'] td {
+  background: var(--nebula-bg-secondary) !important;
+}
+
+[data-theme='dark'] tr:nth-child(even) td {
+  background: var(--nebula-bg-secondary) !important;
+}
+
+[data-theme='light'] tr:nth-child(even) td {
+  background: #f1f5f9 !important;
+}
+
+/* ============================================
+   CODE BLOCKS - Nebula Styling
+   ============================================ */
+
+.code-block {
+  background: var(--nebula-bg-secondary) !important;
+  border: 1px solid var(--ifm-border-color) !important;
+  border-radius: 8px !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+code {
+  background: var(--nebula-glow) !important;
+  color: var(--ifm-color-primary) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+pre code {
+  background: transparent !important;
+  color: var(--ifm-font-color-base) !important;
+  padding: 0;
+}
+
+/* ============================================
+   ALERTS - Nebula Styling
+   ============================================ */
+
+.alert {
+  border-radius: var(--ifm-card-border-radius) !important;
+  border: 1px solid !important;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+
+.alert--info {
+  background: rgba(14, 165, 233, 0.15) !important;
+  border-color: rgba(14, 165, 233, 0.3) !important;
+}
+
+.alert--warning {
+  background: rgba(245, 158, 11, 0.15) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+.alert--success {
+  background: rgba(34, 197, 94, 0.15) !important;
+  border-color: rgba(34, 197, 94, 0.3) !important;
+}
+
+.alert--danger {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+/* ============================================
+   BUTTONS - Nebula Styling
+   ============================================ */
+
+.button {
+  background: var(--ifm-color-primary) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease;
+}
+
+.button:hover {
+  background: var(--ifm-color-primary-dark) !important;
+  box-shadow: 0 4px 12px var(--nebula-glow-strong) !important;
+  transform: translateY(-1px);
+}
+
+.button--secondary {
+  background: var(--nebula-glow) !important;
+  color: var(--ifm-color-primary) !important;
+  border: 1px solid var(--ifm-color-primary) !important;
+}
+
+.button--outline {
+  background: transparent !important;
+  border: 1px solid var(--ifm-color-primary) !important;
+  color: var(--ifm-color-primary) !important;
+}
+
+/* ============================================
+   PAGINATION - Nebula Styling
+   ============================================ */
+
+.pagination-nav__link {
+  background: var(--nebula-card-bg) !important;
+  border: 1px solid var(--ifm-border-color) !important;
+  border-radius: var(--ifm-card-border-radius) !important;
+  transition: all 0.3s ease;
+}
+
+.pagination-nav__link:hover {
+  background: var(--nebula-glow) !important;
+  border-color: var(--ifm-color-primary) !important;
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   TABS - Nebula Styling
+   ============================================ */
+
+.tabs {
+  border-bottom: 1px solid var(--ifm-border-color) !important;
+  transition: border-color 0.3s ease;
+}
+
+.tab-item {
+  border: 1px solid var(--ifm-border-color) !important;
+  border-bottom: none !important;
+  background: var(--nebula-bg-secondary) !important;
+  color: var(--ifm-font-color-secondary) !important;
+  transition: all 0.2s ease;
+}
+
+.tab-item--active {
+  background: var(--nebula-glow) !important;
+  color: var(--ifm-color-primary) !important;
+  border-color: var(--ifm-color-primary) !important;
+}
+
+/* ============================================
+   FOOTER - Nebula Styling
+   ============================================ */
+
+.footer {
+  background: var(--nebula-bg) !important;
+  border-top: 1px solid var(--ifm-border-color) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.footer__link-item {
+  color: var(--ifm-font-color-secondary) !important;
+  transition: color 0.2s ease;
+}
+
+.footer__link-item:hover {
+  color: var(--ifm-color-primary) !important;
+}
+
+/* ============================================
+   SEARCH - Nebula Styling
+   ============================================ */
+
+.DocSearch-Button,
+.DocSearch-modal {
+  background: var(--nebula-bg-secondary) !important;
+  border: 1px solid var(--ifm-border-color) !important;
+  color: var(--ifm-font-color-secondary) !important;
+  transition: all 0.2s ease;
+}
+
+.DocSearch-Button:hover,
+.DocSearch-Button:focus {
+  background: var(--nebula-glow) !important;
+  border-color: var(--ifm-color-primary) !important;
+}
+
+.DocSearch-Hit {
+  background: var(--nebula-bg-secondary) !important;
+  border-color: var(--ifm-border-color) !important;
+}
+
+.DocSearch-Hit[aria-selected='true'] {
+  background: var(--nebula-glow) !important;
+}
+
+.DocSearch-Hit-title {
+  color: var(--ifm-font-color-base) !important;
+}
+
+.DocSearch-Hit-path {
+  color: var(--ifm-font-color-secondary) !important;
+}
+
+.DocSearch-SearchBar {
+  background: var(--nebula-bg-secondary) !important;
+  border-color: var(--ifm-border-color) !important;
+}
+
+.DocSearch-Input {
+  color: var(--ifm-font-color-base) !important;
+}
+
+.DocSearch-Modal {
+  background: var(--nebula-bg) !important;
+  border-color: var(--ifm-border-color) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.nebula-text-gradient {
+  background: linear-gradient(135deg, var(--nebula-gradient-1), var(--nebula-gradient-2), var(--nebula-gradient-3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nebula-card {
+  background: var(--nebula-card-bg);
+  border: 1px solid var(--ifm-border-color);
+  border-radius: var(--ifm-card-border-radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+[data-theme='dark'] .nebula-card {
+  box-shadow: 0 8px 32px rgba(15, 17, 26, 0.6);
+}
+
+.nebula-glow {
+  box-shadow: 0 0 20px var(--nebula-glow);
+}
+
+/* ============================================
+   SCROLLBAR - Nebula Styling
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--nebula-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg,
+    rgba(139, 92, 246, 0.6),
+    rgba(96, 165, 250, 0.6)
+  );
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg,
+    rgba(139, 92, 246, 0.8),
+    rgba(96, 165, 250, 0.8)
+  );
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes nebula-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes nebula-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px var(--nebula-glow);
+  }
+  50% {
+    box-shadow: 0 0 30px var(--nebula-glow-strong);
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  body {
+    background: #ffffff;
+    color: #000000;
+  }
+
+  .navbar,
+  .sidebar,
+  .footer {
+    display: none;
+  }
+}
+
+/* ============================================
+   THEME TOGGLE BUTTON - Enhanced
+   ============================================ */
+
+.clean-btn {
+  color: var(--ifm-font-color-secondary) !important;
+  transition: color 0.2s ease;
+}
+
+.clean-btn:hover {
+  color: var(--ifm-color-primary) !important;
+}
+
+.theme-toggle-button {
+  background: var(--nebula-glow) !important;
+  border: 1px solid var(--ifm-border-color) !important;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle-button:hover {
+  background: var(--nebula-glow-strong) !important;
+}

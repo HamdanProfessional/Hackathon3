@@ -52,7 +52,7 @@ export default function ProgressCard({ title, value, type }: ProgressCardProps) 
           </svg>
           <div className="absolute flex flex-col items-center">
             {type === 'streak' ? (
-              <span className="text-2xl font-bold text-orange-500">🔥</span>
+              <span className="text-2xl font-bold text-orange-500">ST</span>
             ) : (
               <span className={`text-lg font-bold ${textColor}`}>
                 {type === 'percentage' ? `${Math.round(value)}%` : value}

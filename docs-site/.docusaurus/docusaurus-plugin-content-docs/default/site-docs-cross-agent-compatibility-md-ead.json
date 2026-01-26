@@ -1,0 +1,24 @@
+{
+  "id": "cross-agent-compatibility",
+  "title": "Cross-Agent Compatibility Demonstration",
+  "description": "Date: 2026-01-23",
+  "source": "@site/docs/cross-agent-compatibility.md",
+  "sourceDirName": ".",
+  "slug": "/cross-agent-compatibility",
+  "permalink": "/cross-agent-compatibility",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/learnflow/docs/tree/main/docs/cross-agent-compatibility.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Skills Catalog",
+    "permalink": "/SKILLS_CATALOG"
+  },
+  "next": {
+    "title": "Phase 2 Test Results",
+    "permalink": "/PHASE_2_TEST_RESULTS"
+  }
+}

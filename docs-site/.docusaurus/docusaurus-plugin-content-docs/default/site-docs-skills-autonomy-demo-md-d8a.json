@@ -1,0 +1,15 @@
+{
+  "id": "skills-autonomy-demo",
+  "title": "Skills Autonomy Demonstration",
+  "description": "Date: 2026-01-23",
+  "source": "@site/docs/skills-autonomy-demo.md",
+  "sourceDirName": ".",
+  "slug": "/skills-autonomy-demo",
+  "permalink": "/skills-autonomy-demo",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/learnflow/docs/tree/main/docs/skills-autonomy-demo.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {}
+}

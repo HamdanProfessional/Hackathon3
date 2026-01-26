@@ -1,0 +1,24 @@
+{
+  "id": "mcp-integration-complete",
+  "title": "MCP Integration Demonstration",
+  "description": "Date: 2026-01-24",
+  "source": "@site/docs/mcp-integration-complete.md",
+  "sourceDirName": ".",
+  "slug": "/mcp-integration-complete",
+  "permalink": "/mcp-integration-complete",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/learnflow/docs/tree/main/docs/mcp-integration-complete.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Phase 4: Backend Services",
+    "permalink": "/phase-4-final-complete"
+  },
+  "next": {
+    "title": "Skills Catalog",
+    "permalink": "/SKILLS_CATALOG"
+  }
+}

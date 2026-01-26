@@ -1,0 +1,23 @@
+{
+  "id": "intro",
+  "title": "Welcome",
+  "description": "LearnFlow is an AI-powered learning platform for Python programming.",
+  "source": "@site/docs/intro.md",
+  "sourceDirName": ".",
+  "slug": "/",
+  "permalink": "/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/learnflow/docs/tree/main/docs/intro.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Welcome",
+    "slug": "/"
+  },
+  "sidebar": "mainSidebar",
+  "next": {
+    "title": "Documentation Overview",
+    "permalink": "/overview"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "overview",
+  "title": "LearnFlow Documentation",
+  "description": "AI-powered Python learning platform with autonomous deployment",
+  "source": "@site/docs/overview.md",
+  "sourceDirName": ".",
+  "slug": "/overview",
+  "permalink": "/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/learnflow/docs/tree/main/docs/overview.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Welcome",
+    "permalink": "/"
+  },
+  "next": {
+    "title": "System Architecture",
+    "permalink": "/architecture-complete"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "index",
+  "title": "LearnFlow Documentation",
+  "description": "AI-powered Python learning platform with autonomous deployment",
+  "source": "@site/docs/index.md",
+  "sourceDirName": ".",
+  "slug": "/",
+  "permalink": "/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/learnflow/docs/tree/main/docs/index.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "mainSidebar",
+  "next": {
+    "title": "Welcome",
+    "permalink": "/"
+  }
+}

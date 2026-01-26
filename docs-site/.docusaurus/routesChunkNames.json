@@ -1,0 +1,66 @@
+{
+  "/-070": {
+    "__comp": "9dd8a0d2",
+    "__context": {
+      "plugin": "a7456010"
+    },
+    "config": "5e9f5e1a"
+  },
+  "/-aee": {
+    "__comp": "5e95c892",
+    "__context": {
+      "plugin": "aba21aa0"
+    }
+  },
+  "/-09f": {
+    "__comp": "a7bd4aaa",
+    "__props": "22dd74f7"
+  },
+  "/-e26": {
+    "__comp": "a94703ab"
+  },
+  "/architecture-complete-d27": {
+    "__comp": "17896441",
+    "content": "f1f33e32"
+  },
+  "/kafka-client-complete-cdc": {
+    "__comp": "17896441",
+    "content": "25f07d1d"
+  },
+  "/kafka-redpanda-fix-summary-fc3": {
+    "__comp": "17896441",
+    "content": "5fefbe3a"
+  },
+  "/overview-200": {
+    "__comp": "17896441",
+    "content": "1db64337"
+  },
+  "/phase-3-complete-bb8": {
+    "__comp": "17896441",
+    "content": "6528382b"
+  },
+  "/phase-4-complete-c90": {
+    "__comp": "17896441",
+    "content": "25a4335a"
+  },
+  "/phase-4-continued-summary-7b4": {
+    "__comp": "17896441",
+    "content": "1a0c3b9b"
+  },
+  "/phase-4-final-complete-194": {
+    "__comp": "17896441",
+    "content": "4c8f1bd9"
+  },
+  "/SKILLS_CATALOG-ce1": {
+    "__comp": "17896441",
+    "content": "456152e8"
+  },
+  "/skills-autonomy-demo-f5a": {
+    "__comp": "17896441",
+    "content": "d8a9b4a2"
+  },
+  "/-e98": {
+    "__comp": "17896441",
+    "content": "0e384e19"
+  }
+}

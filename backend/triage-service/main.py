@@ -1,9 +1,8 @@
 """
-Triage Service - FastAPI service with Dapr integration
+Triage Service - FastAPI service
 Routes student queries to appropriate specialist agents.
 """
 from fastapi import FastAPI, HTTPException
-from dapr.ext.fastapi import DaprApp
 from dapr.clients import DaprClient
 import json
 import logging
@@ -25,7 +24,6 @@ app = FastAPI(
     description="Routes student queries to appropriate specialist agents",
     version="1.0.0"
 )
-dapr_app = DaprApp(app)
 agent = TriageAgent()
 
 # Dapr configuration
@@ -146,7 +144,7 @@ async def route_and_invoke(request: TriageRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@dapr_app.subscribe(pubsub=PUBSUB_NAME, topic=CODE_SUBMISSION_TOPIC)
+@app.post("/events/code_submission")
 async def handle_code_submission(event_data: dict):
     """
     Handle code submission events from Kafka.
@@ -165,9 +163,11 @@ async def handle_code_submission(event_data: dict):
                 "code": event_data.get("code")
             }
         )
+        return {"status": "processed"}
 
     except Exception as e:
         logger.error(f"Error handling code submission: {e}")
+        raise
 
 
 if __name__ == "__main__":

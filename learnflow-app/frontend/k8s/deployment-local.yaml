@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: learnflow-frontend
+  namespace: learnflow
+  labels:
+    app: learnflow-frontend
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: learnflow-frontend
+  template:
+    metadata:
+      labels:
+        app: learnflow-frontend
+        version: v1
+    spec:
+      containers:
+      - name: frontend
+        image: learnflow-frontend:v1
+        imagePullPolicy: Never
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        - name: NEXT_PUBLIC_API_BASE_URL
+          value: "http://triage-service.learnflow.svc.cluster.local:8001"
+        - name: NEXT_PUBLIC_TRIAGE_URL
+          value: "http://triage-service.learnflow.svc.cluster.local:8001"
+        - name: NEXT_PUBLIC_CONCEPTS_URL
+          value: "http://concepts-service.learnflow.svc.cluster.local:8002"
+        - name: NEXT_PUBLIC_DEBUG_URL
+          value: "http://debug-service.learnflow.svc.cluster.local:8003"
+        - name: NEXT_PUBLIC_EXERCISE_URL
+          value: "http://exercise-service.learnflow.svc.cluster.local:8004"
+        - name: NEXT_PUBLIC_PROGRESS_URL
+          value: "http://progress-service.learnflow.svc.cluster.local:8005"
+        - name: NEXT_PUBLIC_CODE_REVIEW_URL
+          value: "http://code-review-service.learnflow.svc.cluster.local:8006"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3

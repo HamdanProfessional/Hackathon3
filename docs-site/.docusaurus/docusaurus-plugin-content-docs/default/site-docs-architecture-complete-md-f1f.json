@@ -1,0 +1,24 @@
+{
+  "id": "architecture-complete",
+  "title": "Architecture Demonstration",
+  "description": "Date: 2026-01-23",
+  "source": "@site/docs/architecture-complete.md",
+  "sourceDirName": ".",
+  "slug": "/architecture-complete",
+  "permalink": "/architecture-complete",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/learnflow/docs/tree/main/docs/architecture-complete.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Documentation Overview",
+    "permalink": "/overview"
+  },
+  "next": {
+    "title": "Phase 3: Infrastructure",
+    "permalink": "/phase-3-complete"
+  }
+}

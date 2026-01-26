@@ -1,14 +1,12 @@
 """
-progress-service - FastAPI service with Dapr integration
+progress-service - FastAPI service
 Agent Type: progress
 """
 from fastapi import FastAPI
-from dapr.ext.fastapi import DaprApp
-from .agent import ProgressAgent
-from .models import QueryRequest, QueryResponse
+from agent import ProgressAgent
+from models import QueryRequest, QueryResponse
 
 app = FastAPI(title="progress-service", version="1.0.0")
-dapr_app = DaprApp(app)
 agent = ProgressAgent()
 
 @app.post("/", response_model=QueryResponse)
@@ -17,10 +15,11 @@ async def handle_query(request: QueryRequest):
     result = await agent.process(request.query, request.context)
     return QueryResponse(result=result)
 
-@dapr_app.subscribe(pubsub="kafka-pubsub", topic="learning.progress_update")
+@app.post("/events/progress_update")
 async def handle_event(event_data: dict):
-    """Handle Kafka events."""
+    """Handle Kafka events via Dapr endpoint."""
     await agent.process_event(event_data)
+    return {"status": "processed"}
 
 @app.get("/health")
 async def health():

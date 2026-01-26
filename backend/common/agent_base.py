@@ -34,10 +34,17 @@ class BaseAgent(ABC):
             provider = LLMProvider(provider_str)
 
         self.provider = provider
-        self.client = get_llm_client(provider, async_client=True)
+        self._client = None  # Lazy initialization
         self.model = os.getenv("LLM_MODEL") or get_default_model(provider)
 
         logger.info(f"Initialized {self.__class__.__name__} with {provider.value} and model {self.model}")
+
+    @property
+    def client(self):
+        """Lazy-initialize the LLM client only when accessed."""
+        if self._client is None:
+            self._client = get_llm_client(self.provider, async_client=True)
+        return self._client
 
     @abstractmethod
     async def process(self, query: str, context: Dict[str, Any]) -> str:

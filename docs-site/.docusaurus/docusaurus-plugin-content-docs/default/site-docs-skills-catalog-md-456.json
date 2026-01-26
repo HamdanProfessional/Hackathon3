@@ -1,0 +1,24 @@
+{
+  "id": "SKILLS_CATALOG",
+  "title": "Skills Catalog",
+  "description": "Generated01:38",
+  "source": "@site/docs/SKILLS_CATALOG.md",
+  "sourceDirName": ".",
+  "slug": "/SKILLS_CATALOG",
+  "permalink": "/SKILLS_CATALOG",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/learnflow/docs/tree/main/docs/SKILLS_CATALOG.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Phase 4: Backend Services",
+    "permalink": "/phase-4-final-complete"
+  },
+  "next": {
+    "title": "Kafka Client Setup",
+    "permalink": "/kafka-client-complete"
+  }
+}

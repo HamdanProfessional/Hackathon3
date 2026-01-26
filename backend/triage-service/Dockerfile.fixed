@@ -1,0 +1,28 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first for better caching
+COPY triage-service/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy service code (from triage-service subdirectory)
+COPY triage-service/main.py .
+COPY triage-service/agent.py .
+COPY triage-service/models.py .
+
+# Copy common module
+COPY common/ /app/common/
+
+# Create logs directory
+RUN mkdir -p /app/logs
+
+EXPOSE 8001
+
+# Use the correct port for triage-service
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]
