@@ -12,7 +12,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: learnflow.local  # For local testing
+  - host: hackathon3.testservers.online
     http:
       paths:
       - path: /
@@ -22,8 +22,7 @@ spec:
             name: learnflow-frontend
             port:
               number: 80
-  # Optional: TLS configuration for production
-  # tls:
-  # - hosts:
-  #   - learnflow.example.com
-  #   secretName: learnflow-tls-secret
+  tls:
+  - hosts:
+    - hackathon3.testservers.online
+    secretName: learnflow-tls-secret

@@ -1,4 +1,4 @@
-"""Tests for MessageBubble component."""
+// Tests for MessageBubble component
 
 import { describe, it, expect } from 'vitest';
 

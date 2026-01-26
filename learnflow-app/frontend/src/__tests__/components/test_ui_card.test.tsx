@@ -1,4 +1,4 @@
-"""Tests for UI components."""
+// Tests for UI components
 
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@/test-utils';

@@ -1,4 +1,4 @@
-"""Tests for TypeScript type definitions."""
+// Tests for TypeScript type definitions
 
 import { describe, it, expect } from 'vitest';
 

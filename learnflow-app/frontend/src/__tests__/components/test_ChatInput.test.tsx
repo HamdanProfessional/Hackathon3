@@ -1,4 +1,4 @@
-"""Tests for ChatInput component."""
+// Tests for ChatInput component
 
 import { describe, it, expect, vi } from 'vitest';
 

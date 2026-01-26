@@ -1,4 +1,4 @@
-"""Tests for ModuleCard component."""
+// Tests for ModuleCard component
 
 import { describe, it, expect, vi } from 'vitest';
 
