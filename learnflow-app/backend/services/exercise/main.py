@@ -1,9 +1,11 @@
 """Exercise Service - Generates and grades coding exercises.
 
 Provides auto-graded Python exercises with hints and progressive difficulty.
+Integrates with MCP Code Execution server for safe code evaluation.
 """
 
 import os
+import httpx
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,6 +13,9 @@ from shared.models import (
     HealthResponse, ChatRequest, ChatResponse,
     ExerciseRequest, Exercise, ExerciseSubmission, ExerciseResult
 )
+
+# MCP Code Execution Service URL
+CODE_EXECUTION_MCP_URL = os.getenv("CODE_EXECUTION_MCP_URL", "http://localhost:9000")
 
 
 SERVICE_NAME = "exercise-service"
@@ -78,7 +83,7 @@ async def generate_exercise(request: ExerciseRequest):
 
 @app.post("/submit", response_model=ExerciseResult)
 async def submit_exercise(submission: ExerciseSubmission):
-    """Grade exercise submission."""
+    """Grade exercise submission using MCP Code Execution."""
     exercise = EXERCISES.get(submission.exercise_id // 10, {}).get(submission.exercise_id)
 
     if not exercise:
@@ -88,9 +93,62 @@ async def submit_exercise(submission: ExerciseSubmission):
             test_results=[],
         )
 
-    # Simple validation (in real implementation, would execute code)
-    code = submission.code.strip()
-    passed = len(code) > 10 and "print" in code
+    # Use MCP Code Execution to validate and run the code
+    try:
+        async with httpx.AsyncClient() as client:
+            # First check syntax
+            syntax_response = await client.post(
+                f"{CODE_EXECUTION_MCP_URL}/tools/call",
+                json={
+                    "name": "check_syntax",
+                    "arguments": {"code": submission.code}
+                },
+                timeout=5.0
+            )
+
+            # Execute the code
+            exec_response = await client.post(
+                f"{CODE_EXECUTION_MCP_URL}/tools/call",
+                json={
+                    "name": "execute_code",
+                    "arguments": {"code": submission.code}
+                },
+                timeout=10.0
+            )
+
+            if exec_response.status_code == 200:
+                result = exec_response.json()
+                # Parse MCP response (returns list of TextContent)
+                if isinstance(result, list) and len(result) > 0:
+                    import json
+                    exec_result = json.loads(result[0]["text"])
+                    passed = exec_result.get("success", False)
+                    output = exec_result.get("output", "")
+                    error = exec_result.get("error")
+
+                    # Validate against test cases
+                    test_passed = True
+                    if exercise.test_cases:
+                        for tc in exercise.test_cases:
+                            if tc.get("type") == "output":
+                                if tc["expected"] not in output:
+                                    test_passed = False
+                            elif tc.get("type") == "code_check":
+                                if tc.get("check") and tc["check"] not in submission.code:
+                                    test_passed = False
+
+                    passed = passed and test_passed and (error is None or error == "")
+
+                    return ExerciseResult(
+                        passed=passed,
+                        feedback=output if passed else (error or "Code didn't produce expected output"),
+                        test_results=[{"output": output, "error": error}],
+                        hints=exercise.hints if not passed else [],
+                    )
+    except Exception as e:
+        # Fallback to simple validation if MCP is unavailable
+        code = submission.code.strip()
+        passed = len(code) > 10 and "print" in code
 
     return ExerciseResult(
         passed=passed,
