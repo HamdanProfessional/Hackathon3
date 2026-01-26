@@ -69,6 +69,30 @@ Student: student@example.com / demo123
 Teacher: teacher@example.com / demo123
 ```
 
+### Integrated Documentation
+
+The documentation is integrated directly into the application at the `/docs` route. This uses Docusaurus running on a separate port with Next.js rewrites for seamless integration.
+
+**Access docs at**: http://localhost:3004/docs
+
+**How it works**:
+1. Docusaurus runs on port 3003 (separate process)
+2. Next.js rewrites proxy `/docs/*` requests to Docusaurus
+3. Static assets (CSS, JS) are also proxied correctly
+
+**To run with docs**:
+```bash
+# Terminal 1: Start Docusaurus docs server
+cd docs-site
+npx docusaurus start --port 3003
+
+# Terminal 2: Start Next.js frontend
+cd learnflow-app/frontend
+npm run dev
+```
+
+**Note**: If the frontend starts on a different port (e.g., 3002), access docs at `http://localhost:3002/docs`
+
 ## Design System
 
 ### Nebula Space Theme
@@ -249,6 +273,7 @@ This project is part of the LearnFlow Hackathon 3 submission.
 
 ## Related Links
 
+- [Documentation Site](../../docs-site/README.md) - Integrated at `/docs`
 - [Backend Services](../../backend/README.md)
 - [MCP Servers](../../backend/mcp-servers/README.md)
 - [Project Documentation](../../docs/README.md)
