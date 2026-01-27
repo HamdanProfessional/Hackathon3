@@ -1,60 +1,56 @@
-# Multi-service Dockerfile for LearnFlow Backend Services
-# Build targets for each service
+# Multi-stage Dockerfile for LearnFlow Backend Services
+FROM python:3.13-slim AS base
 
-FROM python:3.11-slim AS base
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
 WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    libpq-dev \
+    build-essential \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Install uv for faster dependency management
+RUN pip install uv
+
+# Copy dependency files
 COPY pyproject.toml ./
-RUN pip install --no-cache-dir -e .
 
-# Copy shared code
-COPY shared/ ./shared/
+# Install dependencies using uv
+RUN uv pip install --system -e .
 
-# Triage Service
+# Copy application code
+COPY . .
+
+# Service targets
 FROM base AS triage
-COPY services/triage/ ./services/triage/
-ENV PORT=8001
 EXPOSE 8001
 CMD ["python", "-m", "uvicorn", "services.triage.main:app", "--host", "0.0.0.0", "--port", "8001"]
 
-# Concepts Service
 FROM base AS concepts
-COPY services/concepts/ ./services/concepts/
-ENV PORT=8002
 EXPOSE 8002
 CMD ["python", "-m", "uvicorn", "services.concepts.main:app", "--host", "0.0.0.0", "--port", "8002"]
 
-# Debug Service
 FROM base AS debug
-COPY services/debug/ ./services/debug/
-ENV PORT=8003
 EXPOSE 8003
 CMD ["python", "-m", "uvicorn", "services.debug.main:app", "--host", "0.0.0.0", "--port", "8003"]
 
-# Exercise Service
 FROM base AS exercise
-COPY services/exercise/ ./services/exercise/
-ENV PORT=8004
 EXPOSE 8004
 CMD ["python", "-m", "uvicorn", "services.exercise.main:app", "--host", "0.0.0.0", "--port", "8004"]
 
-# Progress Service
 FROM base AS progress
-COPY services/progress/ ./services/progress/
-ENV PORT=8005
 EXPOSE 8005
 CMD ["python", "-m", "uvicorn", "services.progress.main:app", "--host", "0.0.0.0", "--port", "8005"]
 
-# Code Review Service
 FROM base AS code_review
-COPY services/code_review/ ./services/code_review/
-ENV PORT=8006
 EXPOSE 8006
 CMD ["python", "-m", "uvicorn", "services.code_review.main:app", "--host", "0.0.0.0", "--port", "8006"]
+
+# Default target
+FROM base
+EXPOSE 8001
+CMD ["python", "-m", "uvicorn", "services.triage.main:app", "--host", "0.0.0.0", "--port", "8001"]
