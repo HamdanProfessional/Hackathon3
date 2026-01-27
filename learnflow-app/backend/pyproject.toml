@@ -15,6 +15,9 @@ dependencies = [
     "openai>=1.57.0",
     "httpx>=0.28.0",
     "python-multipart>=0.0.12",
+    # Dapr for distributed application runtime
+    "dapr>=1.14.0",
+    "dapr-ext-fastapi>=1.14.0",
 ]
 
 [build-system]

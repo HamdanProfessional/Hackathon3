@@ -11,5 +11,14 @@
   "editUrl": "https://github.com/learnflow/docs/tree/main/docs/skills-autonomy-demo.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {}
+  "frontMatter": {},
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Skills Catalog",
+    "permalink": "/SKILLS_CATALOG"
+  },
+  "next": {
+    "title": "Kafka Client Setup",
+    "permalink": "/kafka-client-complete"
+  }
 }

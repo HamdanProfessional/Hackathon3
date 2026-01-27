@@ -1,337 +1,214 @@
-# Phase 6: Integration (MCP Servers) Specification
+# Feature Specification: Phase 6 - Integration (MCP Servers)
 
+**Feature Branch**: `6-integration`
+**Created**: 2025-01-26
 **Status**: Draft
-**Phase**: 6
-**Focus**: Model Context Protocol servers for real-time AI agent context
+**Input**: Build Model Context Protocol servers for real-time AI agent context access
 
 ---
 
-## Overview
+## User Scenarios & Testing *(mandatory)*
 
-Build Model Context Protocol (MCP) servers that give AI agents real-time access to LearnFlow platform data. MCP servers provide:
+### User Story 1 - AI Agent Accesses Student Progress in Real-Time (Priority: P1)
 
-- **Database Access**: Real-time student progress, code submissions, exercise history
-- **Kafka Events**: Subscribe to learning events, struggle alerts
-- **Kubernetes Operations**: Query pod status, service health, logs
-- **Code Execution**: Execute student code in sandboxed environment
+As an AI agent tutoring a student, I need to access the student's current progress in real-time so that I can provide personalized guidance based on their mastery level.
 
-Following the **MCP Code Execution Pattern**, these servers expose tools that AI agents can call, with efficient token usage through script-based execution.
+**Why this priority**: Core integration - without real-time data access, AI agents cannot provide personalized tutoring.
 
-### What This Phase Delivers
+**Independent Test**: AI agent queries student progress via MCP tool, receives current mastery and recent activity within 500ms.
 
-Four independent MCP servers that:
-1. Accept tool calls from AI agents via MCP protocol
-2. Execute database queries to retrieve real-time data
-3. Subscribe to Kafka topics for event streaming
-4. Interact with Kubernetes for operational data
-5. Execute Python code in isolated sandbox environment
-6. Return minimal results to minimize token usage
+**Acceptance Scenarios**:
+
+1. **Given** a student ID, **When** agent queries progress, **Then** system returns overall mastery percentage
+2. **Given** progress query, **When** response includes data, **Then** per-module mastery levels are included
+3. **Given** recent activity, **When** progress is queried, **Then** exercise attempts and streak are returned
+4. **Given** MCP tool call, **When** executed, **Then** response uses minimal tokens (<500)
 
 ---
 
-## Success Criteria
+### User Story 2 - AI Agent Retrieves Code Submissions (Priority: P1)
 
-**Measurable Outcomes** (technology-agnostic):
+As an AI agent helping debug code, I need to see the student's recent code submissions so that I can identify patterns in their mistakes.
 
-- [ ] All 4 MCP servers respond to health checks within 1 second
-- [ ] AI agents can query student progress in real-time
-- [ ] Code execution sandbox completes within 5 seconds timeout
-- [ ] Kafka event subscription delivers events within 1 second
-- [ ] Kubernetes operations queries return accurate status
-- [ ] Token efficiency validated (<500 tokens per AI session)
-- [ ] Zero manual intervention - autonomous deployment via Skills
+**Why this priority**: Essential for debugging and code review - without submission history, agents cannot identify learning patterns.
 
----
+**Independent Test**: AI agent queries recent submissions via MCP tool, receives list of code with error messages.
 
-## User Stories
+**Acceptance Scenarios**:
 
-### P1: AI Agent Accesses Student Progress
-
-**As an** AI agent tutoring a student
-**I want** to access the student's current progress in real-time
-**So that** I can provide personalized guidance based on their mastery level
-
-**Acceptance Criteria**:
-- [ ] Given a student ID, the system returns their progress data
-- [ ] Given the student has 68% mastery, the system returns correct level
-- [ ] Given the student is on day 3 of their streak, this is reflected
-- [ ] Query completes within 500ms
-
-**Data Returned**:
-- Overall mastery percentage
-- Per-module mastery levels
-- Recent exercise attempts
-- Current learning streak
+1. **Given** a student ID, **When** agent queries submissions, **Then** system returns recent code submissions
+2. **Given** a limit parameter (e.g., 10), **When** querying, **Then** only that many submissions are returned
+3. **Given** submissions with errors, **When** returned, **Then** error messages are included
+4. **Given** submission data, **When** formatted, **Then** submissions are ordered newest first
 
 ---
 
-### P1: AI Agent Retrieves Code Submissions
+### User Story 3 - AI Agent Subscribes to Learning Events (Priority: P2)
 
-**As an** AI agent helping debug code
-**I want** to see the student's recent code submissions
-**So that** I can identify patterns in their mistakes
+As an AI agent tracking student activity, I need to receive real-time updates when events occur so that I can respond immediately to student actions.
 
-**Acceptance Criteria**:
-- [ ] Given a student ID, the system returns recent submissions
-- [ ] Given the limit is 10, only 10 most recent are returned
-- [ ] Code content includes error messages when present
-- [ ] Submissions are ordered by timestamp (newest first)
+**Why this priority**: Important for real-time responsiveness, but agents can also poll for updates (less efficient).
 
----
+**Independent Test**: AI agent subscribes to Kafka topic via MCP tool, receives events within 1 second of occurrence.
 
-### P1: AI Agent Subscribes to Learning Events
+**Acceptance Scenarios**:
 
-**As an** AI agent tracking student activity
-**I want** to receive real-time updates when events occur
-**So that** I can respond immediately to student actions
-
-**Acceptance Criteria**:
-- [ ] Given a student completes an exercise, the agent receives an event
-- [ ] Given a student triggers a struggle alert, the agent receives an event
-- [ ] Events are delivered within 1 second of occurrence
-- [ ] Multiple agents can subscribe to the same events
+1. **Given** an agent subscribes to learning events, **When** student completes exercise, **Then** agent receives event
+2. **Given** an agent subscribes to struggle alerts, **When** student triggers alert, **Then** agent receives event
+3. **Given** event subscription, **When** events occur, **Then** they are delivered within 1 second
+4. **Given** multiple agents, **When** subscribed to same topic, **Then** all receive events
 
 ---
 
-### P2: AI Agent Executes Student Code
+### User Story 4 - AI Agent Executes Student Code Safely (Priority: P1)
 
-**As an** AI agent providing coding feedback
-**I want** to safely execute Python code to test it
-**So that** I can verify code works before telling the student
+As an AI agent providing coding feedback, I need to safely execute Python code to test it so that I can verify code works before telling the student it's correct.
 
-**Acceptance Criteria**:
-- [ ] Given valid Python code, execution completes and returns output
-- [ ] Given code has errors, execution returns error message
-- [ ] Code execution times out after 5 seconds
-- [ ] Code cannot access file system (except temp)
-- [ ] Code cannot access network
+**Why this priority**: Critical for code validation - without safe execution, agents cannot verify student solutions.
 
-**Sandbox Constraints**:
-- Memory limit: 50MB
-- Timeout: 5 seconds
-- No network access
-- Temp directory only for file I/O
+**Independent Test**: AI agent submits code to MCP tool, receives execution output or error within 5 second timeout.
+
+**Acceptance Scenarios**:
+
+1. **Given** valid Python code, **When** agent executes it, **Then** system returns output
+2. **Given** code with error, **When** executed, **Then** system returns error message
+3. **Given** long-running code, **When** timeout (5s) is reached, **Then** execution terminates
+4. **Given** malicious code, **When** executed, **Then** system sandbox prevents damage
 
 ---
 
-### P2: AI Agent Queries Kubernetes Status
+### User Story 5 - AI Agent Queries Kubernetes Status (Priority: P2)
 
-**As** an AI agent monitoring system health
-**I want** to check if services are running
-**So that** I can report issues to teachers
+As an AI agent monitoring deployment, I need to query pod and service status so that I can identify operational issues.
 
-**Acceptance Criteria**:
-- [ ] Given a query for pod status, the system returns accurate data
-- [ ] Given a service is down, the system returns the error
-- [ ] Queries complete within 1 second
-- [ ] Logs can be retrieved for debugging
+**Why this priority**: Useful for observability, but not critical for core learning functionality.
 
----
+**Independent Test**: AI agent queries pod status via MCP tool, receives current state and health information.
 
-### P3: AI Agent Publishes Events
+**Acceptance Scenarios**:
 
-**As** an AI agent processing student actions
-**I want** to publish events to the event stream
-**So that** other agents can react to them
-
-**Acceptance Criteria**:
-- [ ] Given an exercise is completed, an event is published
-- [ ] Given a struggle is detected, an alert event is published
-- [ ] Event publishing succeeds even if some subscribers are down
-- [ ] Events include relevant context data
+1. **Given** a namespace query, **When** executed, **Then** system returns pod status
+2. **Given** service query, **When** executed, **Then** system returns service endpoints
+3. **Given** pod failure, **When** queried, **Then** system indicates error state
+4. **Given** log request, **When** executed, **Then** system returns recent log entries
 
 ---
 
-## Functional Requirements
+### Edge Cases
 
-### FR-1: MCP Protocol Compliance
-
-Servers must implement the MCP protocol:
-- STDIO transport for local communication
-- HTTP/SSE transport for remote communication
-- Tool definitions with schema validation
-- Error responses with helpful messages
-- Resource cleanup on disconnect
-
-### FR-2: Database Access
-
-MCP Database Server provides tools for:
-- Querying student progress (by student ID, module, topic)
-- Retrieving code submissions (by student ID, limit)
-- Fetching exercise history (by exercise ID, student)
-- Getting conversation history (by conversation ID)
-- Creating/updating data (with proper authorization)
-
-### FR-3: Kafka Integration
-
-MCP Kafka Server provides tools for:
-- Publishing events to topics
-- Subscribing to topics
-- Listing available topics
-- Getting topic statistics
-
-### FR-4: Kubernetes Operations
-
-MCP K8s Server provides tools for:
-- Listing pods and services
-- Checking pod status
-- Retrieving pod logs
-- Checking service health
-- Describing resources
-
-### FR-5: Code Execution
-
-MCP Code Execution Server provides:
-- Python code execution (Python 3.11+)
-- Sandbox constraints (timeout, memory, no network)
-- Output and error capture
-- Security restrictions (no file system, no network)
+- What happens when database query returns no results (student not found)?
+- How does system handle concurrent MCP tool calls from multiple agents?
+- What happens when code execution exceeds resource limits (memory, CPU)?
+- How does system handle Kafka subscription failures?
+- What happens when Kubernetes API is unavailable?
+- How does system handle malformed tool parameters?
 
 ---
 
-## Non-Functional Requirements
+## Requirements *(mandatory)*
 
-### NFR-1: Performance
+### Functional Requirements
 
-- Tool execution: <500ms average
-- Database queries: <200ms average
-- Code execution: completes within 5s timeout
-- Event delivery: <1 second after occurrence
+#### Database MCP Server (Port 9001)
+- **FR-001**: System MUST provide MCP server for database access
+- **FR-002**: System MUST expose tool to get student progress
+- **FR-003**: System MUST expose tool to get recent submissions
+- **FR-004**: System MUST expose tool to get exercises catalog
+- **FR-005**: System MUST query PostgreSQL database
+- **FR-006**: System MUST return results in minimal token format
+- **FR-007**: System MUST handle student not found gracefully
+- **FR-008**: System MUST complete queries within 500ms
 
-### NFR-2: Scalability
+#### Code Execution MCP Server (Port 9000)
+- **FR-009**: System MUST provide MCP server for code execution
+- **FR-010**: System MUST expose tool to execute Python code
+- **FR-011**: System MUST expose tool to check code syntax
+- **FR-012**: System MUST execute code in sandboxed environment
+- **FR-013**: System MUST enforce 5 second timeout
+- **FR-014**: System MUST limit memory usage (50MB max)
+- **FR-015**: System MUST disable network access
+- **FR-016**: System MUST restrict file system access (temp only)
+- **FR-017**: System MUST return stdout/stderr separately
 
-- Servers handle 10+ concurrent tool calls
-- Database connection pooling efficient
-- Event subscribers can scale independently
-- Code execution can queue requests
+#### Kafka Events MCP Server (Port 9002)
+- **FR-018**: System MUST provide MCP server for Kafka events
+- **FR-019**: System MUST expose tool to subscribe to topics
+- **FR-020**: System MUST expose tool to publish events
+- **FR-021**: System MUST deliver events within 1 second
+- **FR-022**: System MUST support multiple subscribers per topic
+- **FR-023**: System MUST handle subscription errors gracefully
 
-### NFR-3: Reliability
+#### Kubernetes Operations MCP Server (Port 9003)
+- **FR-024**: System MUST provide MCP server for Kubernetes operations
+- **FR-025**: System MUST expose tool to query pod status
+- **FR-026**: System MUST expose tool to query service endpoints
+- **FR-027**: System MUST expose tool to get pod logs
+- **FR-028**: System MUST authenticate with Kubernetes cluster
+- **FR-029**: System MUST return structured data (JSON)
 
-- Servers restart gracefully if they crash
-- Failed tool calls return error responses
-- Event subscribers reconnect automatically
-- Code execution timeouts don't crash server
+#### Token Efficiency
+- **FR-030**: MCP tool responses MUST be minimal (<500 tokens per session)
+- **FR-031**: System MUST NOT include unnecessary metadata in responses
+- **FR-032**: System MUST use efficient data structures (arrays, maps)
+- **FR-033**: System MUST paginate large result sets
 
-### NFR-4: Security
+#### MCP Protocol Compliance
+- **FR-034**: Servers MUST implement MCP protocol specification
+- **FR-035**: Servers MUST expose tool schemas for validation
+- **FR-036**: Servers MUST handle tool invocation requests
+- **FR-037**: Servers MUST return structured responses
+- **FR-038**: Servers MUST support JSON-RPC protocol
 
-- Database connections use credentials from secrets
-- Only authorized tools can write data
-- Code execution sandbox cannot escape
-- Kubernetes queries respect RBAC
+### Key Entities
 
-### NFR-5: Observability
-
-- Structured logging for all tool calls
-- Metrics for request count, latency, errors
-- Health check endpoints for all servers
+- **MCP Server**: A Model Context Protocol server exposing tools to AI agents
+- **MCP Tool**: A callable function exposed by MCP server (e.g., get_student_progress)
+- **Tool Call**: An AI agent's request to execute an MCP tool
+- **Sandbox**: Isolated execution environment for untrusted code
+- **Kafka Topic**: A named stream of events (learning.progress, code.submission, exercise.attempt, struggle.alert)
+- **Event Subscription**: A agent's registration to receive events from a Kafka topic
+- **Token Budget**: Maximum tokens for MCP server responses
 
 ---
 
-## Data Requirements
+## Success Criteria *(mandatory)*
 
-### MCP Tool Definitions
+### Measurable Outcomes
 
-Each server exposes tools with:
-- **name**: Unique tool identifier
-- **description**: What the tool does
-- **inputSchema**: JSON Schema for parameters
-- **outputSchema**: JSON Schema for response
-
-### Server Configuration
-
-| Server | Port | Transport | Tools |
-|--------|------|-----------|-------|
-| **Database** | 3001 | stdio, SSE | 5 tools (get_progress, get_submissions, get_exercise, get_conversation, update_progress) |
-| **Kafka** | 3002 | stdio, SSE | 4 tools (publish, subscribe, list_topics, get_stats) |
-| **K8s** | 3003 | stdio, SSE | 5 tools (list_pods, get_pod_status, get_logs, check_health, describe) |
-| **Code Execution** | 3004 | stdio, SSE | 2 tools (execute_code, validate_syntax) |
-
----
-
-## Out of Scope
-
-This phase does NOT include:
-- Backend service implementation (see Phase 4)
-- Frontend implementation (see Phase 5)
-- Database schema creation
-- Kafka topic creation
-- Kubernetes cluster setup
+- **SC-001**: All 4 MCP servers respond to health checks within 1 second
+- **SC-002**: AI agents can query student progress in real-time
+- **SC-003**: Code execution sandbox completes within 5 second timeout
+- **SC-004**: Kafka event subscription delivers events within 1 second
+- **SC-005**: Kubernetes operations queries return accurate status
+- **SC-006**: Token efficiency validated (<500 tokens per AI session)
+- **SC-007**: Zero manual intervention - autonomous deployment via skills
+- **SC-008**: Code sandbox prevents escape (no network, no filesystem)
+- **SC-009**: MCP tools handle errors gracefully (no crashes)
+- **SC-010**: Multiple agents can use MCP servers concurrently
 
 ---
 
 ## Assumptions
 
-1. PostgreSQL database is deployed and accessible
-2. Kafka is running with required topics
-3. Kubernetes cluster is operational
-4. Python 3.11+ is available for code execution
-5. Network policies allow MCP server communication
+1. Phase 3 is complete (Kafka and PostgreSQL deployed)
+2. Phase 4 is complete (backend services with data available)
+3. MCP protocol is documented and understood
+4. Python 3.10+ is available for MCP server implementation
+5. Kubernetes cluster is accessible
+6. mcp-code-execution skill exists and follows MCP Code Execution pattern
 
 ---
 
-## Constraints
+## Out of Scope
 
-1. MCP servers must follow MCP Code Execution pattern (script-based execution)
-2. Token efficiency is critical (<500 tokens per session)
-3. Code execution must be secure (no sandbox escape)
-4. Cross-agent compatibility (Claude Code and Goose)
-5. Servers deploy autonomously via Skills
+For Phase 6, the following are explicitly out of scope:
 
----
+- Direct AI agent integration (agent invokes MCP via standard protocol)
+- MCP client libraries (beyond basic HTTP implementation)
+- Advanced MCP features (beyond basic tools)
+- Performance optimization beyond token efficiency targets
+- MCP server authentication/authorization (basic implementation only)
+- Websocket-based streaming (HTTP long-polling acceptable)
+- MCP tool versioning and compatibility
 
-## Edge Cases
-
-1. **Database Connection Lost**: Return error, attempt reconnection, show cached data if available
-2. **Kafka Connection Lost**: Queue events, attempt reconnection, alert on data loss
-3. **Code Execution Timeout**: Kill process, return timeout error, log code for analysis
-4. **Kubernetes API Unavailable**: Return cached data if available, show error
-5. **Malformed Tool Input**: Return validation error with specific issue
-6. **Concurrent Code Execution**: Queue requests, execute serially or in parallel pools
-7. **Large Query Results**: Paginate results, return summary with count
-8. **Event Subscriber Overload**: Alert on high lag, suggest scaling
-
----
-
-## Dependencies
-
-### Internal Dependencies
-- Phase 3: Infrastructure (Kafka, PostgreSQL deployed)
-- Phase 4: Backend Services (API endpoints available)
-
-### External Dependencies
-- Python 3.11+ runtime
-- PostgreSQL client library
-- Kafka client library
-- Kubernetes client library
-
----
-
-## Risks and Mitigations
-
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Database query performance | Medium | Connection pooling, query optimization, result caching |
-| Kafka consumer lag | High | Alert on lag, suggest scaling, implement backpressure |
-| Code execution security | High | Container isolation, resource limits, no network |
-| Token efficiency | High | Script-based execution, minimal output, lazy loading |
-| MCP protocol version | Low | Version compatibility check, graceful degradation |
-
----
-
-## Glossary
-
-| Term | Definition |
-|------|------------|
-| **MCP** | Model Context Protocol - standard for AI agent data access |
-| **Tool** | Function exposed by MCP server for AI agents to call |
-| **Transport** | Communication method (stdio for local, SSE for remote) |
-| **Sandbox** | Isolated execution environment with restrictions |
-| **Subscription** | Connection to Kafka topic to receive events |
-
----
-
-## References
-
-- Hackathon3.md: Complete project requirements
-- Phase 4 spec: Backend service APIs
-- MCP Code Execution Pattern: Token optimization strategy
+These will be addressed in later phases or future enhancements.

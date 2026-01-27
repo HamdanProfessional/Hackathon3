@@ -1,0 +1,28 @@
+{
+  "id": "deployment/kubernetes",
+  "title": "Kubernetes Deployment",
+  "description": "Deploy LearnFlow to Kubernetes using Docker and Kubernetes manifests.",
+  "source": "@site/docs/deployment/kubernetes.md",
+  "sourceDirName": "deployment",
+  "slug": "/deployment/kubernetes",
+  "permalink": "/deployment/kubernetes",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/learnflow/docs/tree/main/docs/deployment/kubernetes.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "title": "Kubernetes Deployment",
+    "sidebar_position": 1
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "API Reference",
+    "permalink": "/api-reference"
+  },
+  "next": {
+    "title": "System Architecture",
+    "permalink": "/architecture-complete"
+  }
+}

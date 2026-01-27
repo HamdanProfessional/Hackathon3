@@ -43,6 +43,8 @@ metadata:
     app: mcp-k8s-server
     tier: mcp
 spec:
+  imagePullSecrets:
+  - name: docr-secret
   replicas: 1
   selector:
     matchLabels:
@@ -56,8 +58,8 @@ spec:
       serviceAccountName: mcp-k8s-server
       containers:
       - name: mcp-k8s-server
-        image: mcp-k8s-server:v5
-        imagePullPolicy: Never
+        image: registry.digitalocean.com/learnflow-registry/mcp-k8s-server:latest
+        imagePullPolicy: Always
         command: ["python", "main.py"]
         env:
         - name: DEFAULT_NAMESPACE

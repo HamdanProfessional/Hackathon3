@@ -9,10 +9,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from shared.models import HealthResponse, ChatRequest, ChatResponse, ConceptExplanation
+from shared.dapr_client import get_dapr_client, EventTopics
 
 
 SERVICE_NAME = "concepts-service"
-SERVICE_VERSION = "1.0.0"
+SERVICE_VERSION = "2.0.0"
 PORT = int(os.getenv("PORT", "8002"))
 
 app = FastAPI(title="LearnFlow Concepts Service", version=SERVICE_VERSION)
@@ -112,8 +113,23 @@ async def explain_concept(request: ChatRequest):
     level = "learning"
     explanation = CONCEPT_EXPLANATIONS.get(level, {}).get(detected_concept, CONCEPT_EXPLANATIONS["learning"]["variable"])
 
+    response_text = f"{explanation['explanation']}\n\nExamples:\n" + "\n".join(explanation['examples'])
+
+    # Publish learning progress event to Kafka
+    dapr = get_dapr_client()
+    await dapr.publish_event(
+        topic=EventTopics.LEARNING_PROGRESS,
+        data={
+            "student_id": str(request.student_id),
+            "event_type": "concept_learned",
+            "concept": detected_concept,
+            "mastery_level": level,
+            "timestamp": response_text,
+        },
+    )
+
     return ChatResponse(
-        response=f"{explanation['explanation']}\n\nExamples:\n" + "\n".join(explanation['examples']),
+        response=response_text,
         agent_type="concepts",
         confidence=0.9,
     )

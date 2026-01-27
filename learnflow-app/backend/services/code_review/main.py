@@ -12,10 +12,11 @@ from shared.models import (
     HealthResponse, ChatRequest, ChatResponse,
     CodeSubmission, CodeReviewResult
 )
+from shared.dapr_client import get_dapr_client, EventTopics
 
 
 SERVICE_NAME = "code-review-service"
-SERVICE_VERSION = "1.0.0"
+SERVICE_VERSION = "2.0.0"
 PORT = int(os.getenv("PORT", "8006"))
 
 app = FastAPI(title="LearnFlow Code Review Service", version=SERVICE_VERSION)
@@ -101,8 +102,23 @@ async def health():
 
 @app.post("/review", response_model=CodeReviewResult)
 async def review_code(submission: CodeSubmission):
-    """Review code submission."""
+    """Review code submission and publish event."""
     correct, feedback, style_issues, efficiency_notes, hints, quality_score = analyze_code_quality(submission.code)
+
+    # Publish code submission event to Kafka
+    dapr = get_dapr_client()
+    await dapr.publish_event(
+        topic=EventTopics.CODE_SUBMISSION,
+        data={
+            "student_id": str(submission.student_id),
+            "exercise_id": submission.exercise_id,
+            "language": submission.language,
+            "correct": correct,
+            "quality_score": quality_score,
+            "style_issues_count": len(style_issues),
+            "efficiency_notes_count": len(efficiency_notes),
+        },
+    )
 
     return CodeReviewResult(
         correct=correct,

@@ -19,12 +19,14 @@ from shared.models import (
     HealthResponse,
     TriageResult,
     ChatRequest,
+    ChatResponse,
 )
+from shared.dapr_client import get_dapr_client, ServiceAppIds
 
 
 # Environment
 SERVICE_NAME = "triage-service"
-SERVICE_VERSION = "1.0.0"
+SERVICE_VERSION = "2.0.0"
 PORT = int(os.getenv("PORT", "8001"))
 
 
@@ -148,17 +150,41 @@ async def triage_query(request: ChatRequest):
 
 @app.post("/chat")
 async def chat(request: ChatRequest):
-    """Process chat through triage and return response."""
+    """Process chat through triage and invoke appropriate service via Dapr."""
     # Triaging the query
     triage_result = await triage_query(request)
 
-    # In a real implementation, this would call the appropriate service
-    # For now, return the triage result
-    return {
-        "triage": triage_result,
-        "message": f"Your question has been routed to the {triage_result.agent_type} agent.",
-        "next_step": f"Contact {triage_result.agent_type}-service for actual response"
+    # Map agent types to Dapr app IDs and service endpoints
+    service_routing = {
+        "concepts": (ServiceAppIds.CONCEPTS, "/chat"),
+        "debug": (ServiceAppIds.DEBUG, "/chat"),
+        "exercise": (ServiceAppIds.EXERCISE, "/chat"),
+        "progress": (ServiceAppIds.PROGRESS, "/chat"),
+        "code_review": (ServiceAppIds.CODE_REVIEW, "/chat"),
     }
+
+    app_id, method = service_routing.get(triage_result.agent_type, (ServiceAppIds.CONCEPTS, "/chat"))
+
+    # Invoke the target service via Dapr
+    dapr = get_dapr_client()
+    service_response = await dapr.invoke_service(
+        app_id=app_id,
+        method=method,
+        data=request.model_dump(),
+        http_verb="POST",
+    )
+
+    if service_response:
+        return {
+            "triage": triage_result.model_dump(),
+            "service_response": service_response,
+        }
+    else:
+        # Fallback if service invocation fails
+        return {
+            "triage": triage_result.model_dump(),
+            "message": f"Unable to reach {triage_result.agent_type} service. Please try again.",
+        }
 
 
 if __name__ == "__main__":

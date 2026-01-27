@@ -1,115 +1,85 @@
 {
-  "/__docusaurus/debug-5ff": {
-    "__comp": "__comp---theme-debug-config-23-a-2ff",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/config-5ba": {
-    "__comp": "__comp---theme-debug-config-23-a-2ff",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/content-a2b": {
-    "__comp": "__comp---theme-debug-contentba-8-ce7",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    },
-    "__props": "__props---docusaurus-debug-content-3-c-0-be2"
-  },
-  "/__docusaurus/debug/globalData-c3c": {
-    "__comp": "__comp---theme-debug-global-dataede-0fa",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/metadata-156": {
-    "__comp": "__comp---theme-debug-site-metadata-68-e-3d4",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/registry-88c": {
-    "__comp": "__comp---theme-debug-registry-679-501",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/routes-000": {
-    "__comp": "__comp---theme-debug-routes-946-699",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
   "/search-822": {
-    "__comp": "__comp---theme-search-page-1-a-4-d6f",
+    "__comp": "1a4e3797",
     "__context": {
-      "plugin": "plugin---search-138-688"
+      "plugin": "138e0e15"
     }
   },
-  "/-070": {
-    "__comp": "__comp---site-src-pages-index-jsx-9-dd-cb1",
+  "/-9cf": {
+    "__comp": "5e95c892",
     "__context": {
-      "plugin": "plugin---a-74-9d6"
-    },
-    "config": "config---5-e-9-4f3"
-  },
-  "/-aee": {
-    "__comp": "__comp---theme-docs-root-5-e-9-0b6",
-    "__context": {
-      "plugin": "plugin---aba-d70"
+      "plugin": "aba21aa0"
     }
   },
-  "/-09f": {
-    "__comp": "__comp---theme-doc-version-roota-7-b-5de",
-    "__props": "__props---22-d-307"
+  "/-057": {
+    "__comp": "a7bd4aaa",
+    "__props": "22dd74f7"
   },
-  "/-e26": {
-    "__comp": "__comp---theme-doc-roota-94-67a"
+  "/-7fc": {
+    "__comp": "a94703ab"
+  },
+  "/api-reference-e3c": {
+    "__comp": "17896441",
+    "content": "964ae018"
   },
   "/architecture-complete-d27": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---architecture-completef-1-f-59f"
+    "__comp": "17896441",
+    "content": "f1f33e32"
+  },
+  "/deployment/kubernetes-11d": {
+    "__comp": "17896441",
+    "content": "04da809a"
+  },
+  "/development/contributing-bf5": {
+    "__comp": "17896441",
+    "content": "9463d0c6"
+  },
+  "/getting-started/installation-4f1": {
+    "__comp": "17896441",
+    "content": "54f44165"
+  },
+  "/getting-started/quickstart-6cd": {
+    "__comp": "17896441",
+    "content": "fbd7a87c"
   },
   "/kafka-client-complete-cdc": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---kafka-client-complete-25-f-b0a"
+    "__comp": "17896441",
+    "content": "25f07d1d"
   },
   "/kafka-redpanda-fix-summary-fc3": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---kafka-redpanda-fix-summary-5-fe-961"
+    "__comp": "17896441",
+    "content": "5fefbe3a"
   },
   "/overview-200": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---overview-1-db-0f1"
+    "__comp": "17896441",
+    "content": "1db64337"
   },
   "/phase-3-complete-bb8": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---phase-3-complete-652-7c6"
+    "__comp": "17896441",
+    "content": "6528382b"
   },
-  "/phase-4-complete-c90": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---phase-4-complete-25-a-81e"
+  "/phase-4-complete-255": {
+    "__comp": "17896441",
+    "content": "25a4335a"
   },
-  "/phase-4-continued-summary-7b4": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---phase-4-continued-summary-1-a-0-4d8"
+  "/phase-4-continued-summary-d70": {
+    "__comp": "17896441",
+    "content": "1a0c3b9b"
   },
   "/phase-4-final-complete-194": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---phase-4-final-complete-4-c-8-76c"
+    "__comp": "17896441",
+    "content": "4c8f1bd9"
   },
   "/SKILLS_CATALOG-ce1": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---skills-catalog-456-c4d"
+    "__comp": "17896441",
+    "content": "456152e8"
   },
-  "/skills-autonomy-demo-f5a": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---skills-autonomy-demod-8-a-3a3"
+  "/skills-autonomy-demo-98a": {
+    "__comp": "17896441",
+    "content": "d8a9b4a2"
   },
   "/-e98": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---0-e-3-279"
+    "__comp": "17896441",
+    "content": "0e384e19"
   }
 }

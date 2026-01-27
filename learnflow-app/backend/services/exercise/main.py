@@ -13,13 +13,14 @@ from shared.models import (
     HealthResponse, ChatRequest, ChatResponse,
     ExerciseRequest, Exercise, ExerciseSubmission, ExerciseResult
 )
+from shared.dapr_client import get_dapr_client, EventTopics
 
 # MCP Code Execution Service URL
 CODE_EXECUTION_MCP_URL = os.getenv("CODE_EXECUTION_MCP_URL", "http://localhost:9000")
 
 
 SERVICE_NAME = "exercise-service"
-SERVICE_VERSION = "1.0.0"
+SERVICE_VERSION = "2.0.0"
 PORT = int(os.getenv("PORT", "8004"))
 
 app = FastAPI(title="LearnFlow Exercise Service", version=SERVICE_VERSION)
@@ -83,7 +84,7 @@ async def generate_exercise(request: ExerciseRequest):
 
 @app.post("/submit", response_model=ExerciseResult)
 async def submit_exercise(submission: ExerciseSubmission):
-    """Grade exercise submission using MCP Code Execution."""
+    """Grade exercise submission using MCP Code Execution and publish event."""
     exercise = EXERCISES.get(submission.exercise_id // 10, {}).get(submission.exercise_id)
 
     if not exercise:
@@ -94,6 +95,9 @@ async def submit_exercise(submission: ExerciseSubmission):
         )
 
     # Use MCP Code Execution to validate and run the code
+    passed = False
+    output = ""
+    error = ""
     try:
         async with httpx.AsyncClient() as client:
             # First check syntax
@@ -138,22 +142,29 @@ async def submit_exercise(submission: ExerciseSubmission):
                                     test_passed = False
 
                     passed = passed and test_passed and (error is None or error == "")
-
-                    return ExerciseResult(
-                        passed=passed,
-                        feedback=output if passed else (error or "Code didn't produce expected output"),
-                        test_results=[{"output": output, "error": error}],
-                        hints=exercise.hints if not passed else [],
-                    )
     except Exception as e:
         # Fallback to simple validation if MCP is unavailable
         code = submission.code.strip()
         passed = len(code) > 10 and "print" in code
 
+    # Publish exercise attempt event to Kafka
+    dapr = get_dapr_client()
+    await dapr.publish_event(
+        topic=EventTopics.EXERCISE_ATTEMPT,
+        data={
+            "student_id": str(submission.student_id),
+            "exercise_id": submission.exercise_id,
+            "passed": passed,
+            "module_id": exercise.module_id,
+            "topic": exercise.topic,
+            "difficulty": exercise.difficulty,
+        },
+    )
+
     return ExerciseResult(
         passed=passed,
-        feedback="Great job!" if passed else "Keep trying - check the instructions",
-        test_results=[{"passed": passed}],
+        feedback=output if passed else (error or "Code didn't produce expected output"),
+        test_results=[{"output": output, "error": error}],
         hints=exercise.hints if not passed else [],
     )
 

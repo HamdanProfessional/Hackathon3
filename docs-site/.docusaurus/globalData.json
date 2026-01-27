@@ -11,8 +11,33 @@
           "mainDocId": "intro",
           "docs": [
             {
+              "id": "api-reference",
+              "path": "/api-reference",
+              "sidebar": "mainSidebar"
+            },
+            {
               "id": "architecture-complete",
               "path": "/architecture-complete",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "deployment/kubernetes",
+              "path": "/deployment/kubernetes",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "development/contributing",
+              "path": "/development/contributing",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "getting-started/installation",
+              "path": "/getting-started/installation",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "getting-started/quickstart",
+              "path": "/getting-started/quickstart",
               "sidebar": "mainSidebar"
             },
             {
@@ -42,11 +67,13 @@
             },
             {
               "id": "phase-4-complete",
-              "path": "/phase-4-complete"
+              "path": "/phase-4-complete",
+              "sidebar": "mainSidebar"
             },
             {
               "id": "phase-4-continued-summary",
-              "path": "/phase-4-continued-summary"
+              "path": "/phase-4-continued-summary",
+              "sidebar": "mainSidebar"
             },
             {
               "id": "phase-4-final-complete",
@@ -60,7 +87,8 @@
             },
             {
               "id": "skills-autonomy-demo",
-              "path": "/skills-autonomy-demo"
+              "path": "/skills-autonomy-demo",
+              "sidebar": "mainSidebar"
             }
           ],
           "draftIds": [],

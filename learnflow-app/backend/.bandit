@@ -1,0 +1,5 @@
+[bandit]
+# Bandit configuration for Python security linting
+exclude_dirs = ['/tests', '/test']
+skips = ['B101']  # Skip assert_used warning for production code
+assert_used = false

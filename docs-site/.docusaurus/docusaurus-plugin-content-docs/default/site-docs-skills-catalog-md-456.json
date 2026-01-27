@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "mainSidebar",
   "previous": {
-    "title": "Phase 4: Backend Services",
+    "title": "Phase 4: Backend Services (Final)",
     "permalink": "/phase-4-final-complete"
   },
   "next": {
-    "title": "Kafka Client Setup",
-    "permalink": "/kafka-client-complete"
+    "title": "Skills Autonomy Demo",
+    "permalink": "/skills-autonomy-demo"
   }
 }

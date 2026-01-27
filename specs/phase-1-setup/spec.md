@@ -1,393 +1,164 @@
----
-title: Phase 1 - Setup
-status: Draft
-category: Infrastructure
-priority: P0
----
+# Feature Specification: Phase 1 - Environment Setup and Repository Creation
 
-# Phase 1: Environment Setup and Repository Creation
-
-## Overview
-
-Establish the development environment and repository structure for the LearnFlow hackathon project. This phase ensures all required tools are installed, configured, and verified before proceeding with Skills and application development.
-
-## Context
-
-**Hackathon Goal**: Build LearnFlow, an AI-powered Python learning platform using reusable Skills with MCP Code Execution pattern.
-
-**Two Repositories Required**:
-1. `skills-library` - Contains reusable Skills for Claude Code and Goose
-2. `learnflow-app` - The actual LearnFlow application built using those Skills
-
-**Critical Success Factor**: Phase 1 is complete when `kubectl cluster-info` returns valid cluster information.
+**Feature Branch**: `1-setup`
+**Created**: 2025-01-26
+**Status**: Draft
+**Input**: Environment setup for LearnFlow hackathon - install tools, create repositories, initialize Skills following MCP Code Execution pattern
 
 ---
 
-## Acceptance Criteria
+## User Scenarios & Testing *(mandatory)*
 
-### Must Have (P0)
-- [ ] Docker installed and running (`docker --version` succeeds)
-- [ ] Minikube installed with 4 CPUs, 8GB RAM allocated
-- [ ] Kubernetes cluster running (`kubectl cluster-info` returns valid output)
-- [ ] Helm installed (`helm version` succeeds)
-- [ ] Claude Code installed and authenticated (`claude --version` succeeds)
-- [ ] Goose installed (`goose --version` succeeds)
-- [ ] `skills-library` repository created with proper structure
-- [ ] `learnflow-app` repository created (empty placeholder)
-- [ ] All 7 required Hackathon 3 Skills created with MCP Code Execution pattern
-- [ ] Verification script passes all checks
+### User Story 1 - Developer Sets Up Development Environment (Priority: P1)
 
-### Should Have (P1)
-- [ ] Minikube addons enabled (ingress, metrics-server, registry)
-- [ ] AGENTS.md generated using `agents-md-gen` skill
-- [ ] Git repositories initialized with proper .gitignore
-- [ ] README.md created in both repositories
+As a developer joining the LearnFlow hackathon, I need to set up my local development environment with all required tools so that I can begin building Skills and the application.
 
-### Nice to Have (P2)
-- [ ] IDE configuration files (VS Code, etc.)
-- [ ] Pre-commit hooks installed
-- [ ] Development documentation in `docs/` directory
+**Why this priority**: This is the foundation - without tools installed, no development can proceed. All other work depends on this.
+
+**Independent Test**: Developer can run `kubectl cluster-info` and receive valid cluster information, confirming all tools are installed and working.
+
+**Acceptance Scenarios**:
+
+1. **Given** a developer machine, **When** developer runs `docker --version`, **Then** Docker version is displayed
+2. **Given** Docker is installed, **When** developer runs `minikube start --cpus=4 --memory=8192`, **Then** Minikube cluster starts successfully
+3. **Given** Minikube is running, **When** developer runs `kubectl cluster-info`, **Then** valid cluster information is returned
+4. **Given** cluster is running, **When** developer runs `helm version`, **Then** Helm version is displayed
+5. **Given** tools are installed, **When** developer runs verification script, **Then** all checks pass
 
 ---
 
-## Functional Requirements
+### User Story 2 - Developer Creates Project Repositories (Priority: P2)
 
-### FR1: Prerequisite Tools Installation
+As a developer, I need to create two Git repositories with proper structure so that I can organize Skills and application code separately.
 
-**Description**: Install all required development tools for cloud-native development.
+**Why this priority**: Required before any Skills or application code can be committed. Can be done in parallel with tool installation.
 
-**Tools Required**:
+**Independent Test**: Both `skills-library/` and `learnflow-app/` directories exist with `.git/` folders, README files, and proper directory structure.
 
-| Tool | Version | Purpose |
-|------|---------|---------|
-| Docker | Latest | Container runtime |
-| Minikube | Latest | Local Kubernetes cluster |
-| kubectl | Latest | Kubernetes CLI |
-| Helm | v3+ | Kubernetes package manager |
-| Claude Code | Latest | AI coding agent |
-| Goose | Latest | Open-source AI coding agent |
+**Acceptance Scenarios**:
 
-**Platform Notes**:
-- **Windows**: All development MUST use WSL2
-- **macOS**: Use Homebrew for installation
-- **Linux**: Use native package managers or direct downloads
-
-**Verification**:
-```bash
-docker --version
-minikube status
-kubectl cluster-info
-helm version
-claude --version
-goose --version
-```
-
-### FR2: Minikube Cluster Configuration
-
-**Description**: Start a local Kubernetes cluster with sufficient resources for Kafka, PostgreSQL, and multiple microservices.
-
-**Configuration**:
-- CPUs: 4
-- Memory: 8192 MB (8 GB)
-- Driver: docker
-- Addons: ingress, metrics-server, registry
-
-**Startup Command**:
-```bash
-minikube start --cpus=4 --memory=8192 --driver=docker
-minikube addons enable ingress
-minikube addons enable metrics-server
-```
-
-**Success Criteria**: `kubectl cluster-info` returns:
-```
-Kubernetes control plane is running at https://127.0.0.1:xxxxx
-CoreDNS is running at https://127.0.0.1:xxxxx/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
-```
-
-### FR3: Repository Structure Creation
-
-**Description**: Create two Git repositories with proper directory structure.
-
-#### Repository 1: skills-library
-```
-skills-library/
-├── .git/
-├── .gitignore
-├── README.md
-├── CLAUDE.md              # Project constitution
-├── requirements.md        # Hackathon requirements
-├── AGENTS.md              # Generated by agents-md-gen
-└── .claude/
-    ├── agents/           # Agent definitions (existing)
-    ├── commands/         # Spec-Kit Plus commands (existing)
-    └── skills/           # Reusable Skills (MCP pattern)
-        ├── agents-md-gen/
-        │   ├── SKILL.md
-        │   ├── REFERENCE.md
-        │   └── scripts/
-        ├── kafka-k8s-setup/
-        │   ├── SKILL.md
-        │   ├── REFERENCE.md
-        │   └── scripts/
-        ├── postgres-k8s-setup/
-        ├── fastapi-dapr-agent/
-        ├── mcp-code-execution/
-        ├── nextjs-k8s-deploy/
-        ├── docusaurus-deploy/
-        └── [existing skills...]
-```
-
-#### Repository 2: learnflow-app
-```
-learnflow-app/
-├── .git/
-├── .gitignore
-├── README.md
-├── CLAUDE.md
-└── [Placeholder for future development]
-```
-
-**Git Initialization**:
-```bash
-cd skills-library
-git init
-git add .
-git commit -m "feat: initial commit - Phase 1 setup"
-
-cd ../learnflow-app
-git init
-git add .
-git commit -m "feat: initial commit - Phase 1 setup"
-```
-
-### FR4: Skills Validation
-
-**Description**: Ensure all 7 required Hackathon 3 Skills are created and follow MCP Code Execution pattern.
-
-**Required Skills**:
-
-| Skill | SKILL.md | REFERENCE.md | scripts/ | Token Target |
-|-------|----------|--------------|----------|--------------|
-| agents-md-gen | ✓ | ✓ | ✓ | ~100 |
-| kafka-k8s-setup | ✓ | ✓ | ✓ | ~100 |
-| postgres-k8s-setup | ✓ | ✓ | ✓ | ~100 |
-| fastapi-dapr-agent | ✓ | ✓ | ✓ | ~100 |
-| mcp-code-execution | ✓ | ✓ | ✓ | ~100 |
-| nextjs-k8s-deploy | ✓ | ✓ | ✓ | ~100 |
-| docusaurus-deploy | ✓ | ✓ | ✓ | ~100 |
-
-**Validation Command** (for each skill):
-```bash
-# Check SKILL.md size
-wc -c .claude/skills/<skill-name>/SKILL.md
-# Should be ~400-500 characters (~100 tokens)
-
-# Check structure
-ls .claude/skills/<skill-name>/
-# Should show: SKILL.md, REFERENCE.md, scripts/
-
-# Check scripts exist
-ls .claude/skills/<skill-name>/scripts/
-```
+1. **Given** no repositories exist, **When** developer creates `skills-library` repository, **Then** it contains `.claude/` directory with agents, commands, and skills subdirectories
+2. **Given** skills-library exists, **When** developer creates `learnflow-app` repository, **Then** it contains CLAUDE.md and README.md
+3. **Given** both repositories exist, **When** developer runs `git status` in either, **Then** Git reports repository status
 
 ---
 
-## Technical Specifications
+### User Story 3 - Developer Validates Skills Follow MCP Pattern (Priority: P3)
 
-### TS1: MCP Code Execution Pattern
+As a developer, I need to verify that all Skills follow the MCP Code Execution pattern so that token efficiency is maintained.
 
-**Pattern**: All Skills MUST follow the MCP Code Execution pattern for token efficiency.
+**Why this priority**: Important for quality but can be validated after Skills are created. Lower priority than having tools and repos.
 
-**Structure**:
-```
-.claude/skills/<skill-name>/
-├── SKILL.md              # ~100 tokens - instructions only
-├── REFERENCE.md          # Deep docs - loaded on-demand
-└── scripts/              # Executed, never loaded into context
-    ├── deploy.sh         # Shell scripts
-    ├── verify.py         # Python scripts
-    └── generate.py       # Generator scripts
-```
+**Independent Test**: Running validation script confirms each Skill has SKILL.md (~100 tokens), REFERENCE.md, and scripts/ directory.
 
-**Token Budget**:
-- SKILL.md: ~100 tokens (400-500 characters)
-- REFERENCE.md: 0 tokens (loaded only when referenced)
-- scripts/*: 0 tokens (executed, not loaded)
-- Output: Minimal tokens (result only)
+**Acceptance Scenarios**:
 
-### TS2: Cross-Agent Compatibility
-
-**Requirement**: All Skills MUST work with both Claude Code and Goose.
-
-**Compatibility Checks**:
-1. SKILL.md frontmatter is valid YAML
-2. Instructions are clear and actionable
-3. No Claude-specific or Goose-specific syntax
-4. Scripts use standard shebang (`#!/bin/bash`, `#!/usr/bin/env python3`)
-
-### TS3: Platform-Specific Requirements
-
-**Windows (WSL2)**:
-```bash
-# Install in WSL2
-sudo apt-get update
-sudo apt-get install -y docker.io docker-compose
-sudo usermod -aG docker $USER
-
-# Minikube with Docker driver
-minikube start --cpus=4 --memory=8192 --driver=docker
-```
-
-**macOS**:
-```bash
-# Use Homebrew
-brew install --cask docker
-brew install minikube helm
-brew install --cask claude-code
-brew install --cask block-goose
-```
-
-**Linux**:
-```bash
-# Native packages
-sudo apt-get install docker.io docker-compose
-curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-sudo install minikube-linux-amd64 /usr/local/bin/minikube
-```
+1. **Given** a Skill directory, **When** developer checks SKILL.md size, **Then** it is ~400-500 characters (~100 tokens)
+2. **Given** a Skill directory, **When** developer lists files, **Then** SKILL.md, REFERENCE.md, and scripts/ are present
+3. **Given** scripts/ directory, **When** developer lists scripts, **Then** at least deploy.sh or deploy.ps1 exists
 
 ---
 
-## Testing Strategy
+### Edge Cases
 
-### Test 1: Prerequisite Verification
-```bash
-#!/bin/bash
-# test-prerequisites.sh
-echo "Testing Phase 1 prerequisites..."
+- What happens when Docker Desktop is not running?
+- How does system handle Minikube running out of resources (insufficient RAM/CPU)?
+- What happens when WSL2 is not installed on Windows?
+- How does system handle network restrictions preventing tool downloads?
+- What happens when developer has incompatible versions of tools installed?
 
-docker --version || exit 1
-minikube status | grep Running || exit 1
-kubectl cluster-info || exit 1
-helm version || exit 1
-claude --version || exit 1
-goose --version || exit 1
+---
 
-echo "✓ All prerequisites verified"
-```
+## Requirements *(mandatory)*
 
-### Test 2: Repository Structure
-```bash
-#!/bin/bash
-# test-structure.sh
-echo "Testing repository structure..."
+### Functional Requirements
 
-[ -d "skills-library/.claude/skills" ] || exit 1
-[ -d "learnflow-app" ] || exit 1
+#### Environment Setup
+- **FR-001**: System MUST support Docker container runtime
+- **FR-002**: System MUST support Minikube for local Kubernetes cluster
+- **FR-003**: System MUST support kubectl for Kubernetes management
+- **FR-004**: System MUST support Helm v3+ for package management
+- **FR-005**: System MUST support Claude Code AI agent
+- **FR-006**: System MUST support Goose AI agent
+- **FR-007**: On Windows, development MUST use WSL2
 
-# Check all 7 required skills exist
-for skill in agents-md-gen kafka-k8s-setup postgres-k8s-setup fastapi-dapr-agent mcp-code-execution nextjs-k8s-deploy docusaurus-deploy; do
-    [ -f "skills-library/.claude/skills/$skill/SKILL.md" ] || exit 1
-    [ -f "skills-library/.claude/skills/$skill/REFERENCE.md" ] || exit 1
-    [ -d "skills-library/.claude/skills/$skill/scripts" ] || exit 1
-done
+#### Cluster Configuration
+- **FR-008**: Minikube cluster MUST allocate minimum 4 CPUs
+- **FR-009**: Minikube cluster MUST allocate minimum 8GB RAM
+- **FR-010**: Cluster MUST enable ingress addon
+- **FR-011**: Cluster MUST enable metrics-server addon
+- **FR-012**: Cluster health MUST be verifiable via `kubectl cluster-info`
 
-echo "✓ Repository structure valid"
-```
+#### Repository Structure
+- **FR-013**: Developer MUST create `skills-library` repository
+- **FR-014**: Developer MUST create `learnflow-app` repository
+- **FR-015**: `skills-library` MUST contain `.claude/skills/` directory
+- **FR-016**: `skills-library` MUST contain `.claude/agents/` directory
+- **FR-017**: `skills-library` MUST contain `.claude/commands/` directory
+- **FR-018**: Both repositories MUST be initialized with Git
+- **FR-019**: Both repositories MUST contain README.md
+- **FR-020**: Both repositories MUST contain CLAUDE.md
 
-### Test 3: Skill Token Efficiency
-```bash
-#!/bin/bash
-# test-tokens.sh
-echo "Testing skill token efficiency..."
+#### Skills Validation
+- **FR-021**: Each Skill MUST contain SKILL.md file
+- **FR-022**: Each Skill MUST contain REFERENCE.md file
+- **FR-023**: Each Skill MUST contain scripts/ directory
+- **FR-024**: SKILL.md MUST be approximately 100 tokens (400-500 characters)
+- **FR-025**: Skills MUST follow consistent directory structure
 
-for skill_dir in skills-library/.claude/skills/*; do
-    if [ -f "$skill_dir/SKILL.md" ]; then
-        size=$(wc -c < "$skill_dir/SKILL.md")
-        tokens=$((size / 4))
+#### Verification
+- **FR-026**: System MUST provide verification script for tool installation
+- **FR-027**: System MUST provide verification script for repository structure
+- **FR-028**: System MUST provide verification script for Skills token efficiency
+- **FR-029**: Verification scripts MUST exit with error code on failure
+- **FR-030**: Verification scripts MUST output pass/fail for each check
 
-        if [ $tokens -gt 200 ]; then
-            echo "⚠ Warning: $skill_dir/SKILL.md is ~$tokens tokens (target: ~100)"
-        else
-            echo "✓ $(basename $skill_dir): ~$tokens tokens"
-        fi
-    fi
-done
-```
+### Key Entities
 
-### Test 4: Cluster Connectivity
-```bash
-#!/bin/bash
-# test-cluster.sh
-echo "Testing Kubernetes cluster..."
+- **Repository**: A Git repository containing Skills or application code
+- **Skill**: A reusable AI agent capability following MCP Code Execution pattern with SKILL.md, REFERENCE.md, and scripts/
+- **Kubernetes Cluster**: A Minikube-deployed cluster with configurable resources
+- **Verification Script**: A shell script that validates setup completeness
+- **AI Agent**: An AI coding assistant (Claude Code or Goose) that can execute Skills
 
-kubectl cluster-info || exit 1
-kubectl get nodes || exit 1
-kubectl get pods -n kube-system || exit 1
+---
 
-echo "✓ Kubernetes cluster is healthy"
-```
+## Success Criteria *(mandatory)*
+
+### Measurable Outcomes
+
+- **SC-001**: Developer completes full environment setup in under 30 minutes
+- **SC-002**: All verification scripts pass with 100% success rate
+- **SC-003**: Minikube cluster starts and responds to `kubectl cluster-info` in under 2 minutes
+- **SC-004**: All Skills' SKILL.md files are under 150 tokens (target: ~100 tokens)
+- **SC-005**: Developer can successfully run any Skill from `skills-library` repository
+- **SC-006**: Both repositories pass Git validation (proper .gitignore, committed files)
+- **SC-007**: AGENTS.md is generated and contains all agent definitions
+- **SC-008**: Setup is repeatable - another developer can follow documentation and achieve same results
+
+---
+
+## Assumptions
+
+1. Developer has administrator/sudo access on their machine
+2. Developer has internet connection for downloading tools
+3. Developer has at least 10GB free disk space for Docker images
+4. Developer's machine supports virtualization (VT-x/AMD-V)
+5. Developer is comfortable with command-line interface
+6. GitHub or similar Git hosting is available for repository storage
 
 ---
 
 ## Out of Scope
 
 For Phase 1, the following are explicitly out of scope:
-- Deploying any infrastructure (Kafka, PostgreSQL)
-- Writing application code
+
+- Deploying any infrastructure (Kafka, PostgreSQL, applications)
+- Writing application code for LearnFlow
 - Creating additional Skills beyond the required 7
-- Cloud deployment (Azure, GKE, AKS)
-- CI/CD pipeline setup
-- Testing Skills with actual AI agents
+- Cloud deployment setup (Azure, GKE, AKS credentials)
+- CI/CD pipeline configuration
+- Testing Skills with actual AI agents (validation only)
+- IDE configuration (VS Code settings, extensions)
 
 These will be addressed in later phases.
-
----
-
-## Dependencies
-
-### External Dependencies
-- Internet connection for downloading tools
-- Sufficient disk space (10+ GB for Docker images)
-- Hardware capable of running Minikube (4+ CPUs, 8+ GB RAM)
-
-### Phase Dependencies
-- None (Phase 1 is the foundation)
-
----
-
-## Definition of Done
-
-Phase 1 is complete when:
-1. ✓ All prerequisite tools are installed and verified
-2. ✓ Minikube cluster is running and accessible
-3. ✓ Both Git repositories are created and initialized
-4. ✓ All 7 required Skills are created with MCP pattern
-5. ✓ AGENTS.md is generated
-6. ✓ All verification tests pass
-7. ✓ `kubectl cluster-info` returns valid cluster information
-
----
-
-## Rollback Plan
-
-If issues occur during Phase 1:
-
-| Issue | Rollback Action |
-|-------|-----------------|
-| Minikube won't start | `minikube delete && minikube start --driver=docker` |
-| Docker issues | Restart Docker Desktop; verify group membership |
-| Permission errors | `sudo usermod -aG docker $USER` (logout/login required) |
-| Cluster corruption | `minikube delete` and recreate |
-| Git issues | Delete `.git` directory and reinitialize |
-
----
-
-## References
-
-- [Minikube Documentation](https://minikube.sigs.k8s.io/docs/)
-- [Kubernetes Documentation](https://kubernetes.io/docs/)
-- [Helm Documentation](https://helm.sh/docs/)
-- [Claude Code Documentation](https://code.claude.com/docs/en/skills)
-- [Goose Documentation](https://block.github.io/goose/)
-- [MCP Code Execution Pattern](https://www.anthropic.com/engineering/code-execution-with-mcp)

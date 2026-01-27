@@ -1,6 +1,7 @@
 """Progress Service - Tracks student mastery and learning progress.
 
 Calculates mastery scores and tracks learning streaks.
+Subscribes to exercise attempts and learning progress events.
 """
 
 import os
@@ -12,10 +13,11 @@ from shared.models import (
     HealthResponse, ChatRequest, ChatResponse,
     ProgressData, MasteryLevel, ModuleProgress
 )
+from shared.dapr_client import get_dapr_client
 
 
 SERVICE_NAME = "progress-service"
-SERVICE_VERSION = "1.0.0"
+SERVICE_VERSION = "2.0.0"
 PORT = int(os.getenv("PORT", "8005"))
 
 app = FastAPI(title="LearnFlow Progress Service", version=SERVICE_VERSION)
@@ -93,6 +95,67 @@ async def progress_chat(request: ChatRequest):
     response += f"Streak: {student_progress.get(str(request.student_id), {}).get('streak_days', 1)} days"
 
     return ChatResponse(response=response, agent_type="progress", confidence=1.0)
+
+
+@app.post("/events")
+async def handle_events(event_data: dict):
+    """Handle events from Dapr pub/sub (exercise.attempt, learning.progress).
+
+    This endpoint is called by Dapr when events are published to Kafka topics.
+    """
+    event_type = event_data.get("event_type", event_data.get("type", "unknown"))
+
+    if event_type == "exercise_attempt":
+        # Update progress based on exercise completion
+        student_id = event_data.get("student_id")
+        module_id = event_data.get("module_id", 1)
+        passed = event_data.get("passed", False)
+
+        if passed:
+            score_delta = 5.0
+        else:
+            score_delta = 1.0  # Partial credit for attempt
+
+        await update_progress(student_id, module_id, score_delta)
+
+    elif event_type == "concept_learned":
+        # Update progress based on concept learning
+        student_id = event_data.get("student_id")
+        module_id = 1  # Default to basics for concepts
+        score_delta = 2.0
+
+        await update_progress(student_id, module_id, score_delta)
+
+    return {"status": "processed"}
+
+
+# Dapr subscription endpoint (alternative to /events)
+# Dapr can call this when events arrive on subscribed topics
+@app.post("/exercise-attempt")
+async def handle_exercise_attempt(event_data: dict):
+    """Handle exercise attempt events from Dapr pub/sub."""
+    student_id = event_data.get("student_id")
+    module_id = event_data.get("module_id", 1)
+    passed = event_data.get("passed", False)
+
+    if passed:
+        score_delta = 5.0
+    else:
+        score_delta = 1.0  # Partial credit for attempt
+
+    await update_progress(student_id, module_id, score_delta)
+    return {"status": "processed"}
+
+
+@app.post("/learning-progress")
+async def handle_learning_progress(event_data: dict):
+    """Handle learning progress events from Dapr pub/sub."""
+    student_id = event_data.get("student_id")
+    module_id = 1  # Default to basics for concepts
+    score_delta = 2.0
+
+    await update_progress(student_id, module_id, score_delta)
+    return {"status": "processed"}
 
 
 if __name__ == "__main__":

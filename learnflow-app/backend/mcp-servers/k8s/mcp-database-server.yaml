@@ -9,6 +9,8 @@ metadata:
     app: mcp-database-server
     tier: mcp
 spec:
+  imagePullSecrets:
+  - name: docr-secret
   replicas: 1
   selector:
     matchLabels:
@@ -21,8 +23,8 @@ spec:
     spec:
       containers:
       - name: mcp-database-server
-        image: mcp-database-server:v5
-        imagePullPolicy: Never
+        image: registry.digitalocean.com/learnflow-registry/mcp-database-server:latest
+        imagePullPolicy: Always
         command: ["python", "main.py"]
         env:
         - name: DB_HOST

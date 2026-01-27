@@ -20,6 +20,15 @@ spec:
         {{- with $.Values.backend.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        # Dapr sidecar annotations
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "{{ include "learnflow.fullname" $ }}-{{ $serviceName }}"
+        dapr.io/app-port: "{{ $serviceConfig.port }}"
+        dapr.io/log-level: "info"
+        dapr.io/sidecar-cpu-limit: "300m"
+        dapr.io/sidecar-memory-limit: "256Mi"
+        dapr.io/enable-app-health-check: "true"
+        dapr.io/app-health-check-path: "/health"
       labels:
         {{- include "learnflow.labels" $ | nindent 8 }}
         app.kubernetes.io/component: {{ $serviceName }}

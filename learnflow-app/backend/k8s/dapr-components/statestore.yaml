@@ -1,0 +1,40 @@
+---
+# Dapr State Store Component using PostgreSQL
+# State management for microservices
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: learnflow-statestore
+  namespace: learnflow
+spec:
+  type: state.postgresql
+  version: v1
+  metadata:
+    # PostgreSQL connection string (from secret)
+    - name: connectionString
+      secretKeyRef:
+        name: learnflow-db-secret
+        key: connection-string
+    # Table name for Dapr state
+    - name: tableName
+      value: dapr_state
+    # Clean up expired data periodically
+    - name: cleanupInterval
+      value: "1h"
+    # Maximum concurrent connections
+    - name: maxConns
+      value: "10"
+    # Query index size
+    - name: queryIndexes
+      value: "key,created"
+---
+# PostgreSQL Table Schema (run once in database)
+# CREATE TABLE IF NOT EXISTS dapr_state (
+#     key VARCHAR(200) PRIMARY KEY,
+#     value BYTEA NOT NULL,
+#     is_binary BOOLEAN NOT NULL DEFAULT FALSE,
+#     e_tag VARCHAR(50),
+#     expiration_time INTEGER,
+#     created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+#     updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+# );

@@ -1,0 +1,28 @@
+{
+  "id": "development/contributing",
+  "title": "Contributing",
+  "description": "Guide for contributing to LearnFlow.",
+  "source": "@site/docs/development/contributing.md",
+  "sourceDirName": "development",
+  "slug": "/development/contributing",
+  "permalink": "/development/contributing",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/learnflow/docs/tree/main/docs/development/contributing.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "title": "Contributing",
+    "sidebar_position": 1
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Quick Start",
+    "permalink": "/getting-started/quickstart"
+  },
+  "next": {
+    "title": "API Reference",
+    "permalink": "/api-reference"
+  }
+}

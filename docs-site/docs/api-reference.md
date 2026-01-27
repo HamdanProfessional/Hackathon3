@@ -24,7 +24,7 @@ Include `student_id` in request bodies:
 | Concepts | 8002 | POST / |
 | Debug | 8003 | POST / |
 | Exercise | 8004 | POST /generate, POST /submit |
-| Progress | 8005 | GET /progress/{id} |
+| Progress | 8005 | GET /progress/\{id\} |
 | Code Review | 8006 | POST /review |
 
 ## Triage Service
@@ -34,6 +34,7 @@ Include `student_id` in request bodies:
 Route query to appropriate agent.
 
 **Response:**
+
 ```json
 {
   "agent_type": "concepts",
@@ -48,6 +49,7 @@ Route query to appropriate agent.
 Generate new exercise.
 
 **Response:**
+
 ```json
 {
   "id": 1,
@@ -63,6 +65,7 @@ Generate new exercise.
 Submit solution.
 
 **Response:**
+
 ```json
 {
   "passed": true,
@@ -72,11 +75,12 @@ Submit solution.
 
 ## Progress Service
 
-### GET /progress/{student_id}
+### GET /progress/\{student_id\}
 
 Get student progress.
 
 **Response:**
+
 ```json
 {
   "student_id": "uuid",
@@ -94,6 +98,7 @@ Get student progress.
 Execute Python code.
 
 **Request:**
+
 ```json
 {
   "code": "print('hello')",
@@ -102,6 +107,7 @@ Execute Python code.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -116,12 +122,15 @@ Execute Python code.
 Get exercises catalog.
 
 **Response:**
+
 ```json
-[{
-  "id": 1,
-  "title": "Hello World",
-  "difficulty": "beginner"
-}]
+[
+  {
+    "id": 1,
+    "title": "Hello World",
+    "difficulty": "beginner"
+  }
+]
 ```
 
 ## Testing

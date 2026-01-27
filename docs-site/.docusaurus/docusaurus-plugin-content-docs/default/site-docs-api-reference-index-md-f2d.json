@@ -1,0 +1,28 @@
+{
+  "id": "api-reference/index",
+  "title": "API Reference",
+  "description": "Complete API documentation for all LearnFlow backend services.",
+  "source": "@site/docs/api-reference/index.md",
+  "sourceDirName": "api-reference",
+  "slug": "/api-reference/",
+  "permalink": "/api-reference/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/learnflow/docs/tree/main/docs/api-reference/index.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "title": "API Reference",
+    "sidebar_position": 3
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Quick Start",
+    "permalink": "/getting-started/quickstart"
+  },
+  "next": {
+    "title": "System Architecture",
+    "permalink": "/architecture-complete"
+  }
+}

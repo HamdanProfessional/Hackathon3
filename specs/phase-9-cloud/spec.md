@@ -1,243 +1,175 @@
-# Phase 9: Cloud Deployment Specification
+# Feature Specification: Phase 9 - Cloud Deployment
 
+**Feature Branch**: `9-cloud`
+**Created**: 2025-01-26
 **Status**: Draft
-**Phase**: 9
-**Focus**: Deploy LearnFlow on a public cloud provider
+**Input**: Deploy LearnFlow on a public cloud provider's Kubernetes cluster
 
 ---
 
-## Overview
+## User Scenarios & Testing *(mandatory)*
 
-Deploy the complete LearnFlow application to a production Kubernetes cluster on a public cloud provider. This demonstrates that the Skills and application work beyond local Minikube development.
+### User Story 1 - User Accesses Cloud Application from Internet (Priority: P1)
 
-**Cloud Provider Options**:
-- Azure Kubernetes Service (AKS)
-- Google Kubernetes Engine (GKE)
-- Oracle Container Engine for Kubernetes (OKE)
+As a student or teacher, I need to access LearnFlow via a public URL so that I can use it from anywhere without local setup.
 
-### What This Phase Delivers
+**Why this priority**: Cloud deployment makes the platform accessible - without public access, only local developers can use it.
 
-A production-ready cloud deployment that:
-1. Runs on public cloud Kubernetes (AKS/GKE/OKE)
-2. Has ingress configured with TLS/SSL certificates
-3. Has managed services for database and Kafka (optional)
-4. Has domain name configured and accessible
-5. Has monitoring and logging enabled
-6. Deploys autonomously via Skills
+**Independent Test**: User types domain name in browser, application loads, and all features work correctly.
+
+**Acceptance Scenarios**:
+
+1. **Given** cloud deployment complete, **When** user accesses domain, **Then** application loads
+2. **Given** user navigates, **When** pages load, **Then** TLS/SSL lock icon shows in browser
+3. **Given** user logs in, **When** authenticated, **Then** they can access all features
+4. **Given** user interacts, **When** features used, **Then** all services respond correctly
 
 ---
 
-## Success Criteria
+### User Story 2 - Developer Deploys to Cloud Kubernetes (Priority: P1)
 
-**Measurable Outcomes**:
+As a developer, I need to deploy LearnFlow to a cloud Kubernetes cluster so that the application is publicly accessible.
 
-- [ ] Kubernetes cluster created on chosen cloud provider
-- [ ] All services deployed and running (healthy status)
-- [ ] Ingress configured with TLS/SSL (valid certificate)
-- [ ] Domain name accessible from internet
-- [ ] Application loads and functions correctly
-- [ ] Monitoring and logging collecting data
-- [ ] Deployment automated via Skills
+**Why this priority**: Cloud deployment demonstrates portability beyond local development - this proves the architecture works in production.
 
----
+**Independent Test**: Developer uses deployment skill, all services deploy to chosen cloud provider, and application is accessible via domain.
 
-## User Stories
+**Acceptance Scenarios**:
 
-### P1: User Accesses Cloud Application
-
-**As a** student or teacher
-**I want** to access LearnFlow via a public URL
-**So that** I can use it from anywhere
-
-**Acceptance Criteria**:
-- [ ] Given I navigate to the domain, the application loads
-- [ ] Given I log in, my authentication persists
-- [ ] Given I complete exercises, my progress saves
-- [ ] Given the application is updated, I don't lose data
-
-### P2: Operations Team Monitors Deployment
-
-**As an** operations team member
-**I want** to monitor the application health
-**So that** I can respond to issues proactively
-
-**Acceptance Criteria**:
-- [ ] Given I check monitoring, I see resource usage metrics
-- [ ] Given an error occurs, I see an alert
-- [ ] Given I need logs, I can retrieve them easily
-- [ ] Given I need to scale, I can adjust replicas
-
-### P3: Developer Deploys Update
-
-**As a** developer
-**I want** to deploy application updates
-**So that** users get new features
-
-**Acceptance Criteria**:
-- [ ] Given I push code, CI/CD builds the image
-- [ ] Given I merge to main, Argo CD deploys automatically
-- [ ] Given deployment fails, I can rollback
-- [ ] Given deployment succeeds, no downtime occurs
+1. **Given** cloud account, **When** cluster is created, **Then** Kubernetes cluster is running
+2. **Given** cluster ready, **When** deployment skill executes, **Then** all services deploy successfully
+3. **Given** services deployed, **When** ingress is configured, **Then** domain name is accessible
+4. **Given** domain configured, **When** TLS is set up, **Then** valid SSL certificate is in place
 
 ---
 
-## Functional Requirements
+### User Story 3 - Operations Team Monitors Cloud Deployment (Priority: P2)
 
-### FR-1: Cloud Infrastructure
+As an operations team member, I need to monitor the cloud deployment so that I can ensure reliability and performance.
 
-Infrastructure must include:
-- Kubernetes cluster (3+ nodes for HA)
-- Container registry for images
-- Managed database (PostgreSQL) or self-hosted
-- Managed Kafka or self-hosted
-- Load balancer for ingress
-- TLS certificate management
+**Why this priority**: Important for production operations, but application can function without comprehensive monitoring.
 
-### FR-2: Ingress Configuration
+**Independent Test**: Monitoring stack is deployed, collecting metrics, and dashboards are accessible.
 
-Ingress must provide:
-- TLS/SSL termination (Let's Encrypt or cloud provider)
-- Domain routing (custom domain)
-- Path-based routing (/, /api, etc.)
-- Rate limiting (optional)
-- DDoS protection (cloud provider managed)
+**Acceptance Scenarios**:
 
-### FR-3: Monitoring & Logging
-
-Monitoring must include:
-- Metrics collection (CPU, memory, requests)
-- Log aggregation (all services)
-- Alerting (error rates, resource limits)
-- Dashboards (Grafana or cloud provider)
-- Distributed tracing (optional)
-
-### FR-4: Backup & Disaster Recovery
-
-Must implement:
-- Database backups (daily, retained 30 days)
-- Snapshot storage (cloud storage)
-- Recovery procedures documented
-- Backup restoration tested
+1. **Given** monitoring deployed, **When** services run, **Then** metrics are collected
+2. **Given** errors occur, **When** logged, **Then** logs are centrally accessible
+3. **Given** dashboard accessed, **When** viewed, **Then** health status is visible
+4. **Given** resource usage, **When** monitored, **Then** alerts trigger for thresholds
 
 ---
 
-## Non-Functional Requirements
+### Edge Cases
 
-### NFR-1: Availability
-
-- Uptime target: 99% (excluding maintenance)
-- Rolling updates with zero downtime
-- Pod disruption budgets configured
-- Multi-AZ deployment for HA
-
-### NFR-2: Performance
-
-- Page load: <3 seconds
-- API response: <500ms (p95)
-- Resource limits defined for all services
-- Auto-scaling configured (optional)
-
-### NFR-3: Security
-
-- TLS 1.3 minimum for all endpoints
-- Secrets managed via cloud provider
-- Network policies configured
-- RBAC for Kubernetes access
-
-### NFR-4: Cost Management
-
-- Cost alerts configured
-- Resource quotas defined
-- Right-sized instances
-- Reserved instances for long-running workloads
+- What happens when cloud provider quota is exceeded?
+- How does system handle DNS propagation delays?
+- What happens when TLS certificate expires?
+- How does system handle cluster node failures?
+- What happens when cloud provider billing limits are reached?
 
 ---
 
-## Cloud Provider Comparison
+## Requirements *(mandatory)*
 
-| Feature | Azure (AKS) | Google (GKE) | Oracle (OKE) |
-|---------|-------------|--------------|---------------|
-| Free Tier | $200 credit (12 mo) | $300 credit (90 days) | Always Free tier |
-| Managed Kafka | Azure Event Hubs | Cloud Pub/Sub | Oracle Streaming |
-| Managed PostgreSQL | Azure Database | Cloud SQL | Autonomous DB |
-| Load Balancer | Azure LB | Cloud LB | Network LB |
-| Monitoring | Azure Monitor | Cloud Monitoring | Application Monitoring |
+### Functional Requirements
+
+#### Cloud Cluster Setup
+- **FR-001**: System MUST provision Kubernetes cluster on cloud provider
+- **FR-002**: System MUST support Azure Kubernetes Service (AKS)
+- **FR-003**: System MUST support Google Kubernetes Engine (GKE)
+- **FR-004**: System MUST support Oracle Container Engine for Kubernetes (OKE)
+- **FR-005**: System MUST configure cluster with sufficient resources
+- **FR-006**: System MUST verify cluster connectivity
+
+#### Application Deployment
+- **FR-007**: System MUST deploy all backend services to cloud cluster
+- **FR-008**: System MUST deploy frontend application to cloud cluster
+- **FR-009**: System MUST deploy MCP servers to cloud cluster
+- **FR-010**: System MUST deploy infrastructure (Kafka, PostgreSQL) or use managed services
+- **FR-011**: System MUST configure environment variables for cloud endpoints
+
+#### Ingress Configuration
+- **FR-012**: System MUST configure ingress controller for cluster
+- **FR-013**: System MUST obtain TLS/SSL certificate for domain
+- **FR-014**: System MUST configure domain name routing
+- **FR-015**: System MUST enable HTTPS for all endpoints
+- **FR-016**: System MUST redirect HTTP to HTTPS
+
+#### Domain & DNS
+- **FR-017**: System MUST configure domain name for application
+- **FR-018**: System MUST set up DNS records pointing to ingress
+- **FR-019**: System MUST verify DNS propagation
+- **FR-020**: System MUST validate domain is accessible from internet
+
+#### Managed Services (Optional)
+- **FR-021**: System MAY use managed PostgreSQL instead of self-hosted
+- **FR-022**: System MAY use managed Kafka instead of self-hosted
+- **FR-023**: If using managed services, system MUST update connection strings
+- **FR-024**: System MUST maintain data compatibility with managed services
+
+#### Monitoring & Logging
+- **FR-025**: System MUST deploy monitoring stack (Prometheus, Grafana)
+- **FR-026**: System MUST deploy log aggregation (optional)
+- **FR-027**: System MUST collect metrics from all services
+- **FR-028**: System MUST provide dashboards for visualization
+- **FR-029**: System MUST configure alerts for critical failures
+
+#### Deployment Automation
+- **FR-030**: System MUST deploy via k8s-deployer skill
+- **FR-031**: System MUST support repeatable deployments
+- **FR-032**: System MUST support rollback to previous versions
+- **FR-033**: System MUST use Helm charts for templating
+
+### Key Entities
+
+- **Cloud Provider**: Public cloud service (Azure AKS, Google GKE, Oracle OKE)
+- **Kubernetes Cluster**: Managed Kubernetes service on cloud provider
+- **Ingress Controller**: K8s ingress resource for HTTP/S routing
+- **TLS/SSL Certificate**: Cryptographic certificate for HTTPS
+- **Domain Name**: Public DNS name pointing to application
+- **Managed Service**: Cloud provider's managed database or messaging service
 
 ---
 
-## Out of Scope
+## Success Criteria *(mandatory)*
 
-This phase does NOT include:
-- Application development (see Phases 4-7)
-- Documentation (see Phase 8)
-- CI/CD automation (see Phase 10)
+### Measurable Outcomes
+
+- **SC-001**: Kubernetes cluster created on chosen cloud provider
+- **SC_002**: All services deployed and running (healthy status)
+- **SC_003**: Ingress configured with TLS/SSL (valid certificate)
+- **SC_004**: Domain name accessible from internet
+- **SC_005**: Application loads and functions correctly
+- **SC_006**: Monitoring and logging collecting data
+- **SC_007**: Deployment automated via Skills
+- **SC_008**: Zero manual intervention for deployment
+- **SC_009**: Application responds to HTTPS requests
+- **SC_010**: Deployment completes in under 45 minutes
 
 ---
 
 ## Assumptions
 
-1. Cloud provider account is set up
-2. Billing is configured
-3. Domain name is owned or can be registered
-4. CLI tools installed (az, gcloud, or oci)
+1. Phase 7 is complete (application assembled and functional locally)
+2. Developer has cloud provider account with appropriate permissions
+3. Developer has domain name (or uses cloud provider's default domain)
+4. Cloud provider has sufficient quota for requested resources
+5. Developer has kubectl configured for cloud cluster access
+6. k8s-deployer skill exists and follows MCP Code Execution pattern
 
 ---
 
-## Constraints
+## Out of Scope
 
-1. Must use chosen cloud provider's managed services where possible
-2. Skills must work for cloud deployment
-3. Cross-agent compatibility maintained
-4. Deployment must be autonomous via Skills
+For Phase 9, the following are explicitly out of scope:
 
----
+- CI/CD automation (Phase 10)
+- Multi-region deployment
+- Disaster recovery planning
+- Cost optimization beyond basic configuration
+- Advanced security hardening (beyond TLS/SSL)
+- Performance optimization beyond basic functionality
+- Backup and restore procedures
 
-## Edge Cases
-
-1. **Cluster creation fails**: Use alternative cloud provider or region
-2. **TLS certificate expires**: Auto-renewal configured
-3. **Pod eviction**: Graceful shutdown, requests drained
-4. **Database connection failure**: Retry with backoff
-5. **Storage quota exceeded**: Alert and expand
-
----
-
-## Dependencies
-
-### Internal Dependencies
-- Phase 7: Application working locally
-
-### External Dependencies
-- Cloud provider account
-- Domain name registrar
-- Container registry access
-
----
-
-## Risks and Mitigations
-
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Cloud costs exceed budget | High | Cost alerts, resource limits, right-sizing |
-| Deployment fails | Medium | Rollback mechanism, staging environment |
-| Downtime during update | Medium | Rolling updates, pod disruption budgets |
-| Data loss | Critical | Automated backups, tested recovery |
-
----
-
-## Glossary
-
-| Term | Definition |
-|------|------------|
-| **AKS** | Azure Kubernetes Service |
-| **GKE** | Google Kubernetes Engine |
-| **OKE** | Oracle Container Engine for Kubernetes |
-| **TLS** | Transport Layer Security (SSL replacement) |
-| **Ingress** | Kubernetes API for HTTP routing |
-
----
-
-## References
-
-- Hackathon3.md: Complete project requirements
-- Phase 7 spec: Application details
+These will be addressed in later phases or future enhancements.

@@ -18,6 +18,47 @@ const sidebars: SidebarsConfig = {
           id: 'overview',
           label: 'Documentation Overview',
         },
+        {
+          type: 'doc',
+          id: 'getting-started/installation',
+          label: 'Installation',
+        },
+        {
+          type: 'doc',
+          id: 'getting-started/quickstart',
+          label: 'Quick Start',
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Development',
+      collapsible: true,
+      collapsed: true,
+      items: [
+        {
+          type: 'doc',
+          id: 'development/contributing',
+          label: 'Contributing',
+        },
+        {
+          type: 'doc',
+          id: 'api-reference',
+          label: 'API Reference',
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Deployment',
+      collapsible: true,
+      collapsed: true,
+      items: [
+        {
+          type: 'doc',
+          id: 'deployment/kubernetes',
+          label: 'Kubernetes',
+        },
       ],
     },
     {
@@ -46,8 +87,36 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: 'doc',
+          id: 'phase-4-complete',
+          label: 'Phase 4: Backend Services (Initial)',
+        },
+        {
+          type: 'doc',
+          id: 'phase-4-continued-summary',
+          label: 'Phase 4: Continued',
+        },
+        {
+          type: 'doc',
           id: 'phase-4-final-complete',
-          label: 'Phase 4: Backend Services',
+          label: 'Phase 4: Backend Services (Final)',
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Skills & Demos',
+      collapsible: true,
+      collapsed: true,
+      items: [
+        {
+          type: 'doc',
+          id: 'SKILLS_CATALOG',
+          label: 'Skills Catalog',
+        },
+        {
+          type: 'doc',
+          id: 'skills-autonomy-demo',
+          label: 'Skills Autonomy Demo',
         },
       ],
     },
@@ -57,11 +126,6 @@ const sidebars: SidebarsConfig = {
       collapsible: true,
       collapsed: true,
       items: [
-        {
-          type: 'doc',
-          id: 'SKILLS_CATALOG',
-          label: 'Skills Catalog',
-        },
         {
           type: 'doc',
           id: 'kafka-client-complete',

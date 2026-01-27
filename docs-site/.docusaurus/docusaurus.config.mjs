@@ -115,8 +115,12 @@ export default {
               "to": "/"
             },
             {
-              "label": "Architecture",
-              "to": "/architecture-complete"
+              "label": "Quick Start",
+              "to": "/getting-started/quickstart"
+            },
+            {
+              "label": "API Reference",
+              "to": "/api-reference"
             }
           ]
         },
@@ -132,10 +136,6 @@ export default {
         {
           "title": "More",
           "items": [
-            {
-              "label": "MCP Integration",
-              "to": "/mcp-integration-complete"
-            },
             {
               "label": "Skills Catalog",
               "to": "/SKILLS_CATALOG"

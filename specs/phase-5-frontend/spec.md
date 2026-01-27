@@ -1,454 +1,223 @@
-# Phase 5: Frontend User Interface Specification
+# Feature Specification: Phase 5 - Frontend User Interface
 
+**Feature Branch**: `5-frontend`
+**Created**: 2025-01-26
 **Status**: Draft
-**Phase**: 5
-**Focus**: Web-based user interface for LearnFlow multi-agent learning platform
+**Input**: Build web-based user interface for LearnFlow AI-powered Python learning platform
 
 ---
 
-## Overview
+## User Scenarios & Testing *(mandatory)*
 
-Build the web-based user interface that enables students and teachers to interact with the LearnFlow learning platform. The interface provides:
+### User Story 1 - Student Views Progress Dashboard (Priority: P1)
 
-- **Student Dashboard**: Progress tracking, module navigation, coding exercises
-- **Chat Interface**: Conversational AI tutoring with real-time responses
-- **Code Editor**: Embedded code editor with Python support and execution
-- **Teacher Portal**: Class progress monitoring, struggle alerts, exercise generation
+As a student learning Python, I need to see my overall progress and mastery levels so that I know what I've learned and what to focus on next.
 
-### What This Phase Delivers
+**Why this priority**: Primary interface for students - without dashboard, students cannot navigate learning content.
 
-A responsive web application that:
-1. Students can access to learn Python through interactive exercises
-2. Teachers can use to monitor student progress and provide targeted help
-3. Integrates with backend services via standard HTTP APIs
-4. Runs in modern browsers without plugins
-5. Deploys autonomously via Skills
+**Independent Test**: Student logs in and sees dashboard with mastery percentage, module progress, and learning streak.
 
----
+**Acceptance Scenarios**:
 
-## Success Criteria
-
-**Measurable Outcomes** (technology-agnostic):
-
-- [ ] Application loads and displays content within 3 seconds on standard broadband
-- [ ] Students can complete exercises without page refreshes
-- [ ] Code editor supports Python syntax highlighting and execution
-- [ ] Chat interface shows agent responses within 2 seconds
-- [ ] Teachers can view real-time struggle alerts
-- [ ] Application works on desktop and tablet browsers
-- [ ] Deployment succeeds autonomously using defined Skills
-- [ ] User session persists across page navigation
+1. **Given** a student with completed exercises, **When** dashboard loads, **Then** overall mastery percentage is displayed
+2. **Given** multiple modules available, **When** dashboard is viewed, **Then** per-module mastery is shown with color coding
+3. **Given** daily learning activity, **When** dashboard displays, **Then** consecutive day streak is visible
+4. **Given** a module in progress, **When** student clicks it, **Then** they navigate to module detail page
 
 ---
 
-## User Stories
+### User Story 2 - Student Completes Interactive Code Exercises (Priority: P1)
 
-### P1: Student Progress Visualization
+As a student, I need to write and execute Python code in the browser so that I can practice coding without installing anything.
 
-**As a** student learning Python
-**I want** to see my overall progress and mastery levels
-**So that** I know what I've learned and what to focus on next
+**Why this priority**: Core learning activity - without code editor and exercises, students cannot practice Python.
 
-**Acceptance Criteria**:
-- [ ] Given I log in, I see a dashboard with my overall progress
-- [ ] Given I have completed exercises, I see my mastery percentage per module
-- [ ] Given I have a learning streak, I see the number of consecutive days
-- [ ] Given I want to continue learning, I can click to resume my current topic
+**Independent Test**: Student opens exercise, writes code, runs it, and submits for grading without page refresh.
 
-**Mastery Level Display**:
-- **Beginner (0-40%)**: Red indicator, "Getting Started" label
-- **Learning (41-70%)**: Yellow indicator, "Making Progress" label
-- **Proficient (71-90%)**: Green indicator, "Almost There" label
-- **Mastered (91-100%)**: Blue indicator, "Mastered!" label
+**Acceptance Scenarios**:
+
+1. **Given** an exercise page loads, **When** displayed, **Then** code editor shows with Python syntax highlighting
+2. **Given** code is written, **When** student clicks Run, **Then** output appears below editor without page refresh
+3. **Given** code produces error, **When** displayed, **Then** error message is shown with line number
+4. **Given** working code, **When** student clicks Submit, **Then** pass/fail feedback appears with score
 
 ---
 
-### P1: Interactive Code Exercises
+### User Story 3 - Student Chats with AI Tutor (Priority: P1)
 
-**As a** student
-**I want** to write and execute Python code in the browser
-**So that** I can practice coding without installing anything
+As a student, I need to chat with an AI tutor about Python concepts so that I can get help when I'm stuck.
 
-**Acceptance Criteria**:
-- [ ] Given I open an exercise, I see an embedded code editor
-- [ ] Given I write Python code, I see syntax highlighting
-- [ ] Given I click "Run", I see the output of my code
-- [ ] Given my code has errors, I see error messages
-- [ ] Given I click "Submit", I receive pass/fail feedback
-- [ ] Given I'm stuck, I can request hints
+**Why this priority**: Primary support mechanism - conversational AI is the main way students receive help.
 
-**Code Editor Requirements**:
-- Python syntax highlighting
-- Auto-indentation
-- Bracket matching
-- Error indication
-- Run/Submit/Hint buttons
-- Output display area
+**Independent Test**: Student navigates to chat, types question, receives streamed response within 2 seconds.
+
+**Acceptance Scenarios**:
+
+1. **Given** chat page loads, **When** displayed, **Then** conversation interface shows with message input
+2. **Given** a question is typed, **When** student sends, **Then** their message appears in chat history
+3. **Given** message is sent, **When** AI responds, **Then** response is streamed in real-time character by character
+4. **Given** AI response completes, **When** displayed, **Then** which agent responded is indicated
 
 ---
 
-### P1: Conversational AI Tutoring
+### User Story 4 - Teacher Monitors Class Progress (Priority: P2)
 
-**As a** student
-**I want** to chat with an AI tutor about Python concepts
-**So that** I can get help when I'm stuck
+As a teacher, I need to view class progress and struggle alerts so that I can provide targeted help to students who need it most.
 
-**Acceptance Criteria**:
-- [ ] Given I navigate to the chat page, I see a conversation interface
-- [ ] Given I type a question, I see my message in the chat history
-- [ ] Given the AI responds, I see the response streamed in real-time
-- [ ] Given the AI is from a specific agent, I see which agent is responding
-- [ ] Given I need quick help, I see suggested questions
+**Why this priority**: Important for classroom use, but individual students can still learn without teacher dashboard.
 
-**Chat Features**:
-- Message history persistence
-- Agent indicator (Concepts, Debug, Exercise, Progress)
-- Streaming responses
-- Quick action suggestions
-- Code syntax highlighting in responses
+**Independent Test**: Teacher logs in and sees class overview with stats cards and real-time struggle alerts.
+
+**Acceptance Scenarios**:
+
+1. **Given** a teacher dashboard, **When** it loads, **Then** class stats are displayed (total students, active today, struggling now)
+2. **Given** students are struggling, **When** alerts occur, **Then** they appear in real-time in alerts panel
+3. **Given** a struggling student, **When** teacher clicks alert, **Then** they see details about the struggle
+4. **Given** class data, **When** displayed, **Then** it updates without requiring full page refresh
 
 ---
 
-### P1: Exercise Navigation and Discovery
+### User Story 5 - User Session Persists Across Navigation (Priority: P2)
 
-**As a** student
-**I want** to browse and discover coding exercises
-**So that** I can practice specific Python topics
+As a user, I need my session to persist when I navigate between pages so that I don't have to log in repeatedly.
 
-**Acceptance Criteria**:
-- [ ] Given I view the modules page, I see all 8 Python modules
-- [ ] Given I click a module, I see topics within that module
-- [ ] Given I click a topic, I see available exercises
-- [ ] Given I see exercise difficulty, I can choose appropriate challenges
-- [ ] Given I complete an exercise, I see the next recommended exercise
+**Why this priority**: Important for user experience, but platform could work with login on each page (poor UX).
 
-**Module Structure**:
-- 8 modules displayed in a grid or list
-- Each module shows mastery percentage
-- Topics listed with completion status
-- Exercises filtered by difficulty
+**Independent Test**: User logs in, navigates between multiple pages, and remains authenticated throughout session.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user is logged in, **When** they navigate to dashboard, **Then** they remain authenticated
+2. **Given** authenticated user, **When** they navigate to exercise page, **Then** their student ID is available to APIs
+3. **Given** authenticated user, **When** they navigate to chat, **Then** conversation history persists
+4. **Given** session exists, **When** user closes and reopens browser, **Then** session may be restored (optional)
 
 ---
 
-### P2: Teacher Class Dashboard
+### Edge Cases
 
-**As a** teacher
-**I want** to see an overview of my class progress
-**So that** I can identify which students need help
-
-**Acceptance Criteria**:
-- [ ] Given I log in as a teacher, I see my class dashboard
-- [ ] Given students are active, I see how many are online
-- [ ] Given students are struggling, I see urgent alerts
-- [ ] Given I view the class list, I see each student's mastery level
-- [ ] Given I want details, I can click to view a student's work
-
-**Dashboard Metrics**:
-- Total students enrolled
-- Students currently active
-- Students struggling (urgent alerts)
-- Average class mastery
+- What happens when backend service is unavailable during API call?
+- How does system handle slow code execution (long-running scripts)?
+- What happens when student loses internet connection during exercise?
+- How does system handle concurrent sessions (same user on multiple devices)?
+- What happens when chat agent doesn't respond (timeout)?
+- How does system handle mobile browser viewport (responsive design)?
 
 ---
 
-### P2: Struggle Alert Notifications
+## Requirements *(mandatory)*
 
-**As a** teacher
-**I want** to receive alerts when students are struggling
-**So that** I can provide timely help
+### Functional Requirements
 
-**Acceptance Criteria**:
-- [ ] Given a student triggers a struggle alert, I see a notification
-- [ ] Given I view the alert, I see the student name and topic
-- [ ] Given I view the alert, I see why they're struggling
-- [ ] Given I want to help, I can generate a remedial exercise
-- [ ] Given I assign an exercise, the student receives it
+#### Student Dashboard
+- **FR-001**: System MUST display student progress on dashboard page
+- **FR-002**: System MUST show overall mastery percentage with visual indicator
+- **FR-003**: System MUST display per-module mastery with color coding (red 0-40%, yellow 41-70%, green 71-90%, blue 91-100%)
+- **FR-004**: System MUST show learning streak (consecutive days of activity)
+- **FR-005**: System MUST list available modules with progress indicators
+- **FR-006**: System MUST navigate to module detail when module is clicked
+- **FR-007**: Dashboard MUST load within 3 seconds on standard broadband
 
-**Alert Information**:
-- Student name and avatar
-- Topic they're struggling with
-- Struggle reason (error type, time stuck, etc.)
-- Duration of struggle
-- Action to generate remedial exercise
+#### Code Editor
+- **FR-008**: System MUST provide embedded code editor on exercise page
+- **FR-009**: Code editor MUST support Python syntax highlighting
+- **FR-010**: Code editor MUST support auto-indentation
+- **FR-011**: Code editor MUST support bracket matching
+- **FR-012**: System MUST provide Run button to execute code
+- **FR-013**: System MUST provide Submit button to grade exercise
+- **FR-014**: System MUST provide Hint button to get progressive hints
+- **FR-015**: System MUST display code execution output without page refresh
+- **FR-016**: System MUST display error messages with line numbers
+- **FR-017**: System MUST display pass/fail feedback after submission
 
----
+#### Chat Interface
+- **FR-018**: System MUST provide chat page for AI tutoring
+- **FR-019**: System MUST display conversation history
+- **FR-020**: System MUST provide text input for questions
+- **FR-021**: System MUST stream AI responses in real-time
+- **FR-022**: System MUST indicate which agent is responding
+- **FR-023**: System MUST display response within 2 seconds of sending
+- **FR-024**: System MUST persist conversation across page navigation
 
-### P2: Exercise Generation for Students
+#### Teacher Dashboard
+- **FR-025**: System MUST provide teacher dashboard page
+- **FR-026**: System MUST display class statistics (total students, active today, struggling now)
+- **FR-027**: System MUST show real-time struggle alerts
+- **FR-028**: System MUST allow teacher to click alert for details
+- **FR-029**: System MUST update alerts without page refresh (real-time)
 
-**As a** teacher
-**I want** to generate custom exercises for struggling students
-**So that** I can provide targeted practice
+#### Session Management
+- **FR-030**: System MUST authenticate users before accessing protected pages
+- **FR-031**: System MUST persist session across page navigation
+- **FR-032**: System MUST store user ID for API requests
+- **FR-033**: System MUST handle session expiration gracefully
+- **FR-034**: System MUST provide logout functionality
 
-**Acceptance Criteria**:
-- [ ] Given I select a student, I can generate an exercise
-- [ ] Given I choose a topic, the exercise matches that topic
-- [ ] Given I choose a difficulty, the exercise is appropriately challenging
-- [ ] Given I assign the exercise, the student sees it in their dashboard
-- [ ] Given the student completes it, I see the result
+#### API Integration
+- **FR-035**: Frontend MUST communicate with backend via REST APIs
+- **FR-036**: System MUST handle API errors gracefully
+- **FR-037**: System MUST show loading states during API calls
+- **FR-038**: System MUST retry failed API requests (up to 3 times)
+- **FR-039**: System MUST timeout API requests after 10 seconds
 
-**Exercise Generation Options**:
-- Topic selection (from 8 modules)
-- Difficulty level (beginner/intermediate/advanced)
-- Custom requirements (optional)
+#### Responsive Design
+- **FR-040**: Application MUST work on desktop browsers (1280px+)
+- **FR-041**: Application MUST work on tablet browsers (768px-1279px)
+- **FR-042**: Application MUST adapt layout for different screen sizes
+- **FR-043**: Code editor MUST be usable on tablet screens
 
----
+### Key Entities
 
-### P3: User Authentication
-
-**As a** user (student or teacher)
-**I want** to log in securely
-**So that** my progress and data are protected
-
-**Acceptance Criteria**:
-- [ ] Given I navigate to the login page, I see email/password fields
-- [ ] Given I enter valid credentials, I'm redirected to my dashboard
-- [ ] Given I'm a student, I see the student dashboard
-- [ ] Given I'm a teacher, I see the teacher dashboard
-- [ ] Given I log out, my session is cleared
-
-**Authentication Features**:
-- Email/password login
-- Session persistence
-- Role-based routing (student vs teacher)
-- Protected routes require authentication
-
----
-
-## Functional Requirements
-
-### FR-1: Responsive Layout
-
-The application must adapt to different screen sizes:
-- Desktop layout: Full dashboard with side navigation
-- Tablet layout: Adjusted grid and repositioned elements
-- Mobile layout: Stacked components, hamburger menu
-- Breakpoints defined for desktop (>1024px), tablet (768-1024px), mobile (<768px)
-
-### FR-2: Real-Time Updates
-
-The interface must update without page refresh:
-- Chat messages stream as they arrive
-- Progress updates reflect immediately after exercise completion
-- Struggle alerts appear in real-time for teachers
-- Exercise results display instantly after submission
-
-### FR-3: State Persistence
-
-User state must persist across navigation:
-- Code entered in editor saved when navigating away
-- Chat history preserved between sessions
-- Exercise progress saved for resumption
-- User authentication maintained via secure tokens
-
-### FR-4: API Integration
-
-The frontend must communicate with backend services:
-- REST API calls for data retrieval and submission
-- WebSocket or SSE for real-time streaming
-- Error handling for failed requests
-- Loading indicators for pending operations
-
-### FR-5: Code Execution
-
-The code editor must execute Python code safely:
-- Code sent to backend execution service
-- Output displayed in designated area
-- Errors shown with helpful messages
-- Execution timeout enforced (5 seconds)
+- **Dashboard**: Student's main page showing progress, modules, and streak
+- **Exercise**: A coding challenge page with editor, instructions, and submission
+- **Code Editor**: Embedded editor component with Python support and execution
+- **Chat Interface**: Conversational UI for AI tutoring with message history and streaming
+- **Teacher Dashboard**: Teacher's main page showing class stats and struggle alerts
+- **Session**: Authenticated user state persisting across navigation
+- **API Client**: Frontend service for communicating with backend services
 
 ---
 
-## Non-Functional Requirements
+## Success Criteria *(mandatory)*
 
-### NFR-1: Performance
+### Measurable Outcomes
 
-- Initial page load: <3 seconds on 3G connection
-- Time to Interactive: <5 seconds
-- First Contentful Paint: <1.5 seconds
-- Code editor load: <2 seconds
-- Chat response display: <500ms after receiving data
-
-### NFR-2: Accessibility
-
-- Keyboard navigation for all features
-- Screen reader compatibility (ARIA labels)
-- Color contrast ratio ≥4.5:1
-- Focus indicators visible
-- Error messages announced to screen readers
-
-### NFR-3: Browser Compatibility
-
-- Chrome/Edge (latest version)
-- Firefox (latest version)
-- Safari (latest 2 versions)
-- Mobile browsers (iOS Safari, Chrome Mobile)
-
-### NFR-4: Visual Design
-
-- Consistent color scheme for mastery levels
-- Clear typography hierarchy
-- Responsive images and icons
-- Dark mode support (optional)
-- Loading states for all async operations
-
-### NFR-5: Security
-
-- HTTPS in production
-- Secure token storage (httpOnly cookies)
-- XSS protection (input sanitization)
-- CSRF protection for form submissions
-- Content Security Policy configured
-
----
-
-## Data Requirements
-
-### User Session Data
-
-- User ID and role
-- Authentication token
-- Display name and avatar
-- Current module and topic
-
-### Progress Data
-
-- Per-module mastery percentage
-- Per-topic completion status
-- Learning streak count
-- Recent activity (last 10 items)
-
-### Exercise Data
-
-- Exercise ID, title, description
-- Difficulty level
-- Student's current code
-- Submission history and results
-
-### Chat Data
-
-- Conversation ID
-- Message history (role, content, timestamp, agent)
-- Typing indicator state
-
-### Teacher View Data
-
-- Class roster (student names, IDs)
-- Per-student mastery levels
-- Active struggle alerts
-- Exercise assignments
-
----
-
-## User Interface Flows
-
-### Student Learning Flow
-
-```
-1. Login → Student Dashboard
-2. View Progress → Select Module → Select Topic
-3. Start Exercise → View Instructions → Write Code
-4. Run Code → View Output → Submit Exercise
-5. View Results → View Updated Progress
-6. Optional: Chat with AI Tutor → Get Help → Return to Exercise
-```
-
-### Teacher Monitoring Flow
-
-```
-1. Login → Teacher Dashboard
-2. View Class Overview → Identify Struggling Students
-3. View Struggle Alert → Review Student Work
-4. Generate Remedial Exercise → Assign to Student
-5. Monitor Student Progress → View Updated Results
-```
-
----
-
-## Out of Scope
-
-This phase does NOT include:
-- Backend service implementation (see Phase 4)
-- Mobile native applications
-- Offline functionality
-- Social features (forums, peer interaction)
-- Payment processing
-- Advanced analytics dashboards
+- **SC-001**: Application loads and displays content within 3 seconds on standard broadband
+- **SC-002**: Students can complete exercises without page refreshes
+- **SC-003**: Code editor supports Python syntax highlighting and execution
+- **SC-004**: Chat interface shows agent responses within 2 seconds
+- **SC-005**: Teachers can view real-time struggle alerts
+- **SC-006**: Application works on desktop and tablet browsers
+- **SC-007**: Deployment succeeds autonomously using nextjs-k8s-deploy skill
+- **SC-008**: User session persists across page navigation
+- **SC-009**: All API calls complete within 10 seconds or timeout
+- **SC-010**: Zero console errors on page load and navigation
 
 ---
 
 ## Assumptions
 
-1. Backend services provide REST APIs at known endpoints
-2. Authentication service issues JWT tokens
-3. Code execution service runs Python with 5-second timeout
-4. WebSocket/SSE available for real-time streaming
-5. Modern browser with JavaScript enabled
-6. User has stable internet connection
+1. Phase 4 is complete (backend services deployed and accessible)
+2. Backend APIs are documented and accessible
+3. Static assets (logo, favicon) are available
+4. Developer has Node.js 18+ and npm installed
+5. nextjs-k8s-deploy skill exists and follows MCP Code Execution pattern
+6. Browser supports modern JavaScript (ES6+) and CSS Grid
 
 ---
 
-## Constraints
+## Out of Scope
 
-1. Must work without plugins (WebAssembly/WebAssembly not required)
-2. Must deploy autonomously via Skills
-3. Must be responsive (desktop, tablet, mobile)
-4. Must be accessible (WCAG 2.1 AA compliance)
-5. Cross-agent compatibility (Claude Code and Goose)
+For Phase 5, the following are explicitly out of scope:
 
----
+- MCP servers for AI agent integration (Phase 6)
+- Documentation site (Phase 7)
+- Performance optimization beyond basic load times
+- Advanced authentication (OAuth2, SSO)
+- Mobile app (mobile-responsive web only)
+- Offline functionality
+- File upload (images, files)
+- Video content embedding
+- Advanced analytics (tracking beyond basic progress)
 
-## Edge Cases
-
-1. **Code Editor Unavailable**: Display fallback textarea, show warning
-2. **Backend API Down**: Show cached data if available, display error banner
-3. **WebSocket Disconnected**: Queue messages, attempt reconnection, show offline indicator
-4. **Exercise Generation Timeout**: Show loading spinner, offer retry or skip
-5. **Session Expired**: Redirect to login, save work before redirect
-6. **Large Exercise Output**: Truncate output, offer "View Full" option
-7. **Browser Incompatibility**: Show upgrade browser message
-8. **Network During Code Submit**: Disable submit button, show retry option
-
----
-
-## Dependencies
-
-### Internal Dependencies
-- Phase 4: Backend Services (APIs available)
-- Phase 3: Infrastructure (Kubernetes cluster ready)
-
-### External Dependencies
-- Authentication provider (or self-hosted)
-- Code execution service (MCP server from Phase 6)
-- WebSocket/SSE service for real-time updates
-
----
-
-## Risks and Mitigations
-
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Code editor bundle size too large | Medium | Lazy loading, code splitting |
-| Real-time chat latency high | High | WebSocket fallback to polling |
-| Browser compatibility issues | Medium | Progressive enhancement, polyfills |
-| State management complexity | Low | Use simple store pattern |
-| Mobile device limitations | Medium | Optimize touch targets, simplify UI |
-
----
-
-## Glossary
-
-| Term | Definition |
-|------|------------|
-| **Code Editor** | In-browser text editor with syntax highlighting |
-| **Streaming Response** | AI response displayed as it's generated |
-| **Mastery Level** | Student proficiency (Beginner/Learning/Proficient/Mastered) |
-| **Streak** | Consecutive days of learning activity |
-| **Struggle Alert** | Notification when student needs help |
-
----
-
-## References
-
-- Hackathon3.md: Complete project requirements
-- Phase 4 spec: Backend API endpoints
-- Phase 6 spec: MCP servers for code execution
+These will be addressed in later phases or future enhancements.

@@ -11,5 +11,14 @@
   "editUrl": "https://github.com/learnflow/docs/tree/main/docs/phase-4-complete.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {}
+  "frontMatter": {},
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Phase 3: Infrastructure",
+    "permalink": "/phase-3-complete"
+  },
+  "next": {
+    "title": "Phase 4: Continued",
+    "permalink": "/phase-4-continued-summary"
+  }
 }

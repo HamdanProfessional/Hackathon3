@@ -10,10 +10,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from shared.models import HealthResponse, ChatRequest, ChatResponse, CodeSubmission, CodeReviewResult
+from shared.dapr_client import get_dapr_client, EventTopics
 
 
 SERVICE_NAME = "debug-service"
-SERVICE_VERSION = "1.0.0"
+SERVICE_VERSION = "2.0.0"
 PORT = int(os.getenv("PORT", "8003"))
 
 app = FastAPI(title="LearnFlow Debug Service", version=SERVICE_VERSION)
@@ -109,8 +110,35 @@ async def debug_chat(request: ChatRequest):
 
 @app.post("/analyze", response_model=CodeReviewResult)
 async def analyze_code(submission: CodeSubmission):
-    """Analyze code for errors."""
+    """Analyze code for errors and track in state."""
     category, hints = analyze_error(submission.code)
+
+    # Track errors in Dapr state for pattern detection
+    dapr = get_dapr_client()
+    student_id = str(submission.student_id)
+    error_key = f"error:{student_id}:{category}"
+
+    # Get existing error count
+    error_state = await dapr.get_state(error_key) or {"count": 0, "category": category}
+    error_state["count"] += 1
+    error_state["last_code"] = submission.code[:500]  # Store first 500 chars
+
+    # Save updated state
+    await dapr.save_state(error_key, error_state, ttl_seconds=86400)  # 24 hour TTL
+
+    # Check for repeated errors (struggle detection)
+    if error_state["count"] >= 3:
+        # Publish struggle alert
+        await dapr.publish_event(
+            topic=EventTopics.STRUGGLE_ALERT,
+            data={
+                "student_id": student_id,
+                "alert_type": "repeated_error",
+                "category": category,
+                "error_count": error_state["count"],
+                "message": f"Student has encountered {category} errors {error_state['count']} times",
+            },
+        )
 
     return CodeReviewResult(
         correct=len(hints) == 0,

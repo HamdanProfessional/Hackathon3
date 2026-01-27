@@ -11,5 +11,14 @@
   "editUrl": "https://github.com/learnflow/docs/tree/main/docs/phase-4-continued-summary.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {}
+  "frontMatter": {},
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Phase 4: Backend Services (Initial)",
+    "permalink": "/phase-4-complete"
+  },
+  "next": {
+    "title": "Phase 4: Backend Services (Final)",
+    "permalink": "/phase-4-final-complete"
+  }
 }

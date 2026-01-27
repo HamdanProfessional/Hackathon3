@@ -1,4 +1,4 @@
-"""Test utilities for React components."""
+// Test utilities for React components
 
 import { render, RenderOptions } from '@testing-library/react';
 import { ReactElement } from 'react';

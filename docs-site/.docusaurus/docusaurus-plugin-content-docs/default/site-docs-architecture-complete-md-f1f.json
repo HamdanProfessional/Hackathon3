@@ -14,8 +14,8 @@
   "frontMatter": {},
   "sidebar": "mainSidebar",
   "previous": {
-    "title": "Documentation Overview",
-    "permalink": "/overview"
+    "title": "Kubernetes",
+    "permalink": "/deployment/kubernetes"
   },
   "next": {
     "title": "Phase 3: Infrastructure",

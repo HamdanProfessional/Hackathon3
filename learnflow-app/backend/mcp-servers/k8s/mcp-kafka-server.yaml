@@ -9,6 +9,8 @@ metadata:
     app: mcp-kafka-server
     tier: mcp
 spec:
+  imagePullSecrets:
+  - name: docr-secret
   replicas: 1
   selector:
     matchLabels:
@@ -21,8 +23,8 @@ spec:
     spec:
       containers:
       - name: mcp-kafka-server
-        image: mcp-kafka-server:v5
-        imagePullPolicy: Never
+        image: registry.digitalocean.com/learnflow-registry/mcp-kafka-server:latest
+        imagePullPolicy: Always
         command: ["python", "main.py"]
         env:
         - name: KAFKA_BOOTSTRAP_SERVERS

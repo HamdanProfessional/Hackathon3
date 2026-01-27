@@ -1,0 +1,37 @@
+---
+# Dapr Pub/Sub Component using Kafka (Redpanda)
+# Event streaming for microservice communication
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: learnflow-pubsub
+  namespace: learnflow
+spec:
+  type: pubsub.kafka
+  version: v1
+  metadata:
+    # Kafka broker address
+    - name: brokers
+      value: learnflow-kafka.learnflow.svc.cluster.local:9092
+    # Consumer group for durable subscriptions
+    - name: consumerGroup
+      value: learnflow-services
+    # Auto-create topics if they don't exist
+    - name: autoEnableSasl
+      value: "false"
+    # Use the simplest commit mechanism
+    - name: autoCommit
+      value: "true"
+    # Initial offset when no committed offset exists
+    - name: initialOffset
+      value: newest
+    # Skip waiting for topics to be created
+    - name: maxMessageBytes
+      value: "1048576"
+---
+# Kafka Topics (optional - can be created automatically)
+# Topics used by LearnFlow services:
+# - learning.progress: Concept learned, progress updates
+# - code.submission: Code analyzed, reviewed
+# - exercise.attempt: Exercise submitted
+# - struggle.alert: Repeated errors detected

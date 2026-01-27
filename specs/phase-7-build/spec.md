@@ -1,216 +1,172 @@
-# Phase 7: LearnFlow Autonomous Build Specification
+# Feature Specification: Phase 7 - LearnFlow Autonomous Build
 
+**Feature Branch**: `7-build`
+**Created**: 2025-01-26
 **Status**: Draft
-**Phase**: 7
-**Focus**: Assemble complete LearnFlow application using AI agents and Skills
+**Input**: Assemble complete LearnFlow application using AI agents and Skills autonomously
 
 ---
 
-## Overview
+## User Scenarios & Testing *(mandatory)*
 
-This is the **culmination phase** where all components from Phases 1-6 are assembled into a working LearnFlow application. The key principle is:
+### User Story 1 - Student Learns Python Through Complete Application (Priority: P1)
 
-> **DO NOT write application code manually. Use Skills to teach AI agents to build it autonomously.**
+As a student named Maya, I need to learn about Python loops through the platform so that I can practice coding with AI help.
 
-The application will be built entirely by AI agents using the Skills created in previous phases.
+**Why this priority**: This is the primary user journey - if students cannot learn Python, the platform fails its core purpose.
 
-### What This Phase Delivers
+**Independent Test**: Student logs in, navigates to module, completes exercise, chats with AI, and sees progress update.
 
-A fully assembled LearnFlow application that:
-1. Has all 6 backend services deployed and communicating
-2. Has frontend with code editor and chat interface
-3. Has all 4 MCP servers providing real-time data access
-4. Demonstrates Skills-based autonomous deployment
-5. Works with both Claude Code and Goose (cross-agent compatibility)
+**Acceptance Scenarios**:
 
----
-
-## Success Criteria
-
-**Measurable Outcomes** (technology-agnostic):
-
-- [ ] All services deployed and responding to health checks
-- [ ] Student personas can complete learning flows
-- [ ] Teacher portal displays class analytics
-- [ ] Git history shows agentic workflow (Skill-based commits)
-- [ ] Application built using both Claude Code and Goose
-- [ ] Multi-agent system operational (Triage → Concepts/Debug/Exercise)
+1. **Given** Maya logs in, **When** dashboard loads, **Then** she sees her progress and available modules
+2. **Given** Maya selects Loops module, **When** she navigates, **Then** she sees topics and exercises
+3. **Given** Maya opens exercise, **When** she writes and submits code, **Then** she receives pass/fail feedback
+4. **Given** Maya needs help, **When** she asks chat, **Then** AI tutor responds appropriately
+5. **Given** Maya completes exercise, **When** she checks progress, **Then** mastery percentage has increased
 
 ---
 
-## User Stories
+### User Story 2 - Teacher Monitors Student Struggle (Priority: P2)
 
-### P1: Student Learns Python
+As a teacher, I need to see when students are struggling so that I can provide targeted help.
 
-**As a** student named Maya
-**I want** to learn about Python loops through the platform
-**So that** I can practice coding with AI help
+**Why this priority**: Important for classroom use, but individual students can still learn without teacher monitoring.
 
-**Acceptance Criteria**:
-- [ ] Given I log in, I see my dashboard with progress
-- [ ] Given I ask "How do for loops work?", I get an explanation
-- [ ] Given I complete an exercise on loops, my mastery increases
-- [ ] Given I make an error, I get hints (not solutions)
+**Independent Test**: Teacher logs in, views class dashboard, sees real-time struggle alerts for students needing help.
 
-**Persona: Maya**
-- Goal: Learn Python for loops
-- Current mastery: 60% → Target: 68%
-- Flow: Login → Dashboard → Chat → Exercise → Progress
+**Acceptance Scenarios**:
+
+1. **Given** teacher logs in, **When** dashboard loads, **Then** class statistics are displayed
+2. **Given** student is struggling, **When** they trigger alert, **Then** teacher sees notification in real-time
+3. **Given** struggle alert, **When** teacher clicks, **Then** they see details about the student's issue
+4. **Given** alert details, **When** reviewed, **Then** teacher can identify appropriate intervention
 
 ---
 
-### P1: Student Gets Help Debugging
+### User Story 3 - Developer Builds Application Autonomously (Priority: P1)
 
-**As a** student named James
-**I want** help when stuck on list comprehensions
-**So that** I can understand the concept
+As a developer, I need to use Skills to teach AI agents to build the application so that I can demonstrate autonomous deployment capabilities.
 
-**Acceptance Criteria**:
-- [ ] Given I submit incorrect code 3 times, I get struggle alert
-- [ ] Given I'm stuck, the Debug Agent provides progressive hints
-- [ ] Given my teacher sees the alert, they assign an easier exercise
-- [ ] Given I complete the easier exercise, my mastery improves
+**Why this priority**: This is the hackathon's core principle - Skills are the product. Without autonomous build, Skills haven't proven their value.
 
-**Persona: James**
-- Issue: List comprehensions (3 wrong answers)
-- Detection: Struggle alert sent to teacher
-- Resolution: Teacher generates easy exercise → James completes
+**Independent Test**: Developer uses Claude Code or Goose with Skills to deploy all services without manual code writing.
 
----
+**Acceptance Scenarios**:
 
-### P2: Teacher Monitors Class
-
-**As a** teacher named Mr. Rodriguez
-**I want** to view my class's struggles
-**So that** I can provide targeted help
-
-**Acceptance Criteria**:
-- [ ] Given I log in as teacher, I see my dashboard
-- [ ] Given students are struggling, I see alerts
-- [ ] Given I click "Generate Exercise", I can create custom exercises
-- [ ] Given I assign an exercise, the student sees it
+1. **Given** empty cluster, **When** agent uses kafka-k8s-setup skill, **Then** Kafka deploys autonomously
+2. **Given** empty cluster, **When** agent uses postgres-k8s-setup skill, **Then** PostgreSQL deploys autonomously
+3. **Given** no backend, **When** agent uses fastapi-dapr-agent skill, **Then** all 6 services deploy autonomously
+4. **Given** no frontend, **When** agent uses nextjs-k8s-deploy skill, **Then** frontend deploys autonomously
+5. **Given** no docs, **When** agent uses docusaurus-deploy skill, **Then** documentation deploys autonomously
 
 ---
 
-### P2: AI Agent Orchestrates Flow
+### Edge Cases
 
-**As an** AI agent using the Skills
-**I want** to build the entire application autonomously
-**So that** I demonstrate agentic AI capabilities
-
-**Acceptance Criteria**:
-- [ ] Given I invoke `kafka-k8s-setup` skill, Kafka deploys
-- [ ] Given I invoke `postgres-k8s-setup` skill, PostgreSQL deploys
-- [ ] Given I invoke `fastapi-dapr-agent` skill 6 times, all services deploy
-- [ ] Given I invoke `mcp-code-execution` skill 4 times, all MCP servers deploy
-- [ ] Given I invoke `nextjs-k8s-deploy` skill, frontend deploys
-- [ ] All deployments succeed with single command
+- What happens when a Skill fails during autonomous build?
+- How does system handle partial deployment (some services succeed, others fail)?
+- What happens when AI agent doesn't understand Skill instructions?
+- How does system verify deployment success without manual inspection?
+- What happens when cross-agent compatibility breaks?
 
 ---
 
-## Functional Requirements
+## Requirements *(mandatory)*
 
-### FR-1: Skills-Based Deployment
+### Functional Requirements
 
-All components must deploy via Skills:
-- `kafka-k8s-setup`: Deploy Kafka on Kubernetes
-- `postgres-k8s-setup`: Deploy PostgreSQL on Kubernetes
-- `fastapi-dapr-agent`: Generate FastAPI + Dapr microservices
-- `mcp-code-execution`: Generate MCP servers with code execution
-- `nextjs-k8s-deploy`: Deploy Next.js frontend
+#### Complete Application Assembly
+- **FR-001**: System MUST assemble all components from Phases 1-6
+- **FR-002**: System MUST deploy all 6 backend services
+- **FR-003**: System MUST deploy frontend application
+- **FR-004**: System MUST deploy all 4 MCP servers
+- **FR-005**: System MUST establish service communication
+- **FR-006**: System MUST verify all services are healthy
 
-### FR-2: Multi-Agent Coordination
+#### Student Learning Flow
+- **FR-007**: System MUST support student registration/login
+- **FR-008**: System MUST display progress dashboard
+- **FR-009**: System MUST provide module navigation
+- **FR-010**: System MUST allow exercise completion with grading
+- **FR-011**: System MUST provide AI chat tutoring
+- **FR-012**: System MUST update progress in real-time
 
-AI agents must coordinate via:
-- Triage agent routes queries to specialists
-- Events published to Kafka for async processing
-- Dapr state management for shared data
-- MCP servers provide real-time context
+#### Teacher Monitoring Flow
+- **FR-013**: System MUST provide teacher dashboard
+- **FR-014**: System MUST display class statistics
+- **FR-015**: System MUST show real-time struggle alerts
+- **FR-016**: System MUST allow drill-down to student details
 
-### FR-3: Student Learning Flow
+#### Multi-Agent Coordination
+- **FR-017**: System MUST route queries to appropriate agent (triage)
+- **FR-018**: Concepts agent MUST provide adaptive explanations
+- **FR-019**: Debug agent MUST provide progressive hints
+- **FR-020**: Exercise agent MUST generate and grade exercises
+- **FR-021**: Progress agent MUST calculate mastery
+- **FR-022**: Code review agent MUST analyze submissions
 
-Complete learning flow must work:
-1. Login → Dashboard (view progress)
-2. Chat → Ask question → Get explanation
-3. Exercise → Write code → Run → Submit
-4. Progress → Mastery updates
+#### Autonomous Build
+- **FR-023**: System MUST deploy using Skills only (no manual code writing)
+- **FR-024**: System MUST use Skills with both Claude Code and Goose
+- **FR-025**: System MUST validate each deployment step
+- **FR-026**: System MUST handle deployment failures gracefully
+- **FR-027**: Git history MUST show agentic workflow (Skill-based commits)
 
-### FR-4: Teacher Monitoring Flow
+#### Integration Verification
+- **FR-028**: System MUST verify backend services can communicate
+- **FR-029**: System MUST verify frontend can call backend APIs
+- **FR-030**: System MUST verify MCP servers are accessible
+- **FR-031**: System MUST verify event streaming works (Kafka)
+- **FR-032**: System MUST verify data persistence works (PostgreSQL)
 
-Teacher workflow must work:
-1. Login → Dashboard (view class)
-2. View struggles → Identify students
-3. Generate exercise → Assign to student
-4. Monitor → View updated progress
+### Key Entities
+
+- **LearnFlow Application**: Complete assembled platform with frontend, backend, MCP servers, infrastructure
+- **Autonomous Build**: Process where AI agents use Skills to deploy without manual intervention
+- **Student Persona**: A test user account (e.g., Maya) demonstrating learning flow
+- **Teacher Persona**: A test teacher account demonstrating monitoring capabilities
+- **Service Mesh**: Dapr sidecars enabling service-to-service communication
+- **Agentic Workflow**: Git history showing commits made by AI agents using Skills
 
 ---
 
-## Non-Functional Requirements
+## Success Criteria *(mandatory)*
 
-### NFR-1: Token Efficiency
+### Measurable Outcomes
 
-- MCP Code Execution pattern validated
-- <500 tokens per AI agent session
-- Scripts executed (not loaded into context)
+- **SC-001**: All services deployed and responding to health checks
+- **SC-002**: Student personas can complete learning flows end-to-end
+- **SC-003**: Teacher portal displays class analytics accurately
+- **SC-004**: Git history shows agentic workflow (Skill-based commits)
+- **SC-005**: Application built using both Claude Code and Goose
+- **SC-006**: Multi-agent system operational (Triage → Concepts/Debug/Exercise)
+- **SC-007**: All components communicating via service mesh or HTTP
+- **SC-008**: Zero manual code writing during assembly (Skills only)
+- **SC-009**: Deployment completes in under 30 minutes
+- **SC-010**: Application functional for all user journeys
 
-### NFR-2: Cross-Agent Compatibility
+---
 
-- Skills work with Claude Code
-- Skills work with Goose
-- Same results from both agents
+## Assumptions
 
-### NFR-3: Git History Quality
-
-- Commits follow agentic workflow
-- Commit messages reference Skills used
-- History shows autonomous build process
+1. Phases 1-6 are complete (all Skills, infrastructure, services available)
+2. Kubernetes cluster is running (Minikube for local)
+3. AI agents (Claude Code, Goose) are available
+4. Developer has repository access
+5. Target environment has sufficient resources
 
 ---
 
 ## Out of Scope
 
-This phase does NOT include:
-- Writing application code manually
-- Creating new Skills (use existing from Phases 1-6)
-- Cloud deployment (see Phase 9)
-- CI/CD automation (see Phase 10)
+For Phase 7, the following are explicitly out of scope:
 
----
+- Production cloud deployment (Phase 9)
+- CI/CD automation (Phase 10)
+- Documentation and demo preparation (Phase 8)
+- Performance optimization beyond basic functionality
+- Security hardening beyond basic authentication
+- Advanced monitoring and observability
 
-## Dependencies
-
-### Internal Dependencies
-- Phases 1-6: All Skills and components available
-
-### External Dependencies
-- Claude Code or Goose access
-- Kubernetes cluster (Minikube or cloud)
-- Container registry
-
----
-
-## Risks and Mitigations
-
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Skill execution fails | High | Test Skills independently first |
-| Token limits exceeded | Medium | Use MCP Code Execution pattern |
-| Service dependency issues | Medium | Deploy in correct order (infrastructure → services) |
-| Cross-agent incompatibility | High | Test with both Claude Code and Goose |
-
----
-
-## Glossary
-
-| Term | Definition |
-|------|------------|
-| **Skills** | Reusable AI agent instructions for autonomous tasks |
-| **Agentic Workflow** | AI agents performing complex tasks autonomously |
-| **Cross-Agent Compatibility** | Skills work on multiple AI platforms |
-
----
-
-## References
-
-- Hackathon3.md: Complete project requirements
-- AGENTS.md: Build instructions for learnflow-app
+These will be addressed in later phases.

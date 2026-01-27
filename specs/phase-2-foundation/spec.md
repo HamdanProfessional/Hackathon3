@@ -1,431 +1,171 @@
----
-title: Phase 2 - Foundation Skills
-status: Draft
-category: Skills Development
-priority: P0
----
+# Feature Specification: Phase 2 - Foundation Skills
 
-# Phase 2: Foundation Skills
-
-## Overview
-
-Develop and validate additional foundation Skills while testing all Skills for cross-agent compatibility between Claude Code and Goose. This phase ensures the Skills work autonomously with both AI coding agents.
-
-## Context
-
-**Phase 1 Status**: Complete
-- Environment ready (Docker, Kubernetes, Helm, Claude Code)
-- 7 required Hackathon 3 Skills created
-- DigitalOcean Kubernetes cluster running
-- All verification tests passing
-
-**Phase 2 Goal**: Build on Phase 1 by creating additional foundation Skills and validating cross-agent compatibility.
-
-**Critical Success Factor**: Skills work autonomously with both Claude Code AND Goose from a single prompt.
+**Feature Branch**: `2-foundation`
+**Created**: 2025-01-26
+**Status**: Draft
+**Input**: Develop and validate foundation Skills while testing all Skills for cross-agent compatibility between Claude Code and Goose
 
 ---
 
-## Acceptance Criteria
+## User Scenarios & Testing *(mandatory)*
 
-### Must Have (P0)
-- [ ] `k8s-foundation` skill created and tested
-- [ ] `skill-registry` skill created (tracks all skills)
-- [ ] `test-skill` skill created (validates skill execution)
-- [ ] All 7 required Skills tested with Claude Code
-- [ ] All 7 required Skills tested with Goose
-- [ ] Cross-agent compatibility verified
-- [ ] At least 3 Skills executed autonomously end-to-end
+### User Story 1 - Developer Creates Foundation Skills (Priority: P1)
 
-### Should Have (P1)
-- [ ] `yaml-validator` skill created
-- [ ] `helm-template` skill created
-- [ ] Skills documentation updated with test results
-- [ ] Performance benchmark (token usage) documented
+As a developer, I need to create foundation Skills (k8s-foundation, skill-registry, test-skill) so that I have reusable capabilities for Kubernetes operations, skill management, and testing.
 
-### Nice to Have (P2)
-- [ ] `skill-linter` skill created
-- [ ] Video demos of Skills working with both agents
-- [ ] Skills catalog website generated
+**Why this priority**: Foundation Skills are required building blocks for later phases. Without them, Skills cannot be properly managed or tested.
+
+**Independent Test**: All three foundation Skills exist with SKILL.md (~100 tokens), REFERENCE.md, and executable scripts that run successfully.
+
+**Acceptance Scenarios**:
+
+1. **Given** no k8s-foundation skill exists, **When** developer creates it, **Then** it contains scripts for namespace, configmap, secret, and cluster validation operations
+2. **Given** no skill-registry exists, **When** developer creates it, **Then** it can list, search, and validate all Skills in the repository
+3. **Given** no test-skill exists, **When** developer creates it, **Then** it can execute a Skill and measure token usage
+4. **Given** a foundation Skill is created, **When** developer checks SKILL.md size, **Then** it is under 250 tokens
 
 ---
 
-## Functional Requirements
+### User Story 2 - Developer Validates Cross-Agent Compatibility (Priority: P2)
 
-### FR1: k8s-foundation Skill
+As a developer, I need to test all Skills with both Claude Code and Goose so that I can ensure they work autonomously with multiple AI agents.
 
-**Description**: Create a comprehensive skill for Kubernetes foundation tasks - namespaces, configmaps, secrets, and basic deployments.
+**Why this priority**: Cross-agent compatibility is a hackathon requirement (5% of score). Can be done in parallel with Skill creation.
 
-**Use Cases**:
-- Create project namespace
-- Generate ConfigMap from env file
-- Create Secret from literal values
-- Validate cluster access
-- List cluster resources
+**Independent Test**: Cross-agent compatibility matrix shows all 7 required Skills tested and working with both Claude Code and Goose.
 
-**Deliverables**:
-- SKILL.md (~100 tokens)
-- REFERENCE.md with K8s patterns
-- scripts/create-namespace.sh
-- scripts/create-configmap.sh
-- scripts/create-secret.sh
-- scripts/validate-cluster.sh
+**Acceptance Scenarios**:
 
-### FR2: skill-registry Skill
-
-**Description**: Create a skill that maintains a registry of all available Skills with their capabilities and metadata.
-
-**Use Cases**:
-- List all available Skills
-- Search Skills by keyword
-- Get Skill metadata
-- Validate Skill structure
-- Generate Skills catalog
-
-**Deliverables**:
-- SKILL.md (~100 tokens)
-- REFERENCE.md with registry schema
-- scripts/list-skills.py
-- scripts/search-skills.py
-- scripts/validate-registry.py
-- scripts/generate-catalog.py
-
-### FR3: test-skill Skill
-
-**Description**: Create a skill that validates other Skills by executing them and verifying results.
-
-**Use Cases**:
-- Test a specific Skill
-- Validate Skill output
-- Measure token usage
-- Check Skill execution time
-- Generate test report
-
-**Deliverables**:
-- SKILL.md (~100 tokens)
-- REFERENCE.md with testing patterns
-- scripts/test-skill.py
-- scripts/measure-tokens.py
-- scripts/generate-report.py
-
-### FR4: Cross-Agent Compatibility Testing
-
-**Description**: Test all 7 required Skills with both Claude Code and Goose.
-
-**Test Matrix**:
-
-| Skill | Claude Code | Goose | Notes |
-|-------|-------------|-------|-------|
-| agents-md-gen | ⬜ | ⬜ | Test AGENTS.md generation |
-| kafka-k8s-setup | ⬜ | ⬜ | Test Kafka deployment (dry-run) |
-| postgres-k8s-setup | ⬜ | ⬜ | Test PostgreSQL deployment (dry-run) |
-| fastapi-dapr-agent | ⬜ | ⬜ | Test microservice generation |
-| mcp-code-execution | ⬜ | ⬜ | Test MCP server generation |
-| nextjs-k8s-deploy | ⬜ | ⬜ | Test deployment scripts |
-| docusaurus-deploy | ⬜ | ⬜ | Test doc generation |
-
-**Success**: All skills execute with minimal user intervention on both agents.
-
-### FR5: Autonomous Execution Validation
-
-**Description**: Validate that Skills can execute autonomously from a single prompt.
-
-**Test Cases**:
-1. Generate AGENTS.md with single prompt
-2. Deploy Kafka (dry-run mode) with single prompt
-3. Generate FastAPI service with single prompt
-
-**Success Criteria**:
-- Agent loads Skill
-- Agent executes scripts
-- Agent returns success/failure
-- No manual intervention required
+1. **Given** the agents-md-gen skill, **When** tested with Claude Code, **Then** it generates AGENTS.md successfully
+2. **Given** the agents-md-gen skill, **When** tested with Goose, **Then** it generates AGENTS.md successfully
+3. **Given** any Skill from Phase 1, **When** tested with both agents, **Then** both produce equivalent results
+4. **Given** a Skill that fails on one agent, **When** developer fixes it, **Then** it works on both agents
 
 ---
 
-## Technical Specifications
+### User Story 3 - Developer Validates Autonomous Execution (Priority: P3)
 
-### TS1: Skill Template Standard
+As a developer, I need to validate that Skills execute autonomously from a single prompt so that I can demonstrate the MCP Code Execution pattern benefits.
 
-All new Skills MUST follow the MCP Code Execution pattern:
+**Why this priority**: Important for demonstrating token efficiency and autonomy, but lower priority than having Skills that work.
 
-```markdown
----
-name: skill-name
-description: Brief description (< 100 chars)
----
+**Independent Test**: At least 3 Skills execute end-to-end with single prompt on both agents without manual intervention.
 
-# Skill Name
+**Acceptance Scenarios**:
 
-Brief description.
-
-## Quick Start
-```bash
-# One-command example
-./scripts/main.sh
-```
-
-## Instructions
-1. Step one
-2. Step two
-3. Step three
-
-See [REFERENCE.md](./REFERENCE.md) for details.
-```
-
-### TS2: Script Standards
-
-All scripts MUST:
-1. Use proper shebang: `#!/bin/bash` or `#!/usr/bin/env python3`
-2. Be executable: `chmod +x scripts/*.sh`
-3. Return meaningful exit codes (0 = success, non-zero = failure)
-4. Print minimal output (result only)
-5. Handle errors gracefully
-
-### TS3: Cross-Agent Compatibility
-
-Skills MUST be compatible with:
-- **Claude Code** (Claude 3.5 Sonnet, Opus 4.5)
-- **Goose** (with any LLM: Claude, GPT-4, Gemini)
-
-**Compatibility Requirements**:
-1. No agent-specific syntax in SKILL.md
-2. Scripts use standard POSIX sh or Python 3
-3. Instructions are clear and unambiguous
-4. No hardcoded paths (use environment variables)
-
-### TS4: Token Budget Targets
-
-| Component | Target | Maximum |
-|-----------|--------|---------|
-| SKILL.md | ~100 tokens | 250 tokens |
-| REFERENCE.md | N/A (on-demand) | N/A |
-| scripts/* | 0 tokens (executed) | N/A |
-| Total per Skill | ~100 tokens | 250 tokens |
+1. **Given** an agent with access to Skills, **When** single prompt requests AGENTS.md generation, **Then** agent executes skill autonomously
+2. **Given** an agent with access to Skills, **When** single prompt requests skill validation, **Then** agent executes test-skill autonomously
+3. **Given** an agent with access to Skills, **When** single prompt requests skill listing, **Then** agent executes skill-registry autonomously
+4. **Given** autonomous execution, **When** completed, **Then** token usage is documented
 
 ---
 
-## Testing Strategy
+### Edge Cases
 
-### Test 1: Skill Structure Validation
-```bash
-#!/bin/bash
-# scripts/validate-skill-structure.sh
-
-validate_skill() {
-    local skill_path="$1"
-    local errors=0
-
-    # Check SKILL.md
-    if [ ! -f "$skill_path/SKILL.md" ]; then
-        echo "✗ Missing SKILL.md"
-        ((errors++))
-    fi
-
-    # Check REFERENCE.md
-    if [ ! -f "$skill_path/REFERENCE.md" ]; then
-        echo "✗ Missing REFERENCE.md"
-        ((errors++))
-    fi
-
-    # Check scripts directory
-    if [ ! -d "$skill_path/scripts" ]; then
-        echo "✗ Missing scripts/ directory"
-        ((errors++))
-    fi
-
-    # Check scripts are executable
-    for script in "$skill_path/scripts"/*; do
-        if [ -f "$script" ] && [ ! -x "$script" ]; then
-            echo "⚠ Script not executable: $script"
-        fi
-    done
-
-    return $errors
-}
-```
-
-### Test 2: Token Efficiency Check
-```bash
-#!/bin/bash
-# scripts/check-token-efficiency.sh
-
-for skill in .claude/skills/*/SKILL.md; do
-    size=$(wc -c < "$skill")
-    tokens=$((size / 4))
-
-    if [ $tokens -gt 250 ]; then
-        echo "✗ $skill: $tokens tokens (exceeds 250 limit)"
-    elif [ $tokens -gt 150 ]; then
-        echo "⚠ $skill: $tokens tokens (above target)"
-    else
-        echo "✓ $skill: $tokens tokens"
-    fi
-done
-```
-
-### Test 3: Claude Code Compatibility Test
-```bash
-# Using Claude Code to test a Skill
-claude "
-Please use the agents-md-gen skill to generate AGENTS.md for this project.
-Load the skill from .claude/skills/agents-md-gen/
-Execute the appropriate scripts.
-Report the result.
-"
-```
-
-### Test 4: Goose Compatibility Test
-```bash
-# Using Goose to test a Skill
-goose "
-Use the agents-md-gen skill from .claude/skills/agents-md-gen/
-Generate AGENTS.md for this project.
-Report the result.
-"
-```
-
-### Test 5: Autonomous Execution Test
-```bash
-#!/bin/bash
-# scripts/test-autonomous-execution.sh
-
-# Test: Can agent execute skill autonomously?
-echo "Testing autonomous execution..."
-
-# Record start time
-start=$(date +%s)
-
-# Execute with Claude Code
-claude "
-Use the test-skill skill to validate the kafka-k8s-setup skill.
-Report the results.
-" > /tmp/claude-test-output.log 2>&1
-
-# Record end time
-end=$(date +%s)
-duration=$((end - start))
-
-# Check output
-if grep -q "✓" /tmp/claude-test-output.log; then
-    echo "✓ Autonomous execution successful (${duration}s)"
-else
-    echo "✗ Autonomous execution failed"
-fi
-```
+- What happens when Claude Code and Goose produce different results for the same Skill?
+- How does system handle Skills that require interactive input (passwords, confirmations)?
+- What happens when Skill scripts have permission errors on execution?
+- How does system validate Skill output format differences between agents?
+- What happens when required Skills are missing from the repository?
 
 ---
 
-## New Skills to Create
+## Requirements *(mandatory)*
 
-### Skill 1: k8s-foundation
+### Functional Requirements
 
-**Purpose**: Kubernetes foundation operations
+#### Foundation Skills Creation
+- **FR-001**: System MUST provide k8s-foundation skill for namespace operations
+- **FR-002**: System MUST provide k8s-foundation skill for ConfigMap creation
+- **FR-003**: System MUST provide k8s-foundation skill for Secret creation
+- **FR-004**: System MUST provide k8s-foundation skill for cluster validation
+- **FR-005**: System MUST provide skill-registry skill for listing Skills
+- **FR-006**: System MUST provide skill-registry skill for searching Skills
+- **FR-007**: System MUST provide skill-registry skill for validating Skills
+- **FR-008**: System MUST provide test-skill skill for executing Skills
+- **FR-009**: System MUST provide test-skill skill for measuring token usage
+- **FR-010**: System MUST provide test-skill skill for generating test reports
 
-**Scripts**:
-- `create-namespace.sh` - Create K8s namespace
-- `create-configmap.sh` - Create ConfigMap from file
-- `create-secret.sh` - Create Secret from literals
-- `validate-cluster.sh` - Validate cluster access
+#### Cross-Agent Compatibility
+- **FR-011**: All Skills MUST work with Claude Code (Claude 3.5 Sonnet, Opus 4.5)
+- **FR-012**: All Skills MUST work with Goose (with Claude, GPT-4, or Gemini)
+- **FR-013**: Skills MUST NOT use agent-specific syntax in SKILL.md
+- **FR-014**: Skills MUST use standard POSIX sh or Python 3 for scripts
+- **FR-015**: Skills MUST handle both Windows (WSL2) and Unix environments
+- **FR-016**: All 7 required Skills from Phase 1 MUST be tested with Claude Code
+- **FR-017**: All 7 required Skills from Phase 1 MUST be tested with Goose
 
-### Skill 2: skill-registry
+#### Autonomous Execution
+- **FR-018**: Skills MUST execute autonomously from single prompt
+- **FR-019**: Skills MUST NOT require manual intervention during execution
+- **FR-020**: Skills MUST return success/failure status to agent
+- **FR-021**: Skills MUST provide minimal output (result only)
+- **FR-022**: At least 3 Skills MUST demonstrate autonomous execution
 
-**Purpose**: Maintain registry of all Skills
+#### Token Efficiency
+- **FR-023**: SKILL.md files MUST be under 250 tokens maximum
+- **FR-024**: SKILL.md files SHOULD target ~100 tokens (400-500 characters)
+- **FR-025**: REFERENCE.md MUST NOT be loaded unless explicitly referenced
+- **FR-026**: Scripts MUST be executed, not loaded into context
+- **FR-027**: Token usage MUST be measured and documented
 
-**Scripts**:
-- `list-skills.py` - List all available Skills
-- `search-skills.py` - Search Skills by keyword
-- `validate-registry.py` - Validate all Skills
-- `generate-catalog.py` - Generate Skills catalog
+#### Skill Structure
+- **FR-028**: Each Skill MUST contain SKILL.md file
+- **FR-029**: Each Skill MUST contain REFERENCE.md file
+- **FR-030**: Each Skill MUST contain scripts/ directory
+- **FR-031**: Scripts MUST be executable (chmod +x)
+- **FR-032**: Scripts MUST return meaningful exit codes (0 = success)
 
-### Skill 3: test-skill
+### Key Entities
 
-**Purpose**: Test and validate Skills
+- **Foundation Skill**: A core building-block Skill (k8s-foundation, skill-registry, test-skill)
+- **Required Skill**: One of 7 mandatory Skills from Phase 1 (agents-md-gen, kafka-k8s-setup, etc.)
+- **AI Agent**: An AI coding assistant (Claude Code or Goose) that can execute Skills
+- **Skill Execution**: The autonomous execution of a Skill by an AI agent from a single prompt
+- **Token Budget**: The maximum number of tokens a Skill's SKILL.md may consume
+- **Compatibility Matrix**: A table tracking which Skills work with which AI agents
 
-**Scripts**:
-- `test-skill.py` - Execute and validate a Skill
-- `measure-tokens.py` - Measure token usage
-- `generate-report.py` - Generate test report
+---
 
-### Optional Skills (P2)
+## Success Criteria *(mandatory)*
 
-- `yaml-validator` - Validate YAML syntax
-- `helm-template` - Template Helm charts
-- `skill-linter` - Lint Skills for best practices
+### Measurable Outcomes
+
+- **SC-001**: All 3 foundation Skills created and passing validation
+- **SC-002**: 100% of required Skills (7/7) tested successfully with Claude Code
+- **SC-003**: 100% of required Skills (7/7) tested successfully with Goose
+- **SC-004**: 100% of Skills have SKILL.md under 250 tokens
+- **SC-005**: 90% of Skills have SKILL.md under 150 tokens (target: ~100 tokens)
+- **SC-006**: At least 3 Skills demonstrate autonomous execution on both agents
+- **SC-007**: Token efficiency improvement of >80% compared to direct MCP integration
+- **SC-008**: Cross-agent compatibility matrix fully documented with test results
+- **SC-009**: Skills execute from single prompt in under 60 seconds
+- **SC-010**: Zero manual intervention required for autonomous execution
+
+---
+
+## Assumptions
+
+1. Phase 1 is complete (environment ready, 7 required Skills exist)
+2. Claude Code is installed and authenticated
+3. Goose is installed (or tests can be skipped if unavailable)
+4. Kubernetes cluster is accessible for k8s-foundation testing
+5. Developer has permissions to execute scripts and create resources
+6. Git repository is properly initialized
+7. Skills follow MCP Code Execution pattern from Phase 1
 
 ---
 
 ## Out of Scope
 
 For Phase 2, the following are explicitly out of scope:
-- Deploying actual infrastructure (Kafka, PostgreSQL) - Phase 3
-- Writing application code - Phase 4+
-- Cloud deployment - Phase 9
-- Creating bonus Skills (unless time permits)
 
----
+- Deploying actual infrastructure (Kafka, PostgreSQL deployments)
+- Writing application code for LearnFlow
+- Cloud deployment setup
+- Creating bonus Skills beyond the 3 foundation Skills
+- Performance benchmarking beyond token usage
+- Skills catalog website (optional P2 item)
+- Video demonstrations (optional P2 item)
 
-## Dependencies
-
-### Phase Dependencies
-- **Phase 1**: Must be complete (environment, cluster, 7 required Skills)
-
-### External Dependencies
-- Claude Code installed and working
-- Goose installed (or skip Goose tests if not available)
-- Kubernetes cluster accessible
-- Git repository initialized
-
----
-
-## Definition of Done
-
-Phase 2 is complete when:
-1. ✓ `k8s-foundation` skill created with all scripts
-2. ✓ `skill-registry` skill created and working
-3. ✓ `test-skill` skill created and working
-4. ✓ All 7 required Skills tested with Claude Code
-5. ✓ All 7 required Skills tested with Goose (if available)
-6. ✓ Cross-agent compatibility matrix filled
-7. ✓ At least 3 Skills demonstrated autonomous execution
-8. ✓ Token efficiency benchmark documented
-9. ✓ Git commit with Phase 2 changes
-
----
-
-## Rollback Plan
-
-If issues occur during Phase 2:
-
-| Issue | Rollback Action |
-|-------|-----------------|
-| Skill fails validation | Fix SKILL.md size, update scripts |
-| Agent compatibility issue | Rewrite SKILL.md for clarity |
-| Script execution failure | Add error handling, test locally |
-| Token budget exceeded | Move content to REFERENCE.md |
-
----
-
-## Success Metrics
-
-### Quantitative
-- [ ] 3 new Skills created (k8s-foundation, skill-registry, test-skill)
-- [ ] 7/7 required Skills tested with Claude Code
-- [ ] 7/7 required Skills tested with Goose
-- [ ] 100% autonomous execution rate
-- [ ] All Skills < 250 tokens
-
-### Qualitative
-- [ ] Skills work seamlessly with both agents
-- [ ] Single prompt achieves desired result
-- [ ] No manual intervention required
-- [ ] Clear documentation of test results
-
----
-
-## References
-
-- [Claude Code Skills Format](https://code.claude.com/docs/en/skills)
-- [Goose Recipe Format](https://block.github.io/goose/authoring/recipes/)
-- [MCP Code Execution Pattern](https://www.anthropic.com/engineering/code-execution-with-mcp)
-- [Kubernetes Documentation](https://kubernetes.io/docs/)
-- [Helm Best Practices](https://helm.sh/docs/chart_best_practices/)
+These will be addressed in later phases.

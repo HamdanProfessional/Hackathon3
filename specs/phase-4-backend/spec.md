@@ -1,400 +1,241 @@
-# Phase 4: Backend Services Specification
+# Feature Specification: Phase 4 - Backend Microservices
 
+**Feature Branch**: `4-backend`
+**Created**: 2025-01-26
 **Status**: Draft
-**Phase**: 4
-**Focus**: Backend microservices for LearnFlow multi-agent learning platform
+**Input**: Build six backend microservices for LearnFlow AI-powered Python learning platform with Dapr sidecars
 
 ---
 
-## Overview
+## User Scenarios & Testing *(mandatory)*
 
-Build the backend services that power the LearnFlow multi-agent learning platform. These services enable conversational AI tutoring for Python learning through:
-- **Intelligent Query Routing**: Direct student questions to appropriate specialist agents
-- **Concept Explanation**: Adaptive explanations based on student mastery level
-- **Error Analysis**: Parse errors and provide progressive hints
-- **Exercise Generation**: Auto-graded coding challenges with hints
-- **Progress Tracking**: Calculate mastery scores and learning streaks
-- **Code Review**: Analyze code for correctness, style, efficiency, and readability
+### User Story 1 - Student Receives Routed AI Tutoring (Priority: P1)
 
-### What This Phase Delivers
+As a student learning Python, I need my questions to be automatically routed to the appropriate specialist agent so that I get relevant help without manually selecting the assistance type.
 
-Six independent microservices that can:
-1. Accept student queries via REST APIs
-2. Communicate with each other for service orchestration
-3. Publish/subscribe to events for asynchronous processing
-4. Maintain state through external data stores
-5. Scale independently based on load
+**Why this priority**: Core functionality - students cannot learn without query routing working. This is the primary value proposition.
+
+**Independent Test**: Student sends query to triage endpoint, receives response from appropriate specialist service within 2 seconds.
+
+**Acceptance Scenarios**:
+
+1. **Given** a student asks "What is a variable?", **When** query is sent to triage service, **Then** response comes from concepts agent
+2. **Given** a student asks "Why is my code not working?", **When** query is sent to triage service, **Then** response comes from debug agent
+3. **Given** a student asks "I need more practice", **When** query is sent to triage service, **Then** response comes from exercise agent
+4. **Given** a routed request, **When** specialist responds, **Then** response is appropriate to student's mastery level
 
 ---
 
-## Success Criteria
+### User Story 2 - Student Gets Adaptive Explanations (Priority: P1)
 
-**Measurable Outcomes** (technology-agnostic):
+As a student, I need explanations that match my current understanding level so that I'm not overwhelmed by too-advanced or too-simple content.
 
-- [ ] All six services respond to health checks within 1 second
-- [ ] Services can invoke each other without hard-coded dependencies
-- [ ] Events published by one service are received by subscribers within 2 seconds
-- [ ] Student data persists across service restarts
-- [ ] Services handle 100 concurrent requests with <500ms average response time
-- [ ] Zero-downtime deployment possible (rolling updates supported)
-- [ ] Services deploy autonomously using defined Skills
+**Why this priority**: Essential for personalized learning experience. Without this, platform cannot adapt to individual learners.
 
----
+**Independent Test**: Students with different mastery levels receive appropriately complex explanations for the same concept.
 
-## User Stories
+**Acceptance Scenarios**:
 
-### P1: Student Query Routing
-
-**As a** student learning Python
-**I want** my questions to be automatically routed to the right specialist
-**So that** I get relevant help without manually selecting the assistance type
-
-**Acceptance Criteria**:
-- [ ] Given a student query, the system identifies if it's about concepts, debugging, or exercises
-- [ ] Query is routed to appropriate specialist service
-- [ ] Routing decision completes within 500ms
-- [ ] System logs routing decisions for analytics
-
-**Notes**:
-- "explain", "what is", "how does" → Concepts Agent
-- "error", "bug", "not working" → Debug Agent
-- "exercise", "practice", "challenge" → Exercise Agent
+1. **Given** a beginner student (20% mastery), **When** asking about variables, **Then** explanation uses simple language and basic examples
+2. **Given** a proficient student (80% mastery), **When** asking about variables, **Then** explanation is concise with technical terminology
+3. **Given** a student requests concept help, **When** concepts service responds, **Then** response includes code examples
+4. **Given** explanation is provided, **When** student reviews it, **Then** content aligns with their module's curriculum
 
 ---
 
-### P1: Adaptive Concept Explanations
+### User Story 3 - Student Receives Progressive Hints for Errors (Priority: P1)
 
-**As a** student
-**I want** explanations that match my current understanding level
-**So that** I'm not overwhelmed by too-advanced or too-simple content
+As a student encountering an error, I need hints that guide me to the solution without giving the answer so that I learn debugging skills through practice.
 
-**Acceptance Criteria**:
-- [ ] Given a concept request, system retrieves student's mastery level
-- [ ] Explanation complexity adjusts based on mastery (Beginner/Learning/Proficient/Mastered)
-- [ ] System provides code examples relevant to the concept
-- [ ] Topics covered align with 8-module Python curriculum
+**Why this priority**: Core pedagogical approach - learning through guided discovery. Without this, students don't develop problem-solving skills.
 
-**Mastery Level Definitions**:
-- **Beginner (0-40%)**: Simple language, minimal jargon, basic examples
-- **Learning (41-70%)**: Standard explanations, some terminology
-- **Proficient (71-90%)**: Concise explanations, technical terms
-- **Mastered (91-100%)**: Advanced concepts, edge cases, best practices
+**Independent Test**: Student submits code with error, receives progressive hints that become more specific with each request.
+
+**Acceptance Scenarios**:
+
+1. **Given** code with a SyntaxError, **When** student requests hint, **Then** first hint identifies error category
+2. **Given** first hint provided, **When** student requests another hint, **Then** second hint identifies specific line
+3. **Given** second hint provided, **When** student requests final hint, **Then** third hint provides concrete suggestion
+4. **Given** same error type repeated 3 times, **When** detected, **Then** struggle alert is published
 
 ---
 
-### P1: Progressive Debugging Hints
+### User Story 4 - Student Completes Auto-Graded Exercises (Priority: P1)
 
-**As a** student encountering an error
-**I want** hints that guide me to the solution without giving the answer
-**So that** I learn debugging skills through practice
+As a student, I need to complete coding exercises with automatic grading so that I can practice and receive immediate feedback.
 
-**Acceptance Criteria**:
-- [ ] Given code with error, system identifies error type and location
-- [ ] System provides progressive hints (not direct solutions)
-- [ ] Each hint brings student closer to solution
-- [ ] System detects repeated errors (same type 3+ times) and alerts teacher
+**Why this priority**: Primary learning mechanism - without exercises, students cannot practice coding.
 
-**Hint Progression**:
-1. First hint: Error category and general area
-2. Second hint: Specific line or concept issue
-3. Third hint: Concrete suggestion (but not solution)
+**Independent Test**: Student generates exercise, writes code, submits, and receives pass/fail feedback with score.
+
+**Acceptance Scenarios**:
+
+1. **Given** a student requests exercise, **When** exercise service generates, **Then** exercise includes instructions and starter code
+2. **Given** an exercise, **When** student writes code and submits, **Then** service grades and returns pass/fail
+3. **Given** submission passes, **When** feedback is returned, **Then** success message and score are provided
+4. **Given** submission fails, **When** feedback is returned, **Then** constructive guidance is provided
 
 ---
 
-### P1: Auto-Graded Exercises
+### User Story 5 - Student Tracks Progress Over Time (Priority: P2)
 
-**As a** student
-**I want** immediate feedback on coding exercises
-**So that** I know if I understand the concept and can correct mistakes
+As a student, I need to see my overall progress and mastery levels so that I know what I've learned and what to focus on next.
 
-**Acceptance Criteria**:
-- [ ] Given exercise request, system generates appropriate challenge
-- [ ] Exercise difficulty matches student's current module and mastery
-- [ ] Submission is auto-graded against test cases
-- [ ] Feedback includes pass/fail status and hints
-- [ ] Completed exercises update progress tracking
+**Why this priority**: Important for motivation and learning direction, but students can still learn without tracking.
 
-**Exercise Generation**:
-- 120+ exercises across 8 modules
-- Multiple difficulty levels per concept
-- Test cases validate correctness
-- Hints available on request
+**Independent Test**: Student views dashboard showing mastery percentage, module progress, and learning streak.
+
+**Acceptance Scenarios**:
+
+1. **Given** a student has completed exercises, **When** progress is queried, **Then** overall mastery percentage is displayed
+2. **Given** multiple modules, **When** progress is viewed, **Then** per-module mastery is shown
+3. **Given** daily activity, **When** streak is calculated, **Then** consecutive days are displayed
+4. **Given** new submission, **When** progress updates, **Then** mastery is recalculated
 
 ---
 
-### P2: Mastery Progress Tracking
+### User Story 6 - Developer Deploys Services Autonomously (Priority: P2)
 
-**As a** student
-**I want** to see my overall progress and mastery levels
-**So that** I know what I've learned and what to focus on next
+As a developer, I need all six services to deploy autonomously using Skills so that I can demonstrate the platform's capabilities.
 
-**Acceptance Criteria**:
-- [ ] System calculates mastery score per topic using weighted formula
-- [ ] Mastery level displayed (Beginner/Learning/Proficient/Mastered)
-- [ ] Progress updates after each activity (exercise, quiz, code submission)
-- [ ] Streak tracking for consistency (days active in last 30 days)
+**Why this priority**: Important for hackathon demonstration of Skills, but services can be deployed manually if needed.
 
-**Mastery Formula**:
-- Exercise completion: 40%
-- Quiz scores: 30%
-- Code quality ratings: 20%
-- Consistency (streak): 10%
+**Independent Test**: Single prompt to fastapi-dapr-agent skill deploys all six services with Dapr sidecars.
+
+**Acceptance Scenarios**:
+
+1. **Given** no services deployed, **When** fastapi-dapr-agent skill executes, **Then** all six services deploy
+2. **Given** services deploy, **When** deployment completes, **Then** Dapr sidecars are attached
+3. **Given** deployment, **When** health checks run, **Then** all services return healthy status
+4. **Given** services running, **When** requests are made, **Then** services respond within SLA
 
 ---
 
-### P2: Code Quality Analysis
+### Edge Cases
 
-**As a** student
-**I want** feedback on my code quality beyond just correctness
-**So that** I learn to write clean, maintainable Python
-
-**Acceptance Criteria**:
-- [ ] Given code submission, system analyzes for correctness
-- [ ] System checks style compliance (PEP 8)
-- [ ] System assesses efficiency (time/space complexity)
-- [ ] System evaluates readability (naming, comments, structure)
-- [ ] Overall quality score (0-100) provided with breakdown
-
-**Quality Metrics**:
-- Correctness: Code runs without errors
-- Style: Follows PEP 8 conventions
-- Efficiency: Appropriate for problem size
-- Readability: Clear names and structure
+- What happens when a specialist service is unavailable during routing?
+- How does system handle concurrent requests for the same student data?
+- What happens when code execution times out or exceeds resource limits?
+- How does system handle student with no progress history (first-time user)?
+- What happens when mastery calculation fails or returns unexpected values?
+- How does system handle malformed code submissions?
 
 ---
 
-### P3: Struggle Detection
+## Requirements *(mandatory)*
 
-**As a** teacher
-**I want** alerts when students are struggling
-**So that** I can provide targeted help before they give up
+### Functional Requirements
 
-**Acceptance Criteria**:
-- [ ] System detects struggle triggers (same error 3+ times, stuck >10 min, quiz <50%)
-- [ ] Alert includes student ID, topic, and struggle type
-- [ ] Teacher dashboard shows active struggles
-- [ ] System allows teacher to assign remedial exercises
+#### Service Architecture
+- **FR-001**: System MUST provide six independent microservices (triage, concepts, debug, exercise, progress, code-review)
+- **FR-002**: Each service MUST be stateless (no in-memory state)
+- **FR-003**: Each service MUST expose REST API endpoints
+- **FR-004**: Each service MUST include health check endpoint
+- **FR-005**: Services MUST communicate via HTTP or service mesh
+- **FR-006**: Services MUST be containerized with Docker
+- **FR-007**: Services MUST deploy to Kubernetes
+- **FR-008**: Services MUST have Dapr sidecar attached
 
-**Struggle Triggers**:
-- Same error type 3+ times
-- Stuck on exercise > 10 minutes
-- Quiz score < 50%
-- Student says "I don't understand" or "I'm stuck"
-- 5+ failed code executions in a row
+#### Triage Service (Port 8001)
+- **FR-009**: System MUST route queries to appropriate specialist based on keywords
+- **FR-010**: System MUST classify "explain/what is/how" as concepts queries
+- **FR-011**: System MUST classify "error/bug/fix" as debug queries
+- **FR-012**: System MUST classify "exercise/practice/challenge" as exercise queries
+- **FR-013**: System MUST return routing decision within 500ms
 
----
+#### Concepts Service (Port 8002)
+- **FR-014**: System MUST retrieve student mastery level before generating explanation
+- **FR-015**: System MUST adjust explanation complexity based on mastery (0-40%, 41-70%, 71-90%, 91-100%)
+- **FR-016**: System MUST provide code examples with explanations
+- **FR-017**: System MUST align topics with Python curriculum modules
 
-## Functional Requirements
+#### Debug Service (Port 8003)
+- **FR-018**: System MUST parse error messages from student code
+- **FR-019**: System MUST identify error type and location
+- **FR-020**: System MUST provide progressive hints (3 levels)
+- **FR-021**: System MUST detect repeated errors (same type 3+ times)
+- **FR-022**: System MUST publish struggle alert when repeated errors detected
 
-### FR-1: Service Communication
+#### Exercise Service (Port 8004)
+- **FR-023**: System MUST generate exercises from catalog or via AI
+- **FR-024**: System MUST include instructions and starter code with exercise
+- **FR-025**: System MUST grade submissions automatically
+- **FR-026**: System MUST return pass/fail feedback
+- **FR-027**: System MUST calculate and return score
+- **FR-028**: System MUST provide hints on request
 
-Services must communicate without hard-coded dependencies:
-- Services discover each other through a service registry
-- Communication happens through standardized protocols
-- Failed service calls retry with exponential backoff
-- Circuit breakers prevent cascading failures
+#### Progress Service (Port 8005)
+- **FR-029**: System MUST calculate overall mastery as weighted average (exercise 40%, quiz 30%, quality 20%, streak 10%)
+- **FR-030**: System MUST track per-module mastery levels
+- **FR-031**: System MUST calculate learning streak (consecutive days of activity)
+- **FR-032**: System MUST persist progress data to database
+- **FR-033**: System MUST return progress within 500ms
 
-### FR-2: Event Streaming
+#### Code Review Service (Port 8006)
+- **FR-034**: System MUST analyze code for correctness
+- **FR-035**: System MUST check code style (PEP 8 compliance)
+- **FR-036**: System MUST evaluate code efficiency
+- **FR-037**: System MUST assess code readability
+- **FR-038**: System MUST provide constructive feedback
 
-Services publish domain events for asynchronous processing:
-- `learning.*` events for learning activities
-- `code.*` events for code submissions
-- `exercise.*` events for exercise attempts
-- `struggle.*` events for struggle detection
+#### Event Publishing
+- **FR-039**: Services MUST publish events to Kafka topics
+- **FR-040**: System MUST publish learning progress events to `learning.progress` topic
+- **FR-041**: System MUST publish code submission events to `code.submission` topic
+- **FR-042**: System MUST publish exercise events to `exercise.attempt` topic
+- **FR-043**: System MUST publish struggle alerts to `struggle.alert` topic
 
-### FR-3: State Management
+### Key Entities
 
-Services maintain no in-memory state:
-- All persistent data stored externally
-- Session state retrieved on each request
-- Conversation history stored per student
-- Services are horizontally scalable
-
-### FR-4: API Contract
-
-Each service exposes a consistent API:
-- Health check endpoint for monitoring
-- Standardized request/response formats
-- Error responses with helpful messages
-- API documentation auto-generated
-
-### FR-5: AI Agent Integration
-
-Services integrate with AI models for intelligence:
-- Agent prompts separate from business logic
-- Model provider configurable (OpenAI, local, etc.)
-- Rate limiting for API calls
-- Fallback behavior when AI unavailable
-
----
-
-## Non-Functional Requirements
-
-### NFR-1: Performance
-
-- API response time: <500ms (p95)
-- Event processing latency: <2 seconds
-- Concurrent request handling: 100+ simultaneous users
-- Service startup time: <30 seconds
-
-### NFR-2: Scalability
-
-- Services scale horizontally (add instances)
-- Statelessness enables any instance to handle any request
-- Database connections pooled efficiently
-- Event consumers can scale independently
-
-### NFR-3: Reliability
-
-- Services health-check every 10 seconds
-- Failed requests retry up to 3 times
-- Graceful degradation when dependencies unavailable
-- No single point of failure
-
-### NFR-4: Observability
-
-- Structured logging with correlation IDs
-- Metrics for request count, latency, errors
-- Distributed tracing for service calls
-- Alert on error rates >5%
-
-### NFR-5: Security
-
-- Authentication required for all student/teacher endpoints
-- Authorization checks for teacher-only features
-- Secrets stored securely (not in code/environment variables)
-- Input validation and sanitization
+- **Microservice**: An independent service with single responsibility (triage, concepts, debug, exercise, progress, code-review)
+- **Dapr Sidecar**: A service mesh component attached to each microservice for service invocation and state management
+- **Routing Decision**: The process of classifying a query and directing it to the appropriate specialist service
+- **Mastery Level**: A percentage indicating student's understanding (Beginner 0-40%, Learning 41-70%, Proficient 71-90%, Mastered 91-100%)
+- **Progressive Hints**: A sequence of hints that become increasingly specific (category → location → suggestion)
+- **Exercise**: A coding challenge with instructions, starter code, and automated tests
+- **Struggle Alert**: An event published when a student demonstrates difficulty (repeated errors, stuck time, low quiz scores)
 
 ---
 
-## Data Requirements
+## Success Criteria *(mandatory)*
 
-### Student Data
+### Measurable Outcomes
 
-- Unique identifier (UUID)
-- Name and email
-- Role (student/teacher)
-- Current progress per topic
-- Learning streak
-
-### Progress Data
-
-- Student ID
-- Topic/module reference
-- Mastery score (0-100)
-- Mastery level (Beginner/Learning/Proficient/Mastered)
-- Last updated timestamp
-
-### Exercise Data
-
-- Unique identifier
-- Module and topic reference
-- Difficulty level
-- Test cases for validation
-- Hint progression
-
-### Submission Data
-
-- Student ID
-- Exercise ID
-- Code submission
-- Result (pass/fail)
-- Timestamp
-- Hints requested
-
-### Conversation Data
-
-- Student ID
-- Messages (JSON array)
-- Associated topic
-- Timestamp
-
----
-
-## Out of Scope
-
-This phase does NOT include:
-- Frontend implementation (see Phase 5)
-- Database migrations (handled in setup)
-- Authentication service (assumed external)
-- Container orchestration setup (assumed existing)
-- CI/CD pipelines
+- **SC-001**: All six services respond to health checks within 1 second
+- **SC-002**: Services can invoke each other via Dapr without hard-coded dependencies
+- **SC-003**: Events published to Kafka are received by subscribers within 2 seconds
+- **SC-004**: Student data persists across service restarts
+- **SC-005**: Services handle 100 concurrent requests with <500ms average response time
+- **SC-006**: Zero-downtime deployment possible (rolling updates supported)
+- **SC-007**: Services deploy autonomously using fastapi-dapr-agent skill
+- **SC-008**: Triage accuracy >85% (queries routed to correct specialist)
+- **SC-009**: Progressive hints become more specific with each request
+- **SC-010**: Mastery calculation produces consistent results
 
 ---
 
 ## Assumptions
 
-1. Container orchestration platform is available (Kubernetes-compatible)
-2. Message broker is deployed and accessible
-3. Database is provisioned with required schemas
-4. Authentication service provides user identity
-5. Service registry or discovery mechanism exists
-6. AI model API is accessible with valid credentials
+1. Phase 3 is complete (Kafka and PostgreSQL deployed)
+2. PostgreSQL database has required tables created via migrations
+3. Kafka topics are created and accessible
+4. Dapr runtime is installed on Kubernetes cluster
+5. Developer has Python 3.10+ and required packages installed
+6. fastapi-dapr-agent skill exists and follows MCP Code Execution pattern
 
 ---
 
-## Constraints
+## Out of Scope
 
-1. Services must use async patterns for I/O operations
-2. No hard-coded service URLs or dependencies
-3. All state stored externally (no in-memory session state)
-4. Services must be deployable via Skills (autonomous deployment)
-5. Cross-agent compatibility (Claude Code and Goose)
+For Phase 4, the following are explicitly out of scope:
 
----
+- Frontend user interface (Phase 5)
+- MCP servers for AI agent integration (Phase 6)
+- Database schema migrations (handled separately)
+- Authentication and authorization (basic implementation only)
+- OAuth2 or SSO integration (future enhancement)
+- File storage for student submissions (in-memory or temporary)
+- Performance optimization beyond basic SLAs
+- Comprehensive logging and monitoring (Phase 8)
 
-## Edge Cases
-
-1. **AI Service Unavailable**: Return cached response or graceful degradation
-2. **Database Connection Lost**: Retry with backoff, return cached data if available
-3. **Event Publishing Failure**: Log to dead-letter queue for replay
-4. **Malformed Input**: Return validation error with specific issue
-5. **Concurrent Updates**: Use optimistic locking or last-write-wins with timestamp
-6. **Long-Running Operations**: Return immediately, process asynchronously, notify via event
-7. **Struggle Detection Storm**: Rate-limit alerts to avoid notification spam
-8. **Exercise Generation Fails**: Return pre-defined fallback exercise
-
----
-
-## Dependencies
-
-### Internal Dependencies
-- Phase 3: Infrastructure (Kafka, PostgreSQL deployed)
-- Phase 2: Foundation Skills (skills for deployment exist)
-
-### External Dependencies
-- AI model API (OpenAI-compatible)
-- Authentication provider
-- Monitoring/observability platform
-
----
-
-## Risks and Mitigations
-
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| AI API rate limits | High | Implement caching, fallback to local models |
-| Event delivery delays | Medium | Monitor lag, alert on threshold, replay failed events |
-| Database performance | Medium | Connection pooling, query optimization, caching |
-| Service discovery failure | High | Hardcode fallback URLs for critical services |
-
----
-
-## Glossary
-
-| Term | Definition |
-|------|------------|
-| **Agent** | AI-powered service that handles specific tutoring tasks |
-| **Mastery** | Measure of student proficiency (0-100%) |
-| **Sidecar** | Companion process that handles cross-cutting concerns |
-| **Event** | Message published when something of interest happens |
-| **Service Mesh** | Infrastructure layer that handles service-to-service communication |
-| **Stateless** | Service maintains no session data between requests |
-
----
-
-## References
-
-- Hackathon3.md: Complete project requirements
-- Phase 3 spec: Infrastructure deployment details
-- MCP Code Execution Pattern: Token optimization strategy
+These will be addressed in later phases.

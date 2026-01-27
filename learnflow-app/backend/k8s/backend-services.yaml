@@ -8,6 +8,8 @@ metadata:
   labels:
     app: triage-service
 spec:
+  imagePullSecrets:
+  - name: docr-secret
   replicas: 1
   selector:
     matchLabels:
@@ -16,11 +18,20 @@ spec:
     metadata:
       labels:
         app: triage-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "triage-service"
+        dapr.io/app-port: "8001"
+        dapr.io/log-level: "info"
+        dapr.io/sidecar-cpu-limit: "300m"
+        dapr.io/sidecar-memory-limit: "256Mi"
+        dapr.io/enable-app-health-check: "true"
+        dapr.io/app-health-check-path: "/health"
     spec:
       containers:
       - name: triage
-        image: learnflow-backend:latest
-        imagePullPolicy: IfNotPresent
+        image: registry.digitalocean.com/learnflow-registry/learnflow-backend:latest
+        imagePullPolicy: Always
         command: ["python", "-m", "uvicorn", "services.triage.main:app", "--host", "0.0.0.0", "--port", "8001"]
         ports:
         - containerPort: 8001
@@ -63,6 +74,8 @@ metadata:
   labels:
     app: concepts-service
 spec:
+  imagePullSecrets:
+  - name: docr-secret
   replicas: 1
   selector:
     matchLabels:
@@ -71,11 +84,20 @@ spec:
     metadata:
       labels:
         app: concepts-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "concepts-service"
+        dapr.io/app-port: "8002"
+        dapr.io/log-level: "info"
+        dapr.io/sidecar-cpu-limit: "300m"
+        dapr.io/sidecar-memory-limit: "256Mi"
+        dapr.io/enable-app-health-check: "true"
+        dapr.io/app-health-check-path: "/health"
     spec:
       containers:
       - name: concepts
-        image: learnflow-backend:latest
-        imagePullPolicy: IfNotPresent
+        image: registry.digitalocean.com/learnflow-registry/learnflow-backend:latest
+        imagePullPolicy: Always
         command: ["python", "-m", "uvicorn", "services.concepts.main:app", "--host", "0.0.0.0", "--port", "8002"]
         ports:
         - containerPort: 8002
@@ -113,6 +135,8 @@ metadata:
   labels:
     app: debug-service
 spec:
+  imagePullSecrets:
+  - name: docr-secret
   replicas: 1
   selector:
     matchLabels:
@@ -121,11 +145,20 @@ spec:
     metadata:
       labels:
         app: debug-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "debug-service"
+        dapr.io/app-port: "8003"
+        dapr.io/log-level: "info"
+        dapr.io/sidecar-cpu-limit: "300m"
+        dapr.io/sidecar-memory-limit: "256Mi"
+        dapr.io/enable-app-health-check: "true"
+        dapr.io/app-health-check-path: "/health"
     spec:
       containers:
       - name: debug
-        image: learnflow-backend:latest
-        imagePullPolicy: IfNotPresent
+        image: registry.digitalocean.com/learnflow-registry/learnflow-backend:latest
+        imagePullPolicy: Always
         command: ["python", "-m", "uvicorn", "services.debug.main:app", "--host", "0.0.0.0", "--port", "8003"]
         ports:
         - containerPort: 8003
@@ -163,6 +196,8 @@ metadata:
   labels:
     app: exercise-service
 spec:
+  imagePullSecrets:
+  - name: docr-secret
   replicas: 1
   selector:
     matchLabels:
@@ -171,11 +206,20 @@ spec:
     metadata:
       labels:
         app: exercise-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "exercise-service"
+        dapr.io/app-port: "8004"
+        dapr.io/log-level: "info"
+        dapr.io/sidecar-cpu-limit: "300m"
+        dapr.io/sidecar-memory-limit: "256Mi"
+        dapr.io/enable-app-health-check: "true"
+        dapr.io/app-health-check-path: "/health"
     spec:
       containers:
       - name: exercise
-        image: learnflow-backend:latest
-        imagePullPolicy: IfNotPresent
+        image: registry.digitalocean.com/learnflow-registry/learnflow-backend:latest
+        imagePullPolicy: Always
         command: ["python", "-m", "uvicorn", "services.exercise.main:app", "--host", "0.0.0.0", "--port", "8004"]
         ports:
         - containerPort: 8004
@@ -213,6 +257,8 @@ metadata:
   labels:
     app: progress-service
 spec:
+  imagePullSecrets:
+  - name: docr-secret
   replicas: 1
   selector:
     matchLabels:
@@ -221,11 +267,20 @@ spec:
     metadata:
       labels:
         app: progress-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "progress-service"
+        dapr.io/app-port: "8005"
+        dapr.io/log-level: "info"
+        dapr.io/sidecar-cpu-limit: "300m"
+        dapr.io/sidecar-memory-limit: "256Mi"
+        dapr.io/enable-app-health-check: "true"
+        dapr.io/app-health-check-path: "/health"
     spec:
       containers:
       - name: progress
-        image: learnflow-backend:latest
-        imagePullPolicy: IfNotPresent
+        image: registry.digitalocean.com/learnflow-registry/learnflow-backend:latest
+        imagePullPolicy: Always
         command: ["python", "-m", "uvicorn", "services.progress.main:app", "--host", "0.0.0.0", "--port", "8005"]
         ports:
         - containerPort: 8005
@@ -263,6 +318,8 @@ metadata:
   labels:
     app: code-review-service
 spec:
+  imagePullSecrets:
+  - name: docr-secret
   replicas: 1
   selector:
     matchLabels:
@@ -271,11 +328,20 @@ spec:
     metadata:
       labels:
         app: code-review-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "code-review-service"
+        dapr.io/app-port: "8006"
+        dapr.io/log-level: "info"
+        dapr.io/sidecar-cpu-limit: "300m"
+        dapr.io/sidecar-memory-limit: "256Mi"
+        dapr.io/enable-app-health-check: "true"
+        dapr.io/app-health-check-path: "/health"
     spec:
       containers:
       - name: code-review
-        image: learnflow-backend:latest
-        imagePullPolicy: IfNotPresent
+        image: registry.digitalocean.com/learnflow-registry/learnflow-backend:latest
+        imagePullPolicy: Always
         command: ["python", "-m", "uvicorn", "services.code_review.main:app", "--host", "0.0.0.0", "--port", "8006"]
         ports:
         - containerPort: 8006

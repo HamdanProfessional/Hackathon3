@@ -1,0 +1,26 @@
+{
+  "id": "api-reference",
+  "title": "API Reference",
+  "description": "Complete API documentation for all LearnFlow backend services.",
+  "source": "@site/docs/api-reference.md",
+  "sourceDirName": ".",
+  "slug": "/api-reference",
+  "permalink": "/api-reference",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/learnflow/docs/tree/main/docs/api-reference.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "API Reference"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Contributing",
+    "permalink": "/development/contributing"
+  },
+  "next": {
+    "title": "Kubernetes",
+    "permalink": "/deployment/kubernetes"
+  }
+}

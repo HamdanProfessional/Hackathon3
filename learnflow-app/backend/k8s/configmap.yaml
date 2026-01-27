@@ -1,0 +1,46 @@
+---
+# ConfigMap for LearnFlow Backend Services
+# Contains non-sensitive configuration values
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: learnflow-config
+  namespace: learnflow
+data:
+  # Service URLs for inter-service communication
+  triage-service-url: "http://triage-service:8001"
+  concepts-service-url: "http://concepts-service:8002"
+  debug-service-url: "http://debug-service:8003"
+  exercise-service-url: "http://exercise-service:8004"
+  progress-service-url: "http://progress-service:8005"
+  code-review-service-url: "http://code-review-service:8006"
+
+  # Kafka configuration
+  kafka-brokers: "learnflow-kafka.learnflow.svc.cluster.local:9092"
+  kafka-topics: "learning.progress,code.submission,exercise.attempt,struggle.alert"
+
+  # Dapr configuration
+  dapr-http-port: "3500"
+  dapr-grpc-port: "50001"
+  pubsub-component: "learnflow-pubsub"
+  statestore-component: "learnflow-statestore"
+
+  # Application settings
+  log-level: "INFO"
+  environment: "production"
+  max-concurrent-requests: "100"
+  request-timeout: "30"
+
+  # OpenAI API settings (endpoint only, key in secret)
+  openai-api-base: "https://api.openai.com/v1"
+  openai-model: "gpt-4o-mini"
+  openai-max-tokens: "1000"
+  openai-temperature: "0.7"
+
+  # Frontend URL (for CORS)
+  frontend-url: "http://localhost:3000"
+
+  # Feature flags
+  enable-dapr: "true"
+  enable-kafka-events: "true"
+  enable-state-management: "true"
