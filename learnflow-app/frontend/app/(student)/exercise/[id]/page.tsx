@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useCodeStore } from '@/stores/codeStore';
+import { useUserStore } from '@/stores/userStore';
 import { api } from '@/lib/api';
 import EditorPanel from '@/components/EditorPanel';
 import OutputPanel from '@/components/OutputPanel';
@@ -102,6 +103,7 @@ export default function ExercisePage() {
   const params = useParams();
   const router = useRouter();
   const { setExerciseId, setExerciseTitle, resetCode, code, runCode, isRunning } = useCodeStore();
+  const user = useUserStore((state) => state.user);
 
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [hintIndex, setHintIndex] = useState(0);
@@ -164,10 +166,13 @@ export default function ExercisePage() {
 
     setSubmitResult(null);
 
+    // Get student ID from user context
+    const studentId = user?.studentId || user?.id || 'default-student';
+
     const response = await api.submitExercise({
       exerciseId: exercise.id,
       code,
-      studentId: 'mock-user-id',
+      studentId,
       submittedAt: new Date().toISOString(),
     });
 

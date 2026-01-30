@@ -96,8 +96,12 @@ export default function StudentDashboardPage() {
           setExerciseCount(totalExercises);
         }
 
+        // Get user ID from store
+        const user = useUserStore.getState().user;
+        const studentId = user?.studentId || user?.id || 'default-student';
+
         // Fetch progress from progress service
-        const progressRes = await fetch('http://134.209.154.247:30805/progress/mock-user-id');
+        const progressRes = await fetch(`http://134.209.154.247:30805/progress/${studentId}`);
         if (progressRes.ok) {
           const progressData = await progressRes.json();
           // Calculate progress based on completed exercises
@@ -106,15 +110,32 @@ export default function StudentDashboardPage() {
           const progressPercent = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
           setProgress(progressPercent);
           setXp(totalCompleted * 10); // 10 XP per exercise
-          setStreak(5); // Mock streak
+
+          // Get streak from localStorage or default to 0
+          const streakFromStorage = localStorage.getItem('learnflow_streak');
+          setStreak(streakFromStorage ? parseInt(streakFromStorage, 10) : 0);
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
-        // Set fallback values
-        setExerciseCount(43); // We have 43 exercises in total
-        setProgress(45);
-        setStreak(5);
-        setXp(1250);
+        // Set safe fallback values (not hardcoded mocks)
+        setExerciseCount(0);
+        setProgress(0);
+        setStreak(0);
+        setXp(0);
+
+        // Try to get saved values from localStorage
+        try {
+          const savedProgress = localStorage.getItem('learnflow_progress');
+          if (savedProgress) {
+            const progress = JSON.parse(savedProgress);
+            setExerciseCount(progress.exerciseCount || 0);
+            setProgress(progress.progress || 0);
+            setStreak(progress.streak || 0);
+            setXp(progress.xp || 0);
+          }
+        } catch (e) {
+          // Ignore localStorage errors
+        }
       }
     };
 

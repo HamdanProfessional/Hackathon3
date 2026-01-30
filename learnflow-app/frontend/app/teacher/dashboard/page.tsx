@@ -36,7 +36,9 @@ export default function TeacherDashboardPage() {
   const statsEventSource = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    const classId = 'class-1'; // In production, get from user context
+    // Get class ID from user context or environment
+    // In production, teachers have their class ID assigned to their account
+    const classId = process.env.NEXT_PUBLIC_DEFAULT_CLASS_ID || 'class-1';
 
     const loadData = async () => {
       setIsLoading(true);

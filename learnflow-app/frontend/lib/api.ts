@@ -32,11 +32,12 @@ function getAuthToken(): string | null {
 }
 
 /**
- * Base API request function with authentication
+ * Base API request function with authentication and timeout
  */
 async function apiRequest<T>(
   url: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  timeoutMs: number = 30000 // 30 second default timeout
 ): Promise<ApiResponse<T>> {
   const token = getAuthToken();
 
@@ -46,11 +47,19 @@ async function apiRequest<T>(
     ...options.headers,
   };
 
+  // Create abort controller for timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
     const response = await fetch(url, {
       ...options,
       headers,
+      signal: controller.signal,
     });
+
+    // Clear timeout on successful response
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -66,9 +75,24 @@ async function apiRequest<T>(
       data,
     };
   } catch (error) {
+    // Clear timeout on error
+    clearTimeout(timeoutId);
+
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        return {
+          success: false,
+          error: `Request timeout after ${timeoutMs}ms`,
+        };
+      }
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Network error',
+      error: 'Network error',
     };
   }
 }

@@ -177,7 +177,15 @@ export default function ModulesPage() {
   const user = useUserStore((state) => state.user);
   const [mounted, setMounted] = useState(false);
   const [modules, setModules] = useState<Module[]>(defaultModules);
-  const [quickExercises, setQuickExercises] = useState<any[]>([]);
+  const [quickExercises, setQuickExercises] = useState<Array<{
+  id: string;
+  title: string;
+  difficulty: string;
+  description: string;
+  module_id: string;
+  topic: string;
+  points: number;
+}>>([]);
 
   useEffect(() => {
     setMounted(true);
