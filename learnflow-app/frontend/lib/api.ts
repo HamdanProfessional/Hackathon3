@@ -184,7 +184,7 @@ export async function generateExercise(
   difficulty?: 'easy' | 'medium' | 'hard',
   topic?: string
 ): Promise<ApiResponse<Exercise>> {
-  return apiRequest<Exercise>(`${SERVICES.exercise}/api/v1/exercise/generate`, {
+  return apiRequest<Exercise>(`${SERVICES.exercise}/generate`, {
     method: 'POST',
     body: JSON.stringify({ moduleId, difficulty, topic }),
   });
@@ -194,7 +194,7 @@ export async function generateExercise(
  * Get an exercise by ID
  */
 export async function getExercise(exerciseId: string): Promise<ApiResponse<Exercise>> {
-  return apiRequest<Exercise>(`${SERVICES.exercise}/api/v1/exercise/${exerciseId}`);
+  return apiRequest<Exercise>(`${SERVICES.exercise}/exercise/${exerciseId}`);
 }
 
 /**
@@ -203,7 +203,7 @@ export async function getExercise(exerciseId: string): Promise<ApiResponse<Exerc
 export async function submitExercise(
   submission: ExerciseSubmission
 ): Promise<ApiResponse<ExerciseResult>> {
-  return apiRequest<ExerciseResult>(`${SERVICES.exercise}/api/v1/exercise/submit`, {
+  return apiRequest<ExerciseResult>(`${SERVICES.exercise}/submit`, {
     method: 'POST',
     body: JSON.stringify(submission),
   });
@@ -232,7 +232,7 @@ export async function executeCode(
 export async function getStudentProgress(
   studentId: string
 ): Promise<ApiResponse<StudentProgress>> {
-  return apiRequest<StudentProgress>(`${SERVICES.progress}/api/v1/progress/${studentId}`);
+  return apiRequest<StudentProgress>(`${SERVICES.progress}/progress/${studentId}`);
 }
 
 /**
@@ -242,8 +242,8 @@ export async function updateProgress(
   studentId: string,
   data: Partial<StudentProgress>
 ): Promise<ApiResponse<StudentProgress>> {
-  return apiRequest<StudentProgress>(`${SERVICES.progress}/api/v1/progress/${studentId}`, {
-    method: 'PATCH',
+  return apiRequest<StudentProgress>(`${SERVICES.progress}/update`, {
+    method: 'POST',
     body: JSON.stringify(data),
   });
 }
@@ -254,7 +254,7 @@ export async function updateProgress(
 export async function getClassProgress(
   classId: string
 ): Promise<ApiResponse<StudentProgress[]>> {
-  return apiRequest<StudentProgress[]>(`${SERVICES.progress}/api/v1/progress/class/${classId}`);
+  return apiRequest<StudentProgress[]>(`${SERVICES.progress}/progress/class/${classId}`);
 }
 
 /**

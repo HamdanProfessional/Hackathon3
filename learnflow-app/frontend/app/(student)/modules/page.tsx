@@ -189,6 +189,9 @@ export default function ModulesPage() {
 
   useEffect(() => {
     setMounted(true);
+    // Reset modules to default state on mount to clear stale data
+    setModules(defaultModules.map(m => ({ ...m, progress: 0 })));
+
     // Fetch modules and exercises from API
     const fetchData = async () => {
       try {
