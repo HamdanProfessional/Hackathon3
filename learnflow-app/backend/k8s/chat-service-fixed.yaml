@@ -1,0 +1,287 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-service
+  namespace: learnflow
+  labels:
+    app: chat-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-service
+  template:
+    metadata:
+      labels:
+        app: chat-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "chat-service"
+        dapr.io/app-port: "8007"
+        dapr.io/log-level: "info"
+        dapr.io/sidecar-cpu-limit: "300m"
+        dapr.io/sidecar-memory-limit: "256Mi"
+        dapr.io/enable-app-health-check: "true"
+        dapr.io/app-health-check-path: "/health"
+    spec:
+      containers:
+      - name: chat
+        image: python:3.13-slim
+        imagePullPolicy: Always
+        command:
+        - sh
+        - -c
+        - |
+          set -e
+          # Install dependencies
+          pip install --no-cache-dir uv fastapi uvicorn sqlalchemy psycopg2-binary pydantic
+
+          # Create directory structure
+          mkdir -p /app/services/chat
+          touch /app/services/__init__.py
+          touch /app/services/chat/__init__.py
+
+          # Write the chat service code with FIXED endpoint path
+          cat > /app/services/chat/main.py << 'EOFPYTHON'
+          from datetime import datetime
+          from typing import List, Optional
+          from uuid import uuid4
+          from fastapi import FastAPI, HTTPException
+          from pydantic import BaseModel
+          from sqlalchemy import create_engine, Column, String, DateTime, Text
+          from sqlalchemy.ext.declarative import declarative_base
+          from sqlalchemy.orm import sessionmaker
+
+          DATABASE_URL = "postgresql://postgres:learnflow123@learnflow-postgres-postgresql:5432/learnflow"
+          engine = create_engine(DATABASE_URL)
+          SessionLocal = sessionmaker(bind=engine)
+          Base = declarative_base()
+
+          class Conversation(Base):
+              __tablename__ = "conversations"
+              conversation_id = Column(String, primary_key=True)
+              student_id = Column(String, nullable=False, index=True)
+              title = Column(String, default="New Chat")
+              created_at = Column(DateTime, default=datetime.utcnow)
+              updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+          class Message(Base):
+              __tablename__ = "messages"
+              message_id = Column(String, primary_key=True)
+              conversation_id = Column(String, nullable=False, index=True)
+              role = Column(String, nullable=False)
+              content = Column(Text, nullable=False)
+              timestamp = Column(DateTime, default=datetime.utcnow)
+
+          Base.metadata.create_all(bind=engine)
+
+          class ConversationCreate(BaseModel):
+              student_id: str
+              title: Optional[str] = "New Chat"
+
+          class ConversationResponse(BaseModel):
+              conversation_id: str
+              student_id: str
+              title: str
+              created_at: str
+              updated_at: str
+
+          class MessageCreate(BaseModel):
+              conversation_id: str
+              role: str
+              content: str
+
+          class MessageResponse(BaseModel):
+              message_id: str
+              conversation_id: str
+              role: str
+              content: str
+              timestamp: str
+
+          class ConversationWithMessages(ConversationResponse):
+              messages: List[MessageResponse]
+
+          class ConversationsListResponse(BaseModel):
+              conversations: List[ConversationResponse]
+              total_count: int
+
+          app = FastAPI(title="Chat Service", description="Manages persistent conversations", version="1.0.0")
+
+          @app.get("/health")
+          async def health_check():
+              return {"status": "healthy", "service": "chat"}
+
+          @app.post("/api/v1/conversations", response_model=ConversationResponse)
+          async def create_conversation(request: ConversationCreate):
+              db = SessionLocal()
+              try:
+                  conversation = Conversation(
+                      conversation_id=str(uuid4()),
+                      student_id=request.student_id,
+                      title=request.title
+                  )
+                  db.add(conversation)
+                  db.commit()
+                  db.refresh(conversation)
+                  return ConversationResponse(
+                      conversation_id=conversation.conversation_id,
+                      student_id=conversation.student_id,
+                      title=conversation.title,
+                      created_at=conversation.created_at.isoformat(),
+                      updated_at=conversation.updated_at.isoformat()
+                  )
+              finally:
+                  db.close()
+
+          @app.get("/api/v1/conversations/{student_id}", response_model=ConversationsListResponse)
+          async def list_conversations(student_id: str, limit: int = 50, offset: int = 0):
+              db = SessionLocal()
+              try:
+                  query = db.query(Conversation).filter(
+                      Conversation.student_id == student_id
+                  ).order_by(Conversation.updated_at.desc())
+                  total_count = query.count()
+                  conversations = query.limit(limit).offset(offset).all()
+                  return ConversationsListResponse(
+                      conversations=[
+                          ConversationResponse(
+                              conversation_id=c.conversation_id,
+                              student_id=c.student_id,
+                              title=c.title,
+                              created_at=c.created_at.isoformat(),
+                              updated_at=c.updated_at.isoformat()
+                          )
+                          for c in conversations
+                      ],
+                      total_count=total_count
+                  )
+              finally:
+                  db.close()
+
+          # FIXED: Correct endpoint path - /details at the END
+          @app.get("/api/v1/conversations/{conversation_id}/details", response_model=ConversationWithMessages)
+          async def get_conversation(conversation_id: str):
+              db = SessionLocal()
+              try:
+                  conversation = db.query(Conversation).filter(
+                      Conversation.conversation_id == conversation_id
+                  ).first()
+                  if not conversation:
+                      raise HTTPException(status_code=404, detail="Conversation not found")
+                  messages = db.query(Message).filter(
+                      Message.conversation_id == conversation_id
+                  ).order_by(Message.timestamp.asc()).all()
+                  return ConversationWithMessages(
+                      conversation_id=conversation.conversation_id,
+                      student_id=conversation.student_id,
+                      title=conversation.title,
+                      created_at=conversation.created_at.isoformat(),
+                      updated_at=conversation.updated_at.isoformat(),
+                      messages=[
+                          MessageResponse(
+                              message_id=m.message_id,
+                              conversation_id=m.conversation_id,
+                              role=m.role,
+                              content=m.content,
+                              timestamp=m.timestamp.isoformat()
+                          )
+                          for m in messages
+                      ]
+                  )
+              finally:
+                  db.close()
+
+          @app.post("/api/v1/messages", response_model=MessageResponse)
+          async def send_message(request: MessageCreate):
+              db = SessionLocal()
+              try:
+                  conversation = db.query(Conversation).filter(
+                      Conversation.conversation_id == request.conversation_id
+                  ).first()
+                  if not conversation:
+                      raise HTTPException(status_code=404, detail="Conversation not found")
+                  message = Message(
+                      message_id=str(uuid4()),
+                      conversation_id=request.conversation_id,
+                      role=request.role,
+                      content=request.content
+                  )
+                  db.add(message)
+                  conversation.updated_at = datetime.utcnow()
+                  db.commit()
+                  db.refresh(message)
+                  return MessageResponse(
+                      message_id=message.message_id,
+                      conversation_id=message.conversation_id,
+                      role=message.role,
+                      content=message.content,
+                      timestamp=message.timestamp.isoformat()
+                  )
+              finally:
+                  db.close()
+
+          @app.delete("/api/v1/conversations/{conversation_id}")
+          async def delete_conversation(conversation_id: str):
+              db = SessionLocal()
+              try:
+                  db.query(Message).filter(
+                      Message.conversation_id == conversation_id
+                  ).delete()
+                  result = db.query(Conversation).filter(
+                      Conversation.conversation_id == conversation_id
+                  ).delete()
+                  if result == 0:
+                      raise HTTPException(status_code=404, detail="Conversation not found")
+                  db.commit()
+                  return {"message": "Conversation deleted successfully"}
+              finally:
+                  db.close()
+
+          @app.get("/")
+          async def root():
+              return {
+                  "service": "Chat Service",
+                  "status": "running",
+                  "endpoints": {
+                      "health": "/health",
+                      "create_conversation": "POST /api/v1/conversations",
+                      "list_conversations": "GET /api/v1/conversations/{student_id}",
+                      "get_conversation": "GET /api/v1/conversations/{conversation_id}/details",
+                      "send_message": "POST /api/v1/messages",
+                      "delete_conversation": "DELETE /api/v1/conversations/{conversation_id}"
+                  }
+              }
+
+          if __name__ == "__main__":
+              import uvicorn
+              uvicorn.run(app, host="0.0.0.0", port=8007)
+          EOFPYTHON
+
+          # Run the service
+          cd /app && python -m uvicorn services.chat.main:app --host 0.0.0.0 --port 8007
+        env:
+        - name: PORT
+          value: "8007"
+        ports:
+        - containerPort: 8007
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat-service
+  namespace: learnflow
+spec:
+  type: NodePort
+  selector:
+    app: chat-service
+  ports:
+  - port: 8007
+    targetPort: 8007
+    nodePort: 30807
