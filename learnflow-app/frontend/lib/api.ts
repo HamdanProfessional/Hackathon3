@@ -13,14 +13,25 @@ import type {
   ClassOverview,
 } from '@/types';
 
+// Service URLs - use proxy path for production (HTTPS) to avoid mixed content
+// Fall back to direct URLs for development
+const USE_PROXY = typeof window !== 'undefined' && window.location.protocol === 'https:';
+
+const getBaseUrl = (serviceName: string, directUrl: string) => {
+  if (USE_PROXY) {
+    return `/api/backend/${serviceName}`;
+  }
+  return directUrl;
+};
+
 const SERVICES = {
-  triage: (process.env.NEXT_PUBLIC_TRIAGE_URL || 'http://localhost:8001').trim(),
-  concepts: (process.env.NEXT_PUBLIC_CONCEPTS_URL || 'http://localhost:8002').trim(),
-  debug: (process.env.NEXT_PUBLIC_DEBUG_URL || 'http://localhost:8003').trim(),
-  exercise: (process.env.NEXT_PUBLIC_EXERCISE_URL || 'http://localhost:8004').trim(),
-  progress: (process.env.NEXT_PUBLIC_PROGRESS_URL || 'http://localhost:8005').trim(),
-  codeReview: (process.env.NEXT_PUBLIC_CODE_REVIEW_URL || 'http://localhost:8006').trim(),
-  chat: (process.env.NEXT_PUBLIC_CHAT_URL || 'http://localhost:8007').trim(),
+  triage: getBaseUrl('triage', (process.env.NEXT_PUBLIC_TRIAGE_URL || 'http://localhost:8001').trim()),
+  concepts: getBaseUrl('concepts', (process.env.NEXT_PUBLIC_CONCEPTS_URL || 'http://localhost:8002').trim()),
+  debug: getBaseUrl('debug', (process.env.NEXT_PUBLIC_DEBUG_URL || 'http://localhost:8003').trim()),
+  exercise: getBaseUrl('exercise', (process.env.NEXT_PUBLIC_EXERCISE_URL || 'http://localhost:8004').trim()),
+  progress: getBaseUrl('progress', (process.env.NEXT_PUBLIC_PROGRESS_URL || 'http://localhost:8005').trim()),
+  codeReview: getBaseUrl('code-review', (process.env.NEXT_PUBLIC_CODE_REVIEW_URL || 'http://localhost:8006').trim()),
+  chat: getBaseUrl('chat', (process.env.NEXT_PUBLIC_CHAT_URL || 'http://localhost:8007').trim()),
 };
 
 /**
@@ -207,6 +218,19 @@ export async function submitExercise(
     method: 'POST',
     body: JSON.stringify(submission),
   });
+}
+
+/**
+ * Get all modules
+ */
+export async function getModules(): Promise<ApiResponse<Record<string, {
+  id: string;
+  name: string;
+  order: number;
+  topics: string[];
+  exercises: string[];
+}>>> {
+  return apiRequest(`${SERVICES.exercise}/modules`);
 }
 
 /**
