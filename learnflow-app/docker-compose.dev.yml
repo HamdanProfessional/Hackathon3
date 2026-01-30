@@ -227,6 +227,37 @@ services:
     networks:
       - learnflow-dev
 
+  # MCP Kafka Events Server
+  mcp-kafka-events:
+    build:
+      context: ./backend/mcp-servers/kafka-events-mcp
+      dockerfile: Dockerfile
+    container_name: learnflow-mcp-kafka-events-dev
+    environment:
+      DAPR_HTTP_PORT: 3500
+      PUBSUB_COMPONENT: learnflow-pubsub
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "9002:9002"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - learnflow-dev
+
+  # MCP Kubernetes Operations Server
+  mcp-k8s-operations:
+    build:
+      context: ./backend/mcp-servers/k8s-operations-mcp
+      dockerfile: Dockerfile
+    container_name: learnflow-mcp-k8s-ops-dev
+    environment:
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "9003:9003"
+    networks:
+      - learnflow-dev
+
   # Frontend (Development Mode)
   frontend:
     build:
