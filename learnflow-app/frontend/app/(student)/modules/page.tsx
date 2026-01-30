@@ -199,16 +199,21 @@ export default function ModulesPage() {
         // Get modules from backend
         const modulesRes = await api.getModules();
         if (modulesRes.success && modulesRes.data) {
-          // Update modules with actual data from backend
-          const updatedModules = Object.entries(modulesRes.data).map(([key, moduleData]: [string, any]) => ({
-            id: key,
+          // The API returns {modules: [{id, name, exercises}, ...]}
+          const modulesArray = modulesRes.data.modules || modulesRes.data;
+
+          // Map array of modules to our Module interface
+          const updatedModules = (Array.isArray(modulesArray) ? modulesArray : Object.values(modulesArray)).map((moduleData: any) => ({
+            id: moduleData.id,
             name: moduleData.name,
-            description: `${moduleData.topics?.slice(0, 3).join(', ') || 'Python topics'}`,
-            difficulty: key === 'basics' ? 'beginner' as const : key === 'control_flow' ? 'intermediate' as const : 'advanced' as const,
-            icon: getModuleIcon(key),
+            description: `Learn ${moduleData.topics?.join(', ') || 'Python topics'}`,
+            difficulty: moduleData.id === 'basics' ? 'beginner' as const :
+                        moduleData.id === 'control_flow' ? 'intermediate' as const :
+                        moduleData.id === 'functions' ? 'intermediate' as const : 'advanced' as const,
+            icon: getModuleIcon(moduleData.id),
             topics: moduleData.topics || [],
             progress: 0,
-            exercises: moduleData.exercises?.length || 0,
+            exercises: moduleData.exercises || 0,
           }));
           setModules(updatedModules);
         }
