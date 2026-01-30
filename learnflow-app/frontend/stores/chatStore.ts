@@ -260,9 +260,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         });
       } else {
         console.error('Failed to load conversation:', result.error);
+        // Start fresh with empty conversation if not found
+        set({ messages: [], conversationId: targetId });
       }
     } catch (error) {
       console.error('Error loading conversation:', error);
+      // Start fresh with empty conversation on any error
+      set({ messages: [], conversationId: targetId });
     } finally {
       set({ isLoading: false });
     }
@@ -285,8 +289,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         set({ messages: [], conversationId: null });
       }
     } catch (error) {
-      // Service unavailable - start fresh without error
-      console.warn('Chat service unavailable, starting with empty conversation');
+      // Service unavailable or error - start fresh without error
+      console.warn('Chat service unavailable or error, starting with empty conversation');
       set({ messages: [], conversationId: null });
     } finally {
       set({ isLoading: false });

@@ -269,7 +269,7 @@ export default function ExercisePage() {
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Instructions Panel */}
-        <div className="w-full md:w-1/3 overflow-auto border-r border-border bg-card/50 backdrop-blur-sm p-6">
+        <div className="w-full md:w-1/3 overflow-auto border-r border-border bg-card/50 backdrop-blur-sm p-4 md:p-6 order-2 md:order-1">
           <h2 className="mb-4 text-lg font-semibold text-foreground flex items-center gap-2">
             <svg className="h-5 w-5 text-cosmic-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.5a2 2 0 012 2v14a2 2 0 01-2 2h-3.5a2 2 0 01-2-2V9a2 2 0 012-2h1.5" />
@@ -328,8 +328,8 @@ export default function ExercisePage() {
         </div>
 
         {/* Editor and Output */}
-        <div className="hidden md:flex flex-1 flex-col">
-          <div className="flex flex-1 flex-col border-b border-border p-4">
+        <div className="flex flex-1 flex-col md:flex-row">
+          <div className="flex flex-1 flex-col border-b border-border md:border-b-0 md:border-r border-border p-2 md:p-4">
             <EditorPanel
               onRun={handleRun}
               onSubmit={handleSubmit}
@@ -337,7 +337,7 @@ export default function ExercisePage() {
               starterCode={exercise.starterCode}
             />
           </div>
-          <div className="h-64 p-4">
+          <div className="h-32 md:h-64 p-2 md:p-4">
             <OutputPanel />
           </div>
         </div>
