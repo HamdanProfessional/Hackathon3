@@ -1,0 +1,58 @@
+---
+# MCP Kafka Events Server Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-kafka-events-server
+  namespace: learnflow
+  labels:
+    app: mcp-kafka-events-server
+    tier: mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-kafka-events-server
+  template:
+    metadata:
+      labels:
+        app: mcp-kafka-events-server
+        tier: mcp
+    spec:
+      containers:
+      - name: mcp-kafka-events-server
+        image: registry.digitalocean.com/learnflow-registry/mcp-kafka-events-server:latest
+        imagePullPolicy: Always
+        command: ["python", "main.py"]
+        env:
+        - name: DAPR_HTTP_PORT
+          value: "3500"
+        - name: PUBSUB_COMPONENT
+          value: "learnflow-pubsub"
+        - name: LOG_LEVEL
+          value: "INFO"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-kafka-events-server
+  namespace: learnflow
+  labels:
+    app: mcp-kafka-events-server
+    tier: mcp
+spec:
+  type: ClusterIP
+  ports:
+  - port: 9002
+    targetPort: 9002
+    protocol: TCP
+    name: http
+  selector:
+    app: mcp-kafka-events-server

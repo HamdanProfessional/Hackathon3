@@ -1,0 +1,172 @@
+/**
+ * Copyright (c) 2026 LearnFlow. All rights reserved.
+ */
+
+:root {
+  --ifm-color-primary: #6366f1;
+  --ifm-color-secondary: #8b5cf6;
+  --ifm-color-success: #10b981;
+  --ifm-color-warning: #f59e0b;
+  --ifm-color-danger: #ef4444;
+  --ifm-color-dark: #1e1e2e;
+  --ifm-color-light: #f8f9fa;
+}
+
+[data-theme='dark'] {
+  --ifm-background: #0f172a;
+  --ifm-foreground: #e2e8f0;
+  --ifm-border: #334155;
+  --ifm-card-bg: #1e293b;
+  --ifm-table-head: #1e293b;
+  --ifm-table-row: #0f172a;
+  --ifm-table-stripe: #1e293b;
+  --ifm-code-bg: #1e293b;
+  --ifm-link-color: #6366f1;
+  --ifm-link-hover: #8b5cf6;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Hero section */
+.hero {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 1rem;
+  margin-bottom: 2rem;
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  opacity: 0.9;
+  margin-bottom: 2rem;
+}
+
+/* Feature cards */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.feature-card {
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--ifm-border);
+  background: var(--ifm-card-bg);
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border-color: var(--ifm-link-color);
+}
+
+.feature-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.feature-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--ifm-link-color);
+}
+
+/* Code blocks */
+pre {
+  border-radius: 0.5rem;
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+table th,
+table td {
+  padding: 0.75rem;
+  border: 1px solid var(--ifm-border);
+  text-align: left;
+}
+
+table thead {
+  background: var(--ifm-table-head);
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-success {
+  background: var(--ifm-color-success);
+  color: white;
+}
+
+.badge-warning {
+  background: var(--ifm-color-warning);
+  color: white;
+}
+
+.badge-danger {
+  background: var(--ifm-color-danger);
+  color: white;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ifm-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ifm-color-secondary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ifm-color-primary);
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
