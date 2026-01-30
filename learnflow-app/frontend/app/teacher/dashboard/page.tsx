@@ -40,13 +40,21 @@ export default function TeacherDashboardPage() {
     // In production, teachers have their class ID assigned to their account
     const classId = process.env.NEXT_PUBLIC_DEFAULT_CLASS_ID || 'class-1';
 
+    // Track if component is mounted to prevent state updates after unmount
+    let isMounted = true;
+    let sseTimeout: ReturnType<typeof setTimeout> | null = null;
+
     const loadData = async () => {
+      if (!isMounted) return;
+
       setIsLoading(true);
       setError(null);
 
       try {
         // Fetch class overview
         const overviewResponse = await api.getClassOverview(classId);
+        if (!isMounted) return;
+
         if (overviewResponse.success && overviewResponse.data) {
           setClassOverview(overviewResponse.data);
         } else {
@@ -56,6 +64,8 @@ export default function TeacherDashboardPage() {
 
         // Fetch alerts
         const alertsResponse = await api.getStruggleAlerts(classId, false);
+        if (!isMounted) return;
+
         if (alertsResponse.success && alertsResponse.data) {
           setAlerts(alertsResponse.data.alerts || []);
         } else {
@@ -63,24 +73,30 @@ export default function TeacherDashboardPage() {
           console.warn('Failed to load alerts:', alertsResponse.error);
         }
       } catch (err) {
+        if (!isMounted) return;
         console.error('Failed to load data:', err);
         setClassOverview(emptyClassOverview);
         setAlerts([]);
         setError('Failed to connect to server. Please check your connection.');
       }
 
-      setIsLoading(false);
+      if (isMounted) {
+        setIsLoading(false);
+      }
     };
 
     loadData();
 
     // Set up SSE for real-time alerts
     const setupSSE = () => {
+      if (!isMounted) return;
+
       // Subscribe to struggle alerts stream
       try {
         alertsEventSource.current = api.subscribeToStruggleAlerts(
           classId,
           (alert) => {
+            if (!isMounted) return;
             // New alert received
             setAlerts((prev) => {
               // Check if alert already exists
@@ -103,6 +119,7 @@ export default function TeacherDashboardPage() {
             setLastUpdate(new Date());
           },
           (error) => {
+            if (!isMounted) return;
             console.error('SSE alerts error:', error);
             setIsLive(false);
           }
@@ -112,33 +129,43 @@ export default function TeacherDashboardPage() {
         statsEventSource.current = api.subscribeToClassStats(
           classId,
           (stats) => {
+            if (!isMounted) return;
             setClassOverview(stats);
             setLastUpdate(new Date());
           },
           (error) => {
+            if (!isMounted) return;
             console.error('SSE stats error:', error);
             setIsLive(false);
           }
         );
 
-        setIsLive(true);
+        if (isMounted) {
+          setIsLive(true);
+        }
       } catch (error) {
+        if (!isMounted) return;
         console.error('Failed to set up SSE:', error);
         setIsLive(false);
       }
     };
 
     // Start SSE after initial data loads
-    const sseTimeout = setTimeout(setupSSE, 1000);
+    sseTimeout = setTimeout(setupSSE, 1000);
 
     // Cleanup function
     return () => {
-      clearTimeout(sseTimeout);
+      isMounted = false;
+      if (sseTimeout) {
+        clearTimeout(sseTimeout);
+      }
       if (alertsEventSource.current) {
         alertsEventSource.current.close();
+        alertsEventSource.current = null;
       }
       if (statsEventSource.current) {
         statsEventSource.current.close();
+        statsEventSource.current = null;
       }
     };
   }, []);

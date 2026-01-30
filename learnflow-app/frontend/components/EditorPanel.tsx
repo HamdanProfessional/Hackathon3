@@ -1,3 +1,4 @@
+import { useCallback, useRef, useEffect } from 'react';
 import { useCodeStore } from '@/stores/codeStore';
 import CodeEditor from './MonacoEditor';
 import EditorToolbar from './EditorToolbar';
@@ -11,6 +12,9 @@ interface EditorPanelProps {
   starterCode?: string;
 }
 
+// Debounce timeout in milliseconds
+const AUTOSAVE_DEBOUNCE_MS = 1000;
+
 export default function EditorPanel({
   onRun,
   onSubmit,
@@ -20,24 +24,39 @@ export default function EditorPanel({
   starterCode = '',
 }: EditorPanelProps) {
   const { code, setCode, runCode, isRunning } = useCodeStore();
+  const autosaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleRun = () => {
-    if (onRun) {
-      onRun();
-    } else {
-      runCode();
-    }
-  };
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autosaveTimeoutRef.current) {
+        clearTimeout(autosaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
-  const handleCodeChange = (newCode: string) => {
-    setCode(newCode);
-    // Auto-save to localStorage
+  // Debounced auto-save to localStorage
+  const saveToLocalStorage = useCallback((codeToSave: string) => {
     try {
-      localStorage.setItem('learnflow_code', newCode);
+      localStorage.setItem('learnflow_code', codeToSave);
     } catch (e) {
-      // Ignore localStorage errors
+      // Ignore localStorage errors (might be in private browsing mode)
     }
-  };
+  }, []);
+
+  const handleCodeChange = useCallback((newCode: string) => {
+    setCode(newCode);
+
+    // Clear previous timeout
+    if (autosaveTimeoutRef.current) {
+      clearTimeout(autosaveTimeoutRef.current);
+    }
+
+    // Set new timeout for auto-save (debounced by 1 second)
+    autosaveTimeoutRef.current = setTimeout(() => {
+      saveToLocalStorage(newCode);
+    }, AUTOSAVE_DEBOUNCE_MS);
+  }, [setCode, saveToLocalStorage]);
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border shadow-elevated bg-card">

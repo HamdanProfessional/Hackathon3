@@ -89,10 +89,19 @@ export default function StudentDashboardPage() {
     const fetchDashboardData = async () => {
       try {
         // Fetch exercise count from modules endpoint
-        const modulesRes = await fetch('http://134.209.154.247:30804/modules');
+        const exerciseUrl = (process.env.NEXT_PUBLIC_EXERCISE_URL || 'http://134.209.154.247:30804').trim();
+        const modulesRes = await fetch(`${exerciseUrl}/modules`);
         if (modulesRes.ok) {
           const modulesData = await modulesRes.json();
-          const totalExercises = modulesData.modules?.reduce((sum: number, m: any) => sum + (m.exercises || 0), 0) || 0;
+          // Calculate total exercises from all modules
+          let totalExercises = 0;
+          if (modulesData) {
+            for (const key in modulesData) {
+              if (modulesData[key]?.exercises?.length) {
+                totalExercises += modulesData[key].exercises.length;
+              }
+            }
+          }
           setExerciseCount(totalExercises);
         }
 
@@ -101,19 +110,25 @@ export default function StudentDashboardPage() {
         const studentId = user?.studentId || user?.id || 'default-student';
 
         // Fetch progress from progress service
-        const progressRes = await fetch(`http://134.209.154.247:30805/progress/${studentId}`);
+        const progressUrl = (process.env.NEXT_PUBLIC_PROGRESS_URL || 'http://134.209.154.247:30805').trim();
+        const progressRes = await fetch(`${progressUrl}/progress/${studentId}`);
         if (progressRes.ok) {
           const progressData = await progressRes.json();
           // Calculate progress based on completed exercises
-          const totalCompleted = progressData.reduce((sum: number, m: any) => sum + (m.exercises_completed || 0), 0);
-          const totalPossible = progressData.reduce((sum: number, m: any) => sum + (m.total_exercises || 0), 0);
+          const totalCompleted = progressData?.reduce?.((sum: number, m: { exercises_completed?: number }) => sum + (m.exercises_completed || 0), 0) ?? 0;
+          const totalPossible = progressData?.reduce?.((sum: number, m: { total_exercises?: number }) => sum + (m.total_exercises || 0), 0) ?? 0;
           const progressPercent = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
           setProgress(progressPercent);
           setXp(totalCompleted * 10); // 10 XP per exercise
 
           // Get streak from localStorage or default to 0
-          const streakFromStorage = localStorage.getItem('learnflow_streak');
-          setStreak(streakFromStorage ? parseInt(streakFromStorage, 10) : 0);
+          try {
+            const streakFromStorage = localStorage.getItem('learnflow_streak');
+            setStreak(streakFromStorage ? parseInt(streakFromStorage, 10) : 0);
+          } catch {
+            // localStorage might be unavailable
+            setStreak(0);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
