@@ -58,10 +58,15 @@ export default function EditorPanel({
     }, AUTOSAVE_DEBOUNCE_MS);
   }, [setCode, saveToLocalStorage]);
 
+  // Define local handleRun if no prop provided
+  const localHandleRun = useCallback(() => {
+    runCode();
+  }, [runCode]);
+
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border shadow-elevated bg-card">
       <EditorToolbar
-        onRun={handleRun}
+        onRun={onRun || localHandleRun}
         onSubmit={onSubmit}
         onHint={onHint}
         showSubmit={showSubmit}
