@@ -10,6 +10,7 @@ import { Activity, Wifi, WifiOff, Sparkles, RefreshCw } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { useUserStore } from '@/stores/userStore';
 
 // Empty state for when no data is available
 const emptyClassOverview: ClassOverviewType = {
@@ -22,6 +23,7 @@ const emptyClassOverview: ClassOverviewType = {
 };
 
 export default function TeacherDashboardPage() {
+  const user = useUserStore((state) => state.user);
   const [classOverview, setClassOverview] = useState<ClassOverviewType | null>(null);
   const [alerts, setAlerts] = useState<StruggleAlert[]>([]);
   const [assignments, setAssignments] = useState<Exercise[]>([]);

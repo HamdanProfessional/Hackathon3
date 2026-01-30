@@ -221,7 +221,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         console.error('Failed to delete conversation:', err);
       });
     }
-    set({ messages: [], conversationId: null });
+    set({
+      messages: [],
+      conversationId: null,
+      isStreaming: false,
+      currentStreamingMessage: '',
+      isLoading: false,
+    });
   },
 
   // Set conversation ID
