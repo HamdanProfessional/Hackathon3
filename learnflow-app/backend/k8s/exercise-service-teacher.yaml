@@ -1,0 +1,192 @@
+---
+# Exercise Service with Teacher Assignment Endpoints
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: exercise-teacher-endpoints
+  namespace: learnflow
+data:
+  teacher-endpoints.py: |
+    # Teacher Assignment Generation Endpoints
+    from fastapi import APIRouter, HTTPException
+    from pydantic import BaseModel
+    from typing import List, Optional
+    from uuid import uuid4
+
+    router = APIRouter(prefix="/api/v1/teacher", tags=["teacher"])
+
+    class TeacherAssignmentRequest(BaseModel):
+        prompt: str
+        difficulty: str  # 'beginner', 'intermediate', 'advanced'
+        topic: Optional[str] = None
+        module_id: Optional[str] = None
+
+    @router.post("/generate-assignment")
+    async def generate_assignment(request: TeacherAssignmentRequest):
+        from main import Exercise
+        exercise_id = f"teacher_{uuid4().hex[:8]}"
+        difficulty_points = {"beginner": 10, "intermediate": 25, "advanced": 40}
+
+        generated = Exercise(
+            id=exercise_id,
+            title=f"Custom: {request.prompt[:50]}...",
+            difficulty=request.difficulty,
+            description=f"Complete: {request.prompt}",
+            instructions=f"Task: {request.prompt}\nDifficulty: {request.difficulty}\nTopic: {request.topic or 'General'}",
+            starter_code=f"# {request.difficulty} exercise\n# {request.prompt}\n\n",
+            solution="print('Solution placeholder')",
+            test_cases=[],
+            hints=["Break down the problem", "Test your code"],
+            skills=[request.topic.lower() if request.topic else "problem-solving"],
+            points=difficulty_points.get(request.difficulty, 20),
+            module_id=request.module_id or "custom",
+            topic=request.topic or "Custom"
+        )
+        return {"exercise": generated.model_dump(), "preview": f"Generated: {generated.title}"}
+
+    @router.post("/save-assignment")
+    async def save_assignment(exercise_id: str, student_ids: List[str], note: Optional[str] = None):
+        return {"message": f"Saved {exercise_id} for {len(student_ids)} students", "exercise_id": exercise_id}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exercise-service
+  namespace: learnflow
+  labels:
+    app: exercise-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exercise-service
+  template:
+    metadata:
+      labels:
+        app: exercise-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "exercise-service"
+        dapr.io/app-port: "8004"
+        dapr.io/log-level: "info"
+        dapr.io/sidecar-cpu-limit: "300m"
+        dapr.io/sidecar-memory-limit: "256Mi"
+        dapr.io/enable-app-health-check: "true"
+        dapr.io/app-health-check-path: "/health"
+    spec:
+      containers:
+      - name: exercise
+        image: python:3.13-slim
+        imagePullPolicy: Always
+        command:
+        - sh
+        - -c
+        - |
+          set -e
+          pip install --no-cache-dir uv fastapi uvicorn pydantic httpx
+          mkdir -p /app/services/exercise
+          touch /app/services/__init__.py /app/services/exercise/__init__.py
+
+          cat > /app/services/exercise/teacher.py << 'TEACHERPY'
+          from fastapi import APIRouter, HTTPException
+          from pydantic import BaseModel
+          from typing import List, Optional
+          from uuid import uuid4
+
+          router = APIRouter(prefix="/api/v1/teacher", tags=["teacher"])
+
+          class TeacherAssignmentRequest(BaseModel):
+              prompt: str
+              difficulty: str
+              topic: Optional[str] = None
+              module_id: Optional[str] = None
+
+          @router.post("/generate-assignment")
+          async def generate_assignment(request: TeacherAssignmentRequest):
+              exercise_id = f"teacher_{uuid4().hex[:8]}"
+              difficulty_points = {"beginner": 10, "intermediate": 25, "advanced": 40}
+
+              generated = {
+                  "id": exercise_id,
+                  "title": f"Custom: {request.prompt[:50]}",
+                  "difficulty": request.difficulty,
+                  "description": f"Complete: {request.prompt}",
+                  "instructions": f"Task: {request.prompt}\nDifficulty: {request.difficulty}",
+                  "starter_code": f"# {request.difficulty} exercise\n# {request.prompt}\n",
+                  "solution": "print('Solution')",
+                  "test_cases": [],
+                  "hints": ["Break it down"],
+                  "skills": [request.topic.lower() if request.topic else "problem-solving"],
+                  "points": difficulty_points.get(request.difficulty, 20),
+                  "module_id": request.module_id or "custom",
+                  "topic": request.topic or "Custom"
+              }
+              return {"exercise": generated, "preview": f"Created: {generated['title']}"}
+
+          @router.post("/save-assignment")
+          async def save_assignment(exercise_id: str, student_ids: List[str], note: Optional[str] = None):
+              return {"message": f"Assigned {exercise_id} to {len(student_ids)} students"}
+          TEACHERPY
+
+          # Write main service
+          cat > /app/services/exercise/main.py << 'MAINPY'
+          from fastapi import FastAPI
+          from fastapi.middleware.cors import CORSMiddleware
+          import importlib
+
+          app = FastAPI(title="Exercise Service")
+          app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+          # Load teacher endpoints
+          teacher = importlib.import_module("services.exercise.teacher")
+          app.include_router(teacher.router)
+
+          # Basic endpoints
+          @app.get("/")
+          async def root():
+              return {"service": "exercise-service", "status": "running"}
+
+          @app.get("/health")
+          async def health():
+              return {"status": "healthy", "service": "exercise-service"}
+
+          # Sample exercises
+          @app.get("/exercises/all")
+          async def get_all_exercises():
+              return {"exercises": [], "total": 0}
+
+          @app.get("/exercise/{exercise_id}")
+          async def get_exercise(exercise_id: str):
+              return {"id": exercise_id, "title": "Sample Exercise"}
+
+          if __name__ == "__main__":
+              import uvicorn
+              uvicorn.run(app, host="0.0.0.0", port=8004)
+          MAINPY
+
+          cd /app && python -m uvicorn services.exercise.main:app --host 0.0.0.0 --port 8004
+        ports:
+        - containerPort: 8004
+        env:
+        - name: PORT
+          value: "8004"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: exercise-service
+  namespace: learnflow
+spec:
+  selector:
+    app: exercise-service
+  ports:
+  - port: 8004
+    targetPort: 8004
+  type: ClusterIP
