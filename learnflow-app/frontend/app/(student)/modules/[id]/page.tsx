@@ -151,15 +151,45 @@ export default function ModuleDetailPage() {
   const params = useParams();
   const router = useRouter();
   const [module, setModule] = useState<Module | null>(null);
+  const [exercises, setExercises] = useState<Array<{
+    id: string;
+    title: string;
+    description: string;
+    difficulty: string;
+    topic: string;
+    points: number;
+  }>>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const moduleId = params.id as string;
-    const moduleData = modulesData[moduleId];
-    if (moduleData) {
-      setModule(moduleData);
-    }
-    setLoading(false);
+    const loadModuleData = async () => {
+      const moduleId = params.id as string;
+
+      // Try to get module from static data first (fallback)
+      const staticModuleData = modulesData[moduleId];
+      if (staticModuleData) {
+        setModule(staticModuleData);
+      }
+
+      // Fetch actual exercises for this module from the backend
+      try {
+        const exercisesRes = await fetch(`/api/proxy/exercise/exercises/all`);
+        if (exercisesRes.ok) {
+          const data = await exercisesRes.json();
+          // Filter exercises for this module
+          const moduleExercises = (data.exercises || []).filter((ex: any) =>
+            ex.module_id === moduleId || ex.moduleId === `module_${moduleId}`
+          );
+          setExercises(moduleExercises);
+        }
+      } catch (error) {
+        console.error('Failed to fetch exercises:', error);
+      }
+
+      setLoading(false);
+    };
+
+    loadModuleData();
   }, [params.id]);
 
   if (loading) {
@@ -173,16 +203,80 @@ export default function ModuleDetailPage() {
     );
   }
 
-  if (!module) {
+  if (!module && exercises.length === 0) {
     return (
       <div className="flex h-[calc(100vh-64px)] items-center justify-center">
         <Card className="p-8 text-center shadow-elevated max-w-md">
-          <p className="text-muted-foreground mb-4">Module not found</p>
+          <p className="text-muted-foreground mb-4">Module not found or no exercises available</p>
           <Button onClick={() => router.push('/modules')}>
             <ChevronLeft className="mr-2 h-4 w-4" />
             Back to Modules
           </Button>
         </Card>
+      </div>
+    );
+  }
+
+  // If we have exercises, show them instead of the static module data
+  if (exercises.length > 0) {
+    return (
+      <div className="space-y-6 animate-fade-in p-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <Button
+            onClick={() => router.push('/modules')}
+            variant="ghost"
+            size="sm"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-gradient">{exercises[0]?.topic || params.id} - Exercises</h1>
+            <p className="text-sm text-muted-foreground">
+              {exercises.length} exercise{exercises.length > 1 ? 's' : ''} available
+            </p>
+          </div>
+        </div>
+
+        {/* Exercises List */}
+        <div className="grid gap-4">
+          {exercises.map((exercise, index) => (
+            <Card
+              key={exercise.id}
+              className="group hover-lift transition-all duration-300 border border-border bg-card/80 backdrop-blur-sm shadow-elevated cursor-pointer"
+              onClick={() => router.push(`/exercise/${exercise.id}`)}
+            >
+              <div className="p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="flex h-8 w-8 rounded-full bg-primary/20 border border-primary/30 text-primary font-bold text-sm">
+                        {index + 1}
+                      </div>
+                      <h3 className="text-lg font-semibold text-foreground group-hover:text-cosmic-purple transition-colors">
+                        {exercise.title}
+                      </h3>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        exercise.difficulty === 'beginner'
+                          ? 'bg-success/20 text-success'
+                          : exercise.difficulty === 'intermediate'
+                          ? 'bg-warning/20 text-warning'
+                          : 'bg-destructive/20 text-destructive'
+                      }`}>
+                        {exercise.difficulty || 'Beginner'}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-2">{exercise.description}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {exercise.points} points • {exercise.topic}
+                    </p>
+                  </div>
+                  <Play className="h-5 w-5 text-primary group-hover:text-cosmic-purple transition-colors" />
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
