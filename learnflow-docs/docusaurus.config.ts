@@ -64,6 +64,7 @@ sidebars:
         { type: "doc", id: "index", label: "Introduction" },
         { type: "doc", id: "quickstart", label: "Quick Start" },
         { type: "doc", id: "architecture-overview", label: "Architecture" },
+        { type: "doc", id: "demo-guide", label: "Demo Guide" },
       ]
     },
     {
@@ -72,26 +73,14 @@ sidebars:
       items: [
         { type: "doc", id: "student-guide", label: "Student Guide" },
         { type: "doc", id: "teacher-guide", label: "Teacher Guide" },
-        { type: "doc", id: "modules", label: "Curriculum" },
-        { type: "doc", id: "exercises", label: "Exercises" },
       ]
     },
     {
       type: "category",
       label: "Backend",
       items: [
-        { type: "doc", id: "backend-services", label: "Services" },
         { type: "doc", id: "backend-api", label: "API Reference" },
-        { type: "doc", id: "backend-events", label: "Event Streaming" },
-      ]
-    },
-    {
-      type: "category",
-      label: "Frontend",
-      items: [
-        { type: "doc", id: "frontend-overview", label: "Frontend Architecture" },
-        { type: "doc", id: "frontend-components", label: "Components" },
-        { type: "doc", id: "state-management", label: "State Management" },
+        { type: "doc", id: "mcp-usage", label: "MCP Usage Guide" },
       ]
     },
     {
@@ -99,10 +88,7 @@ sidebars:
       label: "MCP Servers",
       items: [
         { type: "doc", id: "mcp-overview", label: "MCP Integration" },
-        { type: "doc", id: "mcp-database", label: "Database MCP" },
-        { type: "doc", id: "mcp-code-exec", label: "Code Execution MCP" },
-        { type: "doc", id: "mcp-kafka", label: "Kafka Events MCP" },
-        { type: "doc", id: "mcp-k8s", label: "K8s Operations MCP" },
+        { type: "doc", id: "mcp-usage", label: "MCP Usage Guide" },
       ]
     },
     {
@@ -111,17 +97,6 @@ sidebars:
       items: [
         { type: "doc", id: "local-setup", label: "Local Development" },
         { type: "doc", id: "kubernetes-setup", label: "Kubernetes" },
-        { type: "doc", id: "docker-setup", label: "Docker" },
-        { type: "doc", id: "cicd", label: "CI/CD Pipeline" },
-      ]
-    },
-    {
-      type: "category",
-      label: "Skills",
-      items: [
-        { type: "doc", id: "skills-overview", label: "Skills Framework" },
-        { type: "doc", id: "available-skills", label: "Available Skills" },
-        { type: "doc", id: "skills-development", label: "Creating Skills" },
       ]
     },
   ]

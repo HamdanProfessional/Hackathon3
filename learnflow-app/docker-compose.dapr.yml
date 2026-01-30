@@ -1,0 +1,10 @@
+# Dapr configuration for LearnFlow development
+version: 1
+common:
+  # These are the environment variables needed for Dapr
+  env:
+    DAPR_HTTP_PORT: 3500
+    DAPR_GRPC_PORT: 50001
+    APP_PORT: "{service_port}"
+  # The command to run your application
+  command: ["dapr", "run", "--app-port", "{service_port}", "--", "python", "-m", "uvicorn", "services.{service_name}.main:app", "--host", "0.0.0.0", "--port", "{service_port}"]
