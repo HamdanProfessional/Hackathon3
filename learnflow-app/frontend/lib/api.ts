@@ -236,6 +236,24 @@ export async function getModules(): Promise<ApiResponse<Record<string, {
 }
 
 /**
+ * Get all exercises
+ */
+export async function getExercises(): Promise<ApiResponse<{
+  total: number;
+  exercises: Array<{
+    id: string;
+    title: string;
+    description: string;
+    difficulty: string;
+    points: number;
+    module_id: string;
+    topic: string;
+  }>;
+}>> {
+  return apiRequest(`${SERVICES.exercise}/exercises/all`);
+}
+
+/**
  * Execute Python code
  */
 export async function executeCode(

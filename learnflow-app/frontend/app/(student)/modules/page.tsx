@@ -6,6 +6,7 @@ import { useUserStore } from '@/stores/userStore';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getModuleIcon } from '@/components/ModuleIcons';
+import { api } from '@/lib/api';
 
 interface Module {
   id: string;
@@ -192,20 +193,35 @@ export default function ModulesPage() {
     // Reset modules to default state on mount to clear stale data
     setModules(defaultModules.map(m => ({ ...m, progress: 0 })));
 
-    // Fetch modules and exercises from API
+    // Fetch modules and exercises from API (uses proxy)
     const fetchData = async () => {
       try {
-        const exerciseUrl = (process.env.NEXT_PUBLIC_EXERCISE_URL || 'http://134.209.154.247:30804').trim();
-        const res = await fetch(`${exerciseUrl}/exercises/all`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.exercises && data.exercises.length > 0) {
-            // Set quick start exercises (first 3)
-            setQuickExercises(data.exercises.slice(0, 3));
-          }
+        // Get modules from backend
+        const modulesRes = await api.getModules();
+        if (modulesRes.success && modulesRes.data) {
+          // Update modules with actual data from backend
+          const updatedModules = Object.entries(modulesRes.data).map(([key, moduleData]: [string, any]) => ({
+            id: key,
+            name: moduleData.name,
+            description: `${moduleData.topics?.slice(0, 3).join(', ') || 'Python topics'}`,
+            difficulty: key === 'basics' ? 'beginner' as const : key === 'control_flow' ? 'intermediate' as const : 'advanced' as const,
+            icon: getModuleIcon(key),
+            topics: moduleData.topics || [],
+            progress: 0,
+            exercises: moduleData.exercises?.length || 0,
+          }));
+          setModules(updatedModules);
+        }
+
+        // Get exercises for quick start
+        const exercisesRes = await api.getExercises();
+        if (exercisesRes.success && exercisesRes.data?.exercises) {
+          // Set quick start exercises (first 3)
+          setQuickExercises(exercisesRes.data.exercises.slice(0, 3));
         }
       } catch (error) {
-        console.error('Failed to fetch exercises:', error);
+        console.error('Failed to fetch data:', error);
+        // Keep default modules on error
       }
     };
     fetchData();
