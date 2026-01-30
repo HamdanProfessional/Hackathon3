@@ -13,6 +13,42 @@ import type {
   ClassOverview,
 } from '@/types';
 
+// ============================================================================
+// EVENTSOURCE TRACKING
+// ============================================================================
+// Track active EventSources to prevent memory leaks
+const activeEventSources = new Set<EventSource>();
+
+/**
+ * Close all active EventSources (useful for cleanup on logout/unmount)
+ */
+export function closeAllEventSources(): void {
+  activeEventSources.forEach((eventSource) => {
+    try {
+      eventSource.close();
+    } catch (e) {
+      console.error('Error closing EventSource:', e);
+    }
+  });
+  activeEventSources.clear();
+}
+
+/**
+ * Register and track an EventSource for automatic cleanup
+ */
+function trackEventSource(eventSource: EventSource): EventSource {
+  activeEventSources.add(eventSource);
+
+  // Remove from tracking when closed
+  const originalClose = eventSource.close.bind(eventSource);
+  eventSource.close = function () {
+    activeEventSources.delete(this);
+    return originalClose();
+  };
+
+  return eventSource;
+}
+
 // Service URLs - use Next.js API route proxy for production (HTTPS)
 // to avoid mixed content issues. The API routes run server-side and can
 // fetch from HTTP backends without browser restrictions.
@@ -476,6 +512,7 @@ export async function deleteConversation(
 /**
  * Subscribe to struggle alerts via SSE
  * Returns an EventSource that can be closed when done
+ * Automatically tracked for cleanup on logout/unmount
  */
 export function subscribeToStruggleAlerts(
   classId: string,
@@ -507,11 +544,12 @@ export function subscribeToStruggleAlerts(
     // EventSource will automatically reconnect
   };
 
-  return eventSource;
+  return trackEventSource(eventSource);
 }
 
 /**
  * Subscribe to class stats updates via SSE
+ * Automatically tracked for cleanup on logout/unmount
  */
 export function subscribeToClassStats(
   classId: string,
@@ -541,7 +579,7 @@ export function subscribeToClassStats(
     }
   };
 
-  return eventSource;
+  return trackEventSource(eventSource);
 }
 
 // ============================================================================

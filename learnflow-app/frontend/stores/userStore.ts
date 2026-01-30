@@ -8,6 +8,7 @@ interface UserStore {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  _hasHydrated: boolean; // Internal flag to track hydration
 
   // Actions
   setUser: (user: User) => void;
@@ -21,9 +22,10 @@ export const useUserStore = create<UserStore>()(
   persist(
     (set, get) => ({
       // Initial state
-      user: auth.getUser(),
-      isAuthenticated: auth.isAuthenticated(),
+      user: null,
+      isAuthenticated: false,
       isLoading: false,
+      _hasHydrated: false,
 
       // Set user
       setUser: (user: User) => {
@@ -82,6 +84,9 @@ export const useUserStore = create<UserStore>()(
     {
       name: 'learnflow-user-storage',
       partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
+      onRehydrateStorage: () => (state) => {
+        state._hasHydrated = true;
+      },
     }
   )
 );
@@ -93,3 +98,5 @@ export const selectUserRole = (state: UserStore) => state.user?.role;
 export const selectIsStudent = (state: UserStore) => state.user?.role === 'student';
 export const selectIsTeacher = (state: UserStore) => state.user?.role === 'teacher';
 export const selectIsLoading = (state: UserStore) => state.isLoading;
+export const selectHasHydrated = (state: UserStore) => state._hasHydrated;
+

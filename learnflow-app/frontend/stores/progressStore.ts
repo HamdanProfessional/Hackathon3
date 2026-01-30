@@ -91,13 +91,25 @@ export const useProgressStore = create<ProgressStore>()(
 
       // Fetch activities
       fetchActivities: async (studentId?: string, limit: number = 20) => {
+        set({ isLoading: true, error: null });
         try {
           const response = await api.getActivityFeed(studentId, limit);
           if (response.success && response.data) {
-            set({ activities: (response.data as unknown as { activities: Activity[] }).activities || [] });
+            set({
+              activities: (response.data as unknown as { activities: Activity[] }).activities || [],
+              isLoading: false,
+            });
+          } else {
+            set({
+              error: response.error || 'Failed to fetch activities',
+              isLoading: false,
+            });
           }
-        } catch {
-          // Silently fail for activities
+        } catch (err) {
+          set({
+            error: 'Failed to fetch activities',
+            isLoading: false,
+          });
         }
       },
 
