@@ -51,7 +51,7 @@ export default function ExercisePieChart({
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+            label={({ name, percent }) => `${name} ${percent !== undefined ? (percent * 100).toFixed(0) : '0'}%`}
             outerRadius={outerRadius}
             innerRadius={innerRadius}
             paddingAngle={2}
@@ -71,7 +71,7 @@ export default function ExercisePieChart({
               borderRadius: '8px',
               color: '#fff'
             }}
-            formatter={(value: number, name: string) => [value, name]}
+            formatter={(value: number, name: string) => [value || 0, name]}
           />
           <Legend
             verticalAlign="bottom"

@@ -1,0 +1,58 @@
+---
+# Chat Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-service
+  namespace: learnflow
+  labels:
+    app: chat-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-service
+  template:
+    metadata:
+      labels:
+        app: chat-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "chat-service"
+        dapr.io/app-port: "8007"
+        dapr.io/log-level: "info"
+        dapr.io/sidecar-cpu-limit: "300m"
+        dapr.io/sidecar-memory-limit: "256Mi"
+        dapr.io/enable-app-health-check: "true"
+        dapr.io/app-health-check-path: "/health"
+    spec:
+      containers:
+      - name: chat
+        image: registry.digitalocean.com/learnflow-registry/learnflow-backend:latest
+        imagePullPolicy: Always
+        command: ["python", "-m", "uvicorn", "services.chat.main:app", "--host", "0.0.0.0", "--port", "8007"]
+        ports:
+        - containerPort: 8007
+        env:
+        - name: PORT
+          value: "8007"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+            memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat-service
+  namespace: learnflow
+spec:
+  selector:
+    app: chat-service
+  ports:
+  - port: 8007
+    targetPort: 8007
+  type: ClusterIP

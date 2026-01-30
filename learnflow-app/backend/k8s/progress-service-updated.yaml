@@ -1,0 +1,305 @@
+---
+# Progress Service Deployment - Updated with Teacher Dashboard Endpoints
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: progress-service
+  namespace: learnflow
+  labels:
+    app: progress-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: progress-service
+  template:
+    metadata:
+      labels:
+        app: progress-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "progress-service"
+        dapr.io/app-port: "8005"
+        dapr.io/log-level: "info"
+        dapr.io/sidecar-cpu-limit: "300m"
+        dapr.io/sidecar-memory-limit: "256Mi"
+        dapr.io/enable-app-health-check: "true"
+        dapr.io/app-health-check-path: "/health"
+    spec:
+      containers:
+      - name: progress
+        image: python:3.13-slim
+        imagePullPolicy: Always
+        command:
+        - sh
+        - -c
+        - |
+          set -e
+          # Install dependencies
+          pip install --no-cache-dir uv fastapi uvicorn pydantic
+
+          # Create directory structure
+          mkdir -p /app/services/progress
+          touch /app/services/__init__.py
+          touch /app/services/progress/__init__.py
+
+          # Write the progress service code with teacher dashboard endpoints
+          cat > /app/services/progress/main.py << 'EOFPYTHON'
+          import asyncio
+          from datetime import datetime, timedelta
+          from typing import List, Optional
+          from fastapi import FastAPI, HTTPException, Query
+          from fastapi.middleware.cors import CORSMiddleware
+          from pydantic import BaseModel
+          from fastapi.responses import StreamingResponse
+
+          SERVICE_NAME = "progress-service"
+          SERVICE_VERSION = "2.0.0"
+          PORT = 8005
+
+          app = FastAPI(title="LearnFlow Progress Service", version=SERVICE_VERSION)
+          app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+
+          # ============================================================================
+          # Models
+          # ============================================================================
+
+          class Student(BaseModel):
+              id: str
+              name: str
+              email: str
+              role: str = "student"
+              studentId: str
+              level: str = "beginner"
+
+          class ClassOverview(BaseModel):
+              totalStudents: int
+              activeToday: int
+              strugglingCount: int
+              averageMastery: float
+              topPerformers: List[Student]
+              strugglingStudents: List[Student]
+
+          class StruggleAlert(BaseModel):
+              id: str
+              studentId: str
+              studentName: str
+              type: str
+              severity: str
+              message: str
+              context: dict = {}
+              createdAt: str
+              resolved: bool = False
+
+          class ModuleProgress(BaseModel):
+              module_id: int
+              module_name: str
+              mastery_score: float
+              mastery_level: str
+              exercises_completed: int
+              total_exercises: int
+
+          class MasteryLevel:
+              BEGINNER = "beginner"
+              LEARNING = "learning"
+              PROFICIENT = "proficient"
+              MASTERED = "mastered"
+
+          # ============================================================================
+          # Mock Data
+          # ============================================================================
+
+          student_progress = {}
+          student_modules = {
+              1: ModuleProgress(module_id=1, module_name="Python Basics", mastery_score=25.0, mastery_level=MasteryLevel.BEGINNER, exercises_completed=3, total_exercises=10),
+              2: ModuleProgress(module_id=2, module_name="Control Flow", mastery_score=0.0, mastery_level=MasteryLevel.BEGINNER, exercises_completed=0, total_exercises=8),
+              3: ModuleProgress(module_id=3, module_name="Functions", mastery_score=0.0, mastery_level=MasteryLevel.BEGINNER, exercises_completed=0, total_exercises=12),
+              4: ModuleProgress(module_id=4, module_name="Data Structures", mastery_score=0.0, mastery_level=MasteryLevel.BEGINNER, exercises_completed=0, total_exercises=14),
+              5: ModuleProgress(module_id=5, module_name="File Operations", mastery_score=0.0, mastery_level=MasteryLevel.BEGINNER, exercises_completed=0, total_exercises=9),
+              6: ModuleProgress(module_id=6, module_name="Error Handling", mastery_score=0.0, mastery_level=MasteryLevel.BEGINNER, exercises_completed=0, total_exercises=10),
+              7: ModuleProgress(module_id=7, module_name="OOP", mastery_score=0.0, mastery_level=MasteryLevel.BEGINNER, exercises_completed=0, total_exercises=16),
+              8: ModuleProgress(module_id=8, module_name="Advanced Python", mastery_score=0.0, mastery_level=MasteryLevel.BEGINNER, exercises_completed=0, total_exercises=15),
+          }
+
+          mock_students = [
+              Student(id="1", name="Alice Johnson", email="alice@example.com", studentId="1", level="advanced"),
+              Student(id="2", name="Bob Smith", email="bob@example.com", studentId="2", level="intermediate"),
+              Student(id="3", name="Charlie Brown", email="charlie@example.com", studentId="3", level="intermediate"),
+              Student(id="4", name="Diana Prince", email="diana@example.com", studentId="4", level="advanced"),
+              Student(id="5", name="Eve Davis", email="eve@example.com", studentId="5", level="beginner"),
+              Student(id="6", name="Frank Miller", email="frank@example.com", studentId="6", level="beginner"),
+              Student(id="7", name="Grace Lee", email="grace@example.com", studentId="7", level="beginner"),
+          ]
+
+          mock_struggle_alerts = [
+              StruggleAlert(
+                  id="alert-1",
+                  studentId="student-1",
+                  studentName="John Doe",
+                  type="repeated_error",
+                  severity="high",
+                  message="Student has encountered the same error 5 times in the Functions module",
+                  context={"exerciseId": "functions-1", "error": "SyntaxError: invalid syntax", "attempts": 5},
+                  createdAt=(datetime.utcnow() - timedelta(minutes=30)).isoformat(),
+                  resolved=False,
+              ),
+              StruggleAlert(
+                  id="alert-2",
+                  studentId="student-2",
+                  studentName="Jane Smith",
+                  type="time_spent",
+                  severity="medium",
+                  message="Student has been stuck on an exercise for 25 minutes",
+                  context={"exerciseId": "loops-2", "timeSpent": 1500},
+                  createdAt=(datetime.utcnow() - timedelta(minutes=15)).isoformat(),
+                  resolved=False,
+              ),
+              StruggleAlert(
+                  id="alert-3",
+                  studentId="student-3",
+                  studentName="Bob Johnson",
+                  type="low_quiz_score",
+                  severity="medium",
+                  message="Student scored 35% on the Data Types quiz",
+                  createdAt=(datetime.utcnow() - timedelta(hours=1)).isoformat(),
+                  resolved=False,
+              ),
+          ]
+
+          alerts_storage = {alert.id: alert for alert in mock_struggle_alerts}
+
+          # ============================================================================
+          # Endpoints
+          # ============================================================================
+
+          @app.get("/")
+          async def root():
+              return {"service": SERVICE_NAME, "version": SERVICE_VERSION, "status": "running"}
+
+          @app.get("/health")
+          async def health():
+              return {"status": "healthy", "service": SERVICE_NAME, "version": SERVICE_VERSION}
+
+          @app.get("/progress/{student_id}")
+          async def get_student_progress(student_id: str):
+              return [m.model_dump() for m in student_modules.values()]
+
+          # Teacher Dashboard Endpoints
+          @app.get("/api/v1/class/{class_id}/overview")
+          async def get_class_overview(class_id: str):
+              total_mastery = sum(m.mastery_score for m in student_modules.values())
+              average_mastery = total_mastery / len(student_modules)
+              return {
+                  "totalStudents": len(mock_students),
+                  "activeToday": 32,
+                  "strugglingCount": 2,
+                  "averageMastery": round(average_mastery, 1),
+                  "topPerformers": [s.model_dump() for s in mock_students[:5]],
+                  "strugglingStudents": [s.model_dump() for s in mock_students[-2:]],
+              }
+
+          @app.get("/api/v1/alerts")
+          async def get_struggle_alerts(classId: Optional[str] = None, resolved: bool = False, limit: int = 50, offset: int = 0):
+              filtered_alerts = [alert for alert in alerts_storage.values() if alert.resolved == resolved]
+              paginated_alerts = filtered_alerts[offset:offset + limit]
+              return {
+                  "alerts": [alert.model_dump() for alert in paginated_alerts],
+                  "total_count": len(filtered_alerts),
+              }
+
+          @app.patch("/api/v1/alerts/{alert_id}/resolve")
+          async def resolve_alert(alert_id: str):
+              alert = alerts_storage.get(alert_id)
+              if not alert:
+                  raise HTTPException(status_code=404, detail="Alert not found")
+              alert.resolved = True
+              return {"message": "Alert resolved successfully"}
+
+          @app.get("/api/v1/activity/{student_id}")
+          async def get_student_activity(student_id: str, limit: int = 20):
+              activities = [
+                  {"id": "act-1", "type": "exercise_completed", "message": "Completed 'Variables and Types' exercise", "timestamp": (datetime.utcnow() - timedelta(minutes=5)).isoformat()},
+                  {"id": "act-2", "type": "concept_learned", "message": "Learned about 'Loops'", "timestamp": (datetime.utcnow() - timedelta(hours=1)).isoformat()},
+              ]
+              return {"activities": activities[:limit], "total_count": len(activities)}
+
+          @app.get("/api/v1/activity")
+          async def get_all_activity(limit: int = 20):
+              activities = [
+                  {"id": "act-1", "student_id": "1", "student_name": "Alice Johnson", "type": "exercise_completed", "message": "Completed 'Advanced Functions' exercise", "timestamp": (datetime.utcnow() - timedelta(minutes=5)).isoformat()},
+              ]
+              return {"activities": activities[:limit], "total_count": len(activities)}
+
+          # SSE Endpoints
+          @app.get("/api/v1/alerts/stream")
+          async def stream_alerts(classId: str = Query(...)):
+              async def event_generator():
+                  try:
+                      for alert in alerts_storage.values():
+                          if not alert.resolved:
+                              yield f"data: {alert.model_dump_json()}\n\n"
+                      while True:
+                          await asyncio.sleep(30)
+                          yield ": keepalive\n\n"
+                  except asyncio.CancelledError:
+                      pass
+              return StreamingResponse(event_generator(), media_type="text/event-stream", headers={"Cache-Control": "no-cache", "Connection": "keep-alive"})
+
+          @app.get("/api/v1/class/{class_id}/stats/stream")
+          async def stream_class_stats(class_id: str):
+              async def event_generator():
+                  try:
+                      total_mastery = sum(m.mastery_score for m in student_modules.values())
+                      average_mastery = total_mastery / len(student_modules)
+                      stats = {
+                          "totalStudents": len(mock_students),
+                          "activeToday": 32,
+                          "strugglingCount": 2,
+                          "averageMastery": round(average_mastery, 1),
+                          "topPerformers": [s.model_dump() for s in mock_students[:5]],
+                          "strugglingStudents": [s.model_dump() for s in mock_students[-2:]],
+                      }
+                      import json
+                      yield f"data: {json.dumps(stats)}\n\n"
+                      while True:
+                          await asyncio.sleep(10)
+                          active_today = 30 + (datetime.utcnow().second % 15)
+                          stats["activeToday"] = active_today
+                          stats["averageMastery"] = round(average_mastery + (datetime.utcnow().second % 5), 1)
+                          yield f"data: {json.dumps(stats)}\n\n"
+                  except asyncio.CancelledError:
+                      pass
+              return StreamingResponse(event_generator(), media_type="text/event-stream", headers={"Cache-Control": "no-cache", "Connection": "keep-alive"})
+
+          if __name__ == "__main__":
+              import uvicorn
+              uvicorn.run(app, host="0.0.0.0", port=PORT)
+          EOFPYTHON
+
+          # Run the service
+          cd /app && python -m uvicorn services.progress.main:app --host 0.0.0.0 --port 8005
+        ports:
+        - containerPort: 8005
+        env:
+        - name: PORT
+          value: "8005"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: progress-service
+  namespace: learnflow
+spec:
+  selector:
+    app: progress-service
+  ports:
+  - port: 8005
+    targetPort: 8005
+  type: ClusterIP

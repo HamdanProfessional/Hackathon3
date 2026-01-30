@@ -415,7 +415,7 @@ export function subscribeToStruggleAlerts(
   onError?: (error: Event) => void
 ): EventSource {
   const token = getAuthToken();
-  const url = new URL(`${SERVICES.progress}/api/v1/alerts/stream`, window.location.origin);
+  const url = new URL(`${SERVICES.progress}/api/v1/alerts/stream`);
   url.searchParams.set('classId', classId);
   if (token) {
     url.searchParams.set('token', token);
@@ -451,7 +451,7 @@ export function subscribeToClassStats(
   onError?: (error: Event) => void
 ): EventSource {
   const token = getAuthToken();
-  const url = new URL(`${SERVICES.progress}/api/v1/class/${classId}/stats/stream`, window.location.origin);
+  const url = new URL(`${SERVICES.progress}/api/v1/class/${classId}/stats/stream`);
   if (token) {
     url.searchParams.set('token', token);
   }

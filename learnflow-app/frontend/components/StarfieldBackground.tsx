@@ -7,6 +7,25 @@
 
 import React, { useEffect, useRef } from 'react';
 
+interface Star {
+  x: number;
+  y: number;
+  size: number;
+  opacity: number;
+  speed: number;
+  twinkleSpeed: number;
+  twinklePhase: number;
+}
+
+interface ShootingStar {
+  x: number;
+  y: number;
+  length: number;
+  speed: number;
+  opacity: number;
+  active: boolean;
+}
+
 interface StarfieldBackgroundProps {
   children: React.ReactNode;
   className?: string;
@@ -21,7 +40,7 @@ export default function StarfieldBackground({
   shootingStars = true
 }: StarfieldBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
   const starsRef = useRef<Star[]>([]);
 
   useEffect(() => {
@@ -48,18 +67,6 @@ export default function StarfieldBackground({
       }
     };
 
-    interface Star {
-      x: number;
-      y: number;
-      size: number;
-      opacity: number;
-      speed: number;
-      twinkleSpeed: number;
-      twinklePhase: number;
-    }
-
-    interface Star {
-
     // Initialize stars
     const initStars = () => {
       starsRef.current = [];
@@ -77,16 +84,6 @@ export default function StarfieldBackground({
         });
       }
     };
-
-    // Shooting star class
-    interface ShootingStar {
-      x: number;
-      y: number;
-      length: number;
-      speed: number;
-      opacity: number;
-      active: boolean;
-    }
 
     const shootingStarsRef = useRef<ShootingStar[]>([]);
 
