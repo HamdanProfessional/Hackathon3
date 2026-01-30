@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     icon: '/favicon.ico',
   },
 };
+// Build: dd18d8c8 - Environment variables added
 
 export default function RootLayout({
   children,
