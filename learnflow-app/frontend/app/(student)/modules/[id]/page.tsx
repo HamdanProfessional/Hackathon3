@@ -275,11 +275,11 @@ export default function ModuleDetailPage() {
                         {topic.exercises} exercises
                       </span>
                       <Link
-                        href={`/modules/${module.id}`}
+                        href="/modules"
                         className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-cosmic-purple/90 to-cosmic-blue/90 hover:from-cosmic-purple hover:to-cosmic-blue text-white px-4 py-2 text-sm font-medium transition-all shadow-glow-purple/30 hover:shadow-glow-purple/50"
                       >
                         <Play className="h-4 w-4" />
-                        Browse Exercises
+                        Start Exercises
                       </Link>
                     </div>
                   </div>
