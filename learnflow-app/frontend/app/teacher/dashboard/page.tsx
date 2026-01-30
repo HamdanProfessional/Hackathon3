@@ -6,70 +6,20 @@ import StruggleAlerts from '@/components/StruggleAlerts';
 import AssignmentGenerator from '@/components/AssignmentGenerator';
 import type { ClassOverview as ClassOverviewType, StruggleAlert, Exercise } from '@/types';
 import { api } from '@/lib/api';
-import { Activity, Wifi, WifiOff, Sparkles } from 'lucide-react';
+import { Activity, Wifi, WifiOff, Sparkles, RefreshCw } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
-// Mock data for demonstration
-const mockClassOverview: ClassOverviewType = {
-  totalStudents: 45,
-  activeToday: 32,
-  strugglingCount: 5,
-  averageMastery: 68,
-  topPerformers: [
-    { id: '1', name: 'Alice Johnson', email: 'alice@example.com', role: 'student' as const, studentId: '1', level: 'advanced' as const },
-    { id: '2', name: 'Bob Smith', email: 'bob@example.com', role: 'student' as const, studentId: '2', level: 'intermediate' as const },
-    { id: '3', name: 'Charlie Brown', email: 'charlie@example.com', role: 'student' as const, studentId: '3', level: 'intermediate' as const },
-    { id: '4', name: 'Diana Prince', email: 'diana@example.com', role: 'student' as const, studentId: '4', level: 'advanced' as const },
-    { id: '5', name: 'Eve Davis', email: 'eve@example.com', role: 'student' as const, studentId: '5', level: 'beginner' as const },
-  ],
-  strugglingStudents: [
-    { id: '6', name: 'Frank Miller', email: 'frank@example.com', role: 'student' as const, studentId: '6', level: 'beginner' as const },
-    { id: '7', name: 'Grace Lee', email: 'grace@example.com', role: 'student' as const, studentId: '7', level: 'beginner' as const },
-  ],
+// Empty state for when no data is available
+const emptyClassOverview: ClassOverviewType = {
+  totalStudents: 0,
+  activeToday: 0,
+  strugglingCount: 0,
+  averageMastery: 0,
+  topPerformers: [],
+  strugglingStudents: [],
 };
-
-const mockStruggleAlerts: StruggleAlert[] = [
-  {
-    id: 'alert-1',
-    studentId: 'student-1',
-    studentName: 'John Doe',
-    type: 'repeated_error',
-    severity: 'high',
-    message: 'Student has encountered the same error 5 times in the Functions module',
-    context: {
-      exerciseId: 'functions-1',
-      error: 'SyntaxError: invalid syntax',
-      attempts: 5,
-    },
-    createdAt: new Date(Date.now() - 30 * 60000).toISOString(),
-    resolved: false,
-  },
-  {
-    id: 'alert-2',
-    studentId: 'student-2',
-    studentName: 'Jane Smith',
-    type: 'time_spent',
-    severity: 'medium',
-    message: 'Student has been stuck on an exercise for 25 minutes',
-    context: {
-      exerciseId: 'loops-2',
-      timeSpent: 1500,
-    },
-    createdAt: new Date(Date.now() - 15 * 60000).toISOString(),
-    resolved: false,
-  },
-  {
-    id: 'alert-3',
-    studentId: 'student-3',
-    studentName: 'Bob Johnson',
-    type: 'low_quiz_score',
-    severity: 'medium',
-    message: 'Student scored 35% on the Data Types quiz',
-    context: {},
-    createdAt: new Date(Date.now() - 60 * 60000).toISOString(),
-    resolved: false,
-  },
-];
 
 export default function TeacherDashboardPage() {
   const [classOverview, setClassOverview] = useState<ClassOverviewType | null>(null);
@@ -79,6 +29,7 @@ export default function TeacherDashboardPage() {
   const [isLive, setIsLive] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [error, setError] = useState<string | null>(null);
 
   // Refs to store EventSource instances for cleanup
   const alertsEventSource = useRef<EventSource | null>(null);
@@ -89,27 +40,31 @@ export default function TeacherDashboardPage() {
 
     const loadData = async () => {
       setIsLoading(true);
+      setError(null);
 
       try {
-        // Try to fetch from API, fall back to mock data
+        // Fetch class overview
         const overviewResponse = await api.getClassOverview(classId);
         if (overviewResponse.success && overviewResponse.data) {
           setClassOverview(overviewResponse.data);
         } else {
-          setClassOverview(mockClassOverview);
+          setClassOverview(emptyClassOverview);
+          setError(overviewResponse.error || 'Failed to load class overview');
         }
 
+        // Fetch alerts
         const alertsResponse = await api.getStruggleAlerts(classId, false);
         if (alertsResponse.success && alertsResponse.data) {
           setAlerts(alertsResponse.data.alerts || []);
         } else {
-          setAlerts(mockStruggleAlerts);
+          setAlerts([]);
+          console.warn('Failed to load alerts:', alertsResponse.error);
         }
-      } catch (error) {
-        console.error('Failed to load data:', error);
-        // Fall back to mock data
-        setClassOverview(mockClassOverview);
-        setAlerts(mockStruggleAlerts);
+      } catch (err) {
+        console.error('Failed to load data:', err);
+        setClassOverview(emptyClassOverview);
+        setAlerts([]);
+        setError('Failed to connect to server. Please check your connection.');
       }
 
       setIsLoading(false);
@@ -196,6 +151,25 @@ export default function TeacherDashboardPage() {
     setActiveTab('overview');
   };
 
+  const handleRetry = () => {
+    const classId = 'class-1';
+    setError(null);
+    setIsLoading(true);
+
+    api.getClassOverview(classId).then((response) => {
+      if (response.success && response.data) {
+        setClassOverview(response.data);
+        setError(null);
+      } else {
+        setError(response.error || 'Failed to load data');
+      }
+      setIsLoading(false);
+    }).catch(() => {
+      setError('Failed to connect to server');
+      setIsLoading(false);
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="flex h-96 items-center justify-center">
@@ -244,15 +218,41 @@ export default function TeacherDashboardPage() {
               </p>
             )}
           </div>
-          <div className="hidden sm:block">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl icon-nebula-purple">
-              <svg className="h-8 w-8 text-cosmic-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
+          <div className="flex items-center gap-3">
+            {error && (
+              <Button onClick={handleRetry} variant="outline" size="sm" className="gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Retry
+              </Button>
+            )}
+            <div className="hidden sm:block">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl icon-nebula-purple">
+                <svg className="h-8 w-8 text-cosmic-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Error Display */}
+      {error && (
+        <Card className="p-6 border-destructive/50 bg-destructive/10">
+          <div className="flex items-start gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/20">
+              <WifiOff className="h-5 w-5 text-destructive" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-destructive">Connection Error</h3>
+              <p className="text-sm text-destructive/80 mt-1">{error}</p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Unable to connect to the backend service. Please check that the services are running.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Tabs for Dashboard Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -274,6 +274,11 @@ export default function TeacherDashboardPage() {
           {classOverview && (
             <div>
               <ClassOverview overview={classOverview} />
+              {classOverview.totalStudents === 0 && !error && (
+                <Card className="mt-6 p-8 text-center">
+                  <p className="text-muted-foreground">No students enrolled yet. Share your class code to get started!</p>
+                </Card>
+              )}
             </div>
           )}
 
@@ -314,7 +319,13 @@ export default function TeacherDashboardPage() {
                 </span>
               )}
             </h2>
-            <StruggleAlerts alerts={alerts} onResolve={handleResolveAlert} />
+            {alerts.length === 0 ? (
+              <Card className="p-8 text-center">
+                <p className="text-muted-foreground">No alerts at the moment. Your students are doing great!</p>
+              </Card>
+            ) : (
+              <StruggleAlerts alerts={alerts} onResolve={handleResolveAlert} />
+            )}
           </div>
         </TabsContent>
 

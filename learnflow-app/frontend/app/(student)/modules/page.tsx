@@ -5,12 +5,13 @@ import Link from 'next/link';
 import { useUserStore } from '@/stores/userStore';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { getModuleIcon } from '@/components/ModuleIcons';
 
 interface Module {
   id: string;
   name: string;
   description: string;
-  icon: string;
+  icon: React.ReactNode;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   topics: Topic[];
   progress: number;
@@ -26,41 +27,48 @@ interface Topic {
   completed: boolean;
 }
 
-const pythonModules: Module[] = [
+interface ApiModule {
+  id: string;
+  name: string;
+  exercises: number;
+}
+
+// Default module structure (will be enhanced with API data)
+const defaultModules: Module[] = [
   {
-    id: 'python-basics',
+    id: 'basics',
     name: 'Python Basics',
     description: 'Learn the fundamentals of Python programming',
-    icon: 'Python',
+    icon: <getModuleIcon iconName="Python" />,
     difficulty: 'beginner',
     progress: 0,
     completed: false,
     topics: [
-      { id: 'basics-1', moduleId: 'python-basics', name: 'Variables & Data Types', description: 'Store and use data', exercises: 3, completed: false },
-      { id: 'basics-2', moduleId: 'python-basics', name: 'Operators', description: 'Math and comparison operators', exercises: 3, completed: false },
-      { id: 'basics-3', moduleId: 'python-basics', name: 'Input/Output', description: 'Interact with users', exercises: 2, completed: false },
-      { id: 'basics-4', moduleId: 'python-basics', name: 'Comments & Documentation', description: 'Document your code', exercises: 2, completed: false },
+      { id: 'basics-1', moduleId: 'basics', name: 'Variables & Data Types', description: 'Store and use data', exercises: 3, completed: false },
+      { id: 'basics-2', moduleId: 'basics', name: 'Operators', description: 'Math and comparison operators', exercises: 3, completed: false },
+      { id: 'basics-3', moduleId: 'basics', name: 'Input/Output', description: 'Interact with users', exercises: 2, completed: false },
+      { id: 'basics-4', moduleId: 'basics', name: 'Comments & Documentation', description: 'Document your code', exercises: 2, completed: false },
     ],
   },
   {
-    id: 'control-flow',
+    id: 'control_flow',
     name: 'Control Flow',
     description: 'Master conditional logic and loops',
-    icon: 'Flow',
+    icon: <getModuleIcon iconName="Flow" />,
     difficulty: 'beginner',
     progress: 0,
     completed: false,
     topics: [
-      { id: 'flow-1', moduleId: 'control-flow', name: 'If Statements', description: 'Conditional execution', exercises: 4, completed: false },
-      { id: 'flow-2', moduleId: 'control-flow', name: 'Loops', description: 'For and while loops', exercises: 4, completed: false },
-      { id: 'flow-3', moduleId: 'control-flow', name: 'Break & Continue', description: 'Control loop flow', exercises: 3, completed: false },
+      { id: 'flow-1', moduleId: 'control_flow', name: 'If Statements', description: 'Conditional execution', exercises: 4, completed: false },
+      { id: 'flow-2', moduleId: 'control_flow', name: 'Loops', description: 'For and while loops', exercises: 4, completed: false },
+      { id: 'flow-3', moduleId: 'control_flow', name: 'Break & Continue', description: 'Control loop flow', exercises: 3, completed: false },
     ],
   },
   {
     id: 'functions',
     name: 'Functions',
     description: 'Create reusable code blocks',
-    icon: 'Bolt',
+    icon: <getModuleIcon iconName="Bolt" />,
     difficulty: 'intermediate',
     progress: 0,
     completed: false,
@@ -72,52 +80,52 @@ const pythonModules: Module[] = [
     ],
   },
   {
-    id: 'data-structures',
+    id: 'data_structures',
     name: 'Data Structures',
     description: 'Lists, dictionaries, tuples, sets',
-    icon: 'Box',
+    icon: <getModuleIcon iconName="Box" />,
     difficulty: 'intermediate',
     progress: 0,
     completed: false,
     topics: [
-      { id: 'ds-1', moduleId: 'data-structures', name: 'Lists', description: 'Ordered collections', exercises: 5, completed: false },
-      { id: 'ds-2', moduleId: 'data-structures', name: 'Dictionaries', description: 'Key-value pairs', exercises: 5, completed: false },
-      { id: 'ds-3', moduleId: 'data-structures', name: 'Tuples & Sets', description: 'Immutable collections', exercises: 4, completed: false },
+      { id: 'ds-1', moduleId: 'data_structures', name: 'Lists', description: 'Ordered collections', exercises: 5, completed: false },
+      { id: 'ds-2', moduleId: 'data_structures', name: 'Dictionaries', description: 'Key-value pairs', exercises: 5, completed: false },
+      { id: 'ds-3', moduleId: 'data_structures', name: 'Tuples & Sets', description: 'Immutable collections', exercises: 4, completed: false },
     ],
   },
   {
-    id: 'file-operations',
+    id: 'files',
     name: 'File Operations',
     description: 'Read and write files',
-    icon: 'Folder',
+    icon: <getModuleIcon iconName="Folder" />,
     difficulty: 'intermediate',
     progress: 0,
     completed: false,
     topics: [
-      { id: 'file-1', moduleId: 'file-operations', name: 'Reading Files', description: 'Load file contents', exercises: 3, completed: false },
-      { id: 'file-2', moduleId: 'file-operations', name: 'Writing Files', description: 'Save data to files', exercises: 3, completed: false },
-      { id: 'file-3', moduleId: 'file-operations', name: 'File Context Managers', description: 'Safe file handling', exercises: 3, completed: false },
+      { id: 'file-1', moduleId: 'files', name: 'Reading Files', description: 'Load file contents', exercises: 3, completed: false },
+      { id: 'file-2', moduleId: 'files', name: 'Writing Files', description: 'Save data to files', exercises: 3, completed: false },
+      { id: 'file-3', moduleId: 'files', name: 'File Context Managers', description: 'Safe file handling', exercises: 3, completed: false },
     ],
   },
   {
-    id: 'error-handling',
+    id: 'errors',
     name: 'Error Handling',
     description: 'Debug and handle exceptions',
-    icon: 'Bug',
+    icon: <getModuleIcon iconName="Bug" />,
     difficulty: 'intermediate',
     progress: 0,
     completed: false,
     topics: [
-      { id: 'err-1', moduleId: 'error-handling', name: 'Try/Except Blocks', description: 'Catch exceptions', exercises: 4, completed: false },
-      { id: 'err-2', moduleId: 'error-handling', name: 'Exception Types', description: 'Different error types', exercises: 3, completed: false },
-      { id: 'err-3', moduleId: 'error-handling', name: 'Raising Exceptions', description: 'Throw errors', exercises: 3, completed: false },
+      { id: 'err-1', moduleId: 'errors', name: 'Try/Except Blocks', description: 'Catch exceptions', exercises: 4, completed: false },
+      { id: 'err-2', moduleId: 'errors', name: 'Exception Types', description: 'Different error types', exercises: 3, completed: false },
+      { id: 'err-3', moduleId: 'errors', name: 'Raising Exceptions', description: 'Throw errors', exercises: 3, completed: false },
     ],
   },
   {
     id: 'oop',
     name: 'Object-Oriented Programming',
     description: 'Classes and objects',
-    icon: 'Building',
+    icon: <getModuleIcon iconName="Building" />,
     difficulty: 'advanced',
     progress: 0,
     completed: false,
@@ -129,18 +137,18 @@ const pythonModules: Module[] = [
     ],
   },
   {
-    id: 'advanced-python',
+    id: 'libraries',
     name: 'Advanced Python',
     description: 'Decorators, generators, and more',
-    icon: 'Rocket',
+    icon: <getModuleIcon iconName="Rocket" />,
     difficulty: 'advanced',
     progress: 0,
     completed: false,
     topics: [
-      { id: 'adv-1', moduleId: 'advanced-python', name: 'Decorators', description: 'Function modifiers', exercises: 4, completed: false },
-      { id: 'adv-2', moduleId: 'advanced-python', name: 'Generators', description: 'Lazy evaluation', exercises: 4, completed: false },
-      { id: 'adv-3', moduleId: 'advanced-python', name: 'List Comprehensions', description: 'Concise iteration', exercises: 4, completed: false },
-      { id: 'adv-4', moduleId: 'advanced-python', name: 'Context Managers', description: 'Resource management', exercises: 3, completed: false },
+      { id: 'adv-1', moduleId: 'libraries', name: 'Decorators', description: 'Function modifiers', exercises: 4, completed: false },
+      { id: 'adv-2', moduleId: 'libraries', name: 'Generators', description: 'Lazy evaluation', exercises: 4, completed: false },
+      { id: 'adv-3', moduleId: 'libraries', name: 'List Comprehensions', description: 'Concise iteration', exercises: 4, completed: false },
+      { id: 'adv-4', moduleId: 'libraries', name: 'Context Managers', description: 'Resource management', exercises: 3, completed: false },
     ],
   },
 ];
@@ -168,12 +176,28 @@ function getProgressColor(progress: number) {
 export default function ModulesPage() {
   const user = useUserStore((state) => state.user);
   const [mounted, setMounted] = useState(false);
-  const [modules, setModules] = useState<Module[]>(pythonModules);
+  const [modules, setModules] = useState<Module[]>(defaultModules);
+  const [quickExercises, setQuickExercises] = useState<any[]>([]);
 
   useEffect(() => {
     setMounted(true);
-    // In production, fetch modules from API
-    // For now, use mock data
+    // Fetch modules and exercises from API
+    const fetchData = async () => {
+      try {
+        const exerciseUrl = (process.env.NEXT_PUBLIC_EXERCISE_URL || 'http://134.209.154.247:30804').trim();
+        const res = await fetch(`${exerciseUrl}/exercises/all`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.exercises && data.exercises.length > 0) {
+            // Set quick start exercises (first 3)
+            setQuickExercises(data.exercises.slice(0, 3));
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch exercises:', error);
+      }
+    };
+    fetchData();
   }, []);
 
   if (!mounted) {
@@ -214,7 +238,7 @@ export default function ModulesPage() {
               <div className="p-6">
                 {/* Module Header */}
                 <div className="flex items-start justify-between mb-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-nebula text-2xl">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-nebula text-primary-foreground">
                     {module.icon}
                   </div>
                   <span className={`rounded-full px-2 py-1 text-xs font-semibold ${getModuleColor(module.difficulty)}`}>
@@ -259,33 +283,59 @@ export default function ModulesPage() {
       <div className="glass rounded-xl p-6 shadow-elevated">
         <h2 className="text-xl font-bold text-foreground mb-4">Quick Start Exercises</h2>
         <div className="grid gap-4 md:grid-cols-3">
-          <Link href="/exercise/1">
-            <Button variant="outline" className="w-full justify-start gap-2 h-auto py-3 border-2 border-cosmic-purple/40 bg-cosmic-purple/5 hover:bg-cosmic-purple/15 hover:border-cosmic-purple/60">
-              <span className="text-2xl">1️⃣</span>
-              <div className="text-left">
-                <p className="font-medium text-foreground">Hello World</p>
-                <p className="text-xs text-muted-foreground">Your first program</p>
-              </div>
-            </Button>
-          </Link>
-          <Link href="/exercise/2">
-            <Button variant="outline" className="w-full justify-start gap-2 h-auto py-3 border-2 border-cosmic-blue/40 bg-cosmic-blue/5 hover:bg-cosmic-blue/15 hover:border-cosmic-blue/60">
-              <span className="text-2xl">2️⃣</span>
-              <div className="text-left">
-                <p className="font-medium text-foreground">Variables</p>
-                <p className="text-xs text-muted-foreground">Store data</p>
-              </div>
-            </Button>
-          </Link>
-          <Link href="/exercise/3">
-            <Button variant="outline" className="w-full justify-start gap-2 h-auto py-3 border-2 border-cosmic-cyan/40 bg-cosmic-cyan/5 hover:bg-cosmic-cyan/15 hover:border-cosmic-cyan/60">
-              <span className="text-2xl">3️⃣</span>
-              <div className="text-left">
-                <p className="font-medium text-foreground">Arithmetic</p>
-                <p className="text-xs text-muted-foreground">Math operations</p>
-              </div>
-            </Button>
-          </Link>
+          {quickExercises.length > 0 ? quickExercises.map((ex, index) => (
+            <Link key={ex.id} href={`/exercise/${ex.id}`}>
+              <Button variant="outline" className={`w-full justify-start gap-2 h-auto py-3 border-2 ${
+                index === 0 ? 'border-cosmic-purple/40 bg-cosmic-purple/5 hover:bg-cosmic-purple/15 hover:border-cosmic-purple/60' :
+                index === 1 ? 'border-cosmic-blue/40 bg-cosmic-blue/5 hover:bg-cosmic-blue/15 hover:border-cosmic-blue/60' :
+                'border-cosmic-cyan/40 bg-cosmic-cyan/5 hover:bg-cosmic-cyan/15 hover:border-cosmic-cyan/60'
+              }`}>
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
+                  <span className="text-sm font-bold text-primary">{index + 1}</span>
+                </div>
+                <div className="text-left">
+                  <p className="font-medium text-foreground">{ex.title}</p>
+                  <p className="text-xs text-muted-foreground">{ex.difficulty || 'Beginner'}</p>
+                </div>
+              </Button>
+            </Link>
+          )) : (
+            <>
+              <Link href="/modules/basics">
+                <Button variant="outline" className="w-full justify-start gap-2 h-auto py-3 border-2 border-cosmic-purple/40 bg-cosmic-purple/5 hover:bg-cosmic-purple/15 hover:border-cosmic-purple/60">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
+                    <span className="text-sm font-bold text-primary">1</span>
+                  </div>
+                  <div className="text-left">
+                    <p className="font-medium text-foreground">Hello World</p>
+                    <p className="text-xs text-muted-foreground">Your first program</p>
+                  </div>
+                </Button>
+              </Link>
+              <Link href="/modules/basics">
+                <Button variant="outline" className="w-full justify-start gap-2 h-auto py-3 border-2 border-cosmic-blue/40 bg-cosmic-blue/5 hover:bg-cosmic-blue/15 hover:border-cosmic-blue/60">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
+                    <span className="text-sm font-bold text-primary">2</span>
+                  </div>
+                  <div className="text-left">
+                    <p className="font-medium text-foreground">Variables</p>
+                    <p className="text-xs text-muted-foreground">Store data</p>
+                  </div>
+                </Button>
+              </Link>
+              <Link href="/modules/control_flow">
+                <Button variant="outline" className="w-full justify-start gap-2 h-auto py-3 border-2 border-cosmic-cyan/40 bg-cosmic-cyan/5 hover:bg-cosmic-cyan/15 hover:border-cosmic-cyan/60">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
+                    <span className="text-sm font-bold text-primary">3</span>
+                  </div>
+                  <div className="text-left">
+                    <p className="font-medium text-foreground">Control Flow</p>
+                    <p className="text-xs text-muted-foreground">If statements</p>
+                  </div>
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </div>

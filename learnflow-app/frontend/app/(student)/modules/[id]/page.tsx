@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ChevronLeft, Play, Lock, CheckCircle2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { getModuleIcon } from '@/components/ModuleIcons';
 
 interface Topic {
   id: string;
@@ -20,7 +21,7 @@ interface Module {
   id: string;
   name: string;
   description: string;
-  icon: string;
+  icon: React.ReactNode;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   topics: Topic[];
   progress: number;
@@ -28,40 +29,40 @@ interface Module {
 }
 
 const modulesData: Record<string, Module> = {
-  'python-basics': {
-    id: 'python-basics',
+  'basics': {
+    id: 'basics',
     name: 'Python Basics',
     description: 'Learn the fundamentals of Python programming',
-    icon: 'Python',
+    icon: <getModuleIcon iconName="Python" />,
     difficulty: 'beginner',
     progress: 0,
     completed: false,
     topics: [
-      { id: 'basics-1', moduleId: 'python-basics', name: 'Variables & Data Types', description: 'Store and use data in Python', exercises: 3, completed: false },
-      { id: 'basics-2', moduleId: 'python-basics', name: 'Operators', description: 'Perform mathematical and logical operations', exercises: 3, completed: false },
-      { id: 'basics-3', moduleId: 'python-basics', name: 'Input/Output', description: 'Get user input and display output', exercises: 2, completed: false },
-      { id: 'basics-4', moduleId: 'python-basics', name: 'Comments & Documentation', description: 'Document your code effectively', exercises: 2, completed: false },
+      { id: 'basics-1', moduleId: 'basics', name: 'Variables & Data Types', description: 'Store and use data in Python', exercises: 3, completed: false },
+      { id: 'basics-2', moduleId: 'basics', name: 'Operators', description: 'Perform mathematical and logical operations', exercises: 3, completed: false },
+      { id: 'basics-3', moduleId: 'basics', name: 'Input/Output', description: 'Get user input and display output', exercises: 2, completed: false },
+      { id: 'basics-4', moduleId: 'basics', name: 'Comments & Documentation', description: 'Document your code effectively', exercises: 2, completed: false },
     ],
   },
-  'control-flow': {
-    id: 'control-flow',
+  'control_flow': {
+    id: 'control_flow',
     name: 'Control Flow',
     description: 'Master conditional logic and loops',
-    icon: 'Flow',
+    icon: <getModuleIcon iconName="Flow" />,
     difficulty: 'beginner',
     progress: 0,
     completed: false,
     topics: [
-      { id: 'flow-1', moduleId: 'control-flow', name: 'If Statements', description: 'Make decisions with conditional logic', exercises: 4, completed: false },
-      { id: 'flow-2', moduleId: 'control-flow', name: 'Loops', description: 'Repeat code with for and while loops', exercises: 4, completed: false },
-      { id: 'flow-3', moduleId: 'control-flow', name: 'Break & Continue', description: 'Control loop execution flow', exercises: 3, completed: false },
+      { id: 'flow-1', moduleId: 'control_flow', name: 'If Statements', description: 'Make decisions with conditional logic', exercises: 4, completed: false },
+      { id: 'flow-2', moduleId: 'control_flow', name: 'Loops', description: 'Repeat code with for and while loops', exercises: 4, completed: false },
+      { id: 'flow-3', moduleId: 'control_flow', name: 'Break & Continue', description: 'Control loop execution flow', exercises: 3, completed: false },
     ],
   },
   'functions': {
     id: 'functions',
     name: 'Functions',
     description: 'Create reusable code blocks',
-    icon: 'Bolt',
+    icon: <getModuleIcon iconName="Bolt" />,
     difficulty: 'intermediate',
     progress: 0,
     completed: false,
@@ -72,53 +73,53 @@ const modulesData: Record<string, Module> = {
       { id: 'func-4', moduleId: 'functions', name: 'Lambda Functions', description: 'Create anonymous inline functions', exercises: 3, completed: false },
     ],
   },
-  'data-structures': {
-    id: 'data-structures',
+  'data_structures': {
+    id: 'data_structures',
     name: 'Data Structures',
     description: 'Lists, dictionaries, tuples, and sets',
-    icon: 'Box',
+    icon: <getModuleIcon iconName="Box" />,
     difficulty: 'intermediate',
     progress: 0,
     completed: false,
     topics: [
-      { id: 'ds-1', moduleId: 'data-structures', name: 'Lists', description: 'Work with ordered mutable collections', exercises: 5, completed: false },
-      { id: 'ds-2', moduleId: 'data-structures', name: 'Dictionaries', description: 'Store key-value pairs efficiently', exercises: 5, completed: false },
-      { id: 'ds-3', moduleId: 'data-structures', name: 'Tuples & Sets', description: 'Use immutable and unique collections', exercises: 4, completed: false },
+      { id: 'ds-1', moduleId: 'data_structures', name: 'Lists', description: 'Work with ordered mutable collections', exercises: 5, completed: false },
+      { id: 'ds-2', moduleId: 'data_structures', name: 'Dictionaries', description: 'Store key-value pairs efficiently', exercises: 5, completed: false },
+      { id: 'ds-3', moduleId: 'data_structures', name: 'Tuples & Sets', description: 'Use immutable and unique collections', exercises: 4, completed: false },
     ],
   },
-  'file-operations': {
-    id: 'file-operations',
+  'files': {
+    id: 'files',
     name: 'File Operations',
     description: 'Read and write files on disk',
-    icon: 'Folder',
+    icon: <getModuleIcon iconName="Folder" />,
     difficulty: 'intermediate',
     progress: 0,
     completed: false,
     topics: [
-      { id: 'file-1', moduleId: 'file-operations', name: 'Reading Files', description: 'Load and read file contents', exercises: 3, completed: false },
-      { id: 'file-2', moduleId: 'file-operations', name: 'Writing Files', description: 'Create and write to files', exercises: 3, completed: false },
-      { id: 'file-3', moduleId: 'file-operations', name: 'File Context Managers', description: 'Safely manage file resources', exercises: 3, completed: false },
+      { id: 'file-1', moduleId: 'files', name: 'Reading Files', description: 'Load and read file contents', exercises: 3, completed: false },
+      { id: 'file-2', moduleId: 'files', name: 'Writing Files', description: 'Create and write to files', exercises: 3, completed: false },
+      { id: 'file-3', moduleId: 'files', name: 'File Context Managers', description: 'Safely manage file resources', exercises: 3, completed: false },
     ],
   },
-  'error-handling': {
-    id: 'error-handling',
+  'errors': {
+    id: 'errors',
     name: 'Error Handling',
     description: 'Debug and handle exceptions gracefully',
-    icon: 'Bug',
+    icon: <getModuleIcon iconName="Bug" />,
     difficulty: 'intermediate',
     progress: 0,
     completed: false,
     topics: [
-      { id: 'err-1', moduleId: 'error-handling', name: 'Try/Except Blocks', description: 'Catch and handle runtime errors', exercises: 4, completed: false },
-      { id: 'err-2', moduleId: 'error-handling', name: 'Exception Types', description: 'Work with different exception types', exercises: 3, completed: false },
-      { id: 'err-3', moduleId: 'error-handling', name: 'Raising Exceptions', description: 'Throw custom exceptions when needed', exercises: 3, completed: false },
+      { id: 'err-1', moduleId: 'errors', name: 'Try/Except Blocks', description: 'Catch and handle runtime errors', exercises: 4, completed: false },
+      { id: 'err-2', moduleId: 'errors', name: 'Exception Types', description: 'Work with different exception types', exercises: 3, completed: false },
+      { id: 'err-3', moduleId: 'errors', name: 'Raising Exceptions', description: 'Throw custom exceptions when needed', exercises: 3, completed: false },
     ],
   },
   'oop': {
     id: 'oop',
     name: 'Object-Oriented Programming',
     description: 'Classes and objects',
-    icon: 'Building',
+    icon: <getModuleIcon iconName="Building" />,
     difficulty: 'advanced',
     progress: 0,
     completed: false,
@@ -129,19 +130,19 @@ const modulesData: Record<string, Module> = {
       { id: 'oop-4', moduleId: 'oop', name: 'Polymorphism', description: 'Implement different behaviors', exercises: 3, completed: false },
     ],
   },
-  'advanced-python': {
-    id: 'advanced-python',
+  'libraries': {
+    id: 'libraries',
     name: 'Advanced Python',
     description: 'Decorators, generators, and more',
-    icon: 'Rocket',
+    icon: <getModuleIcon iconName="Rocket" />,
     difficulty: 'advanced',
     progress: 0,
     completed: false,
     topics: [
-      { id: 'adv-1', moduleId: 'advanced-python', name: 'Decorators', description: 'Modify function behavior dynamically', exercises: 4, completed: false },
-      { id: 'adv-2', moduleId: 'advanced-python', name: 'Generators', description: 'Create lazy iterators with yield', exercises: 4, completed: false },
-      { id: 'adv-3', moduleId: 'advanced-python', name: 'List Comprehensions', description: 'Write concise iteration expressions', exercises: 4, completed: false },
-      { id: 'adv-4', moduleId: 'advanced-python', name: 'Context Managers', description: 'Implement resource management patterns', exercises: 3, completed: false },
+      { id: 'adv-1', moduleId: 'libraries', name: 'Decorators', description: 'Modify function behavior dynamically', exercises: 4, completed: false },
+      { id: 'adv-2', moduleId: 'libraries', name: 'Generators', description: 'Create lazy iterators with yield', exercises: 4, completed: false },
+      { id: 'adv-3', moduleId: 'libraries', name: 'List Comprehensions', description: 'Write concise iteration expressions', exercises: 4, completed: false },
+      { id: 'adv-4', moduleId: 'libraries', name: 'Context Managers', description: 'Implement resource management patterns', exercises: 3, completed: false },
     ],
   },
 };
@@ -199,7 +200,7 @@ export default function ModuleDetailPage() {
           >
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl gradient-nebula text-4xl">
+          <div className="flex h-20 w-20 items-center justify-center rounded-2xl gradient-nebula text-primary-foreground">
             {module.icon}
           </div>
           <div className="flex-1">
@@ -274,11 +275,11 @@ export default function ModuleDetailPage() {
                         {topic.exercises} exercises
                       </span>
                       <Link
-                        href={`/exercise/${topic.id}`}
+                        href={`/modules/${module.id}`}
                         className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-cosmic-purple/90 to-cosmic-blue/90 hover:from-cosmic-purple hover:to-cosmic-blue text-white px-4 py-2 text-sm font-medium transition-all shadow-glow-purple/30 hover:shadow-glow-purple/50"
                       >
                         <Play className="h-4 w-4" />
-                        Start
+                        Browse Exercises
                       </Link>
                     </div>
                   </div>

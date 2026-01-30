@@ -5,6 +5,7 @@ import { useUserStore } from '@/stores/userStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 
 // Icon components
 const TrophyIcon = () => (
@@ -20,7 +21,7 @@ const TrendingUpIcon = () => (
 );
 
 const TargetIcon = () => (
-  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <circle cx="12" cy="12" r="10" />
     <circle cx="12" cy="12" r="6" />
     <circle cx="12" cy="12" r="2" />
@@ -29,15 +30,15 @@ const TargetIcon = () => (
 
 const CalendarIcon = () => (
   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-    <path d="M16 2v4M8 2v4M3 10h18" />
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth={2} />
+    <path d="M16 2v4M8 2v4M3 10h18" strokeWidth={2} />
   </svg>
 );
 
 const AwardIcon = () => (
   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <circle cx="12" cy="8" r="7" />
-    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+    <circle cx="12" cy="8" r="7" strokeWidth={2} />
+    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" strokeWidth={2} />
   </svg>
 );
 
@@ -48,9 +49,7 @@ const CodeIcon = () => (
 );
 
 const ChevronRightIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-  </svg>
+  <ChevronRight />
 );
 
 interface Module {
@@ -70,12 +69,105 @@ interface Achievement {
   icon: React.ReactNode;
 }
 
+interface ApiModule {
+  id: string;
+  name: string;
+  exercises: number;
+}
+
 export default function ProgressPage() {
   const user = useUserStore((state) => state.user);
   const [mounted, setMounted] = useState(false);
+  const [modules, setModules] = useState<Module[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [totalExercises, setTotalExercises] = useState(0);
+  const [completedExercises, setCompletedExercises] = useState(0);
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [totalXP, setTotalXP] = useState(0);
 
   useEffect(() => {
     setMounted(true);
+
+    // Fetch progress data from API
+    const fetchProgressData = async () => {
+      try {
+        const exerciseUrl = (process.env.NEXT_PUBLIC_EXERCISE_URL || 'http://134.209.154.247:30804').trim();
+        const progressUrl = (process.env.NEXT_PUBLIC_PROGRESS_URL || 'http://134.209.154.247:30805').trim();
+
+        // Fetch modules
+        const modulesRes = await fetch(`${exerciseUrl}/modules`);
+        if (modulesRes.ok) {
+          const modulesData = await modulesRes.json();
+          if (modulesData.modules) {
+            setModules(modulesData.modules.map((m: ApiModule) => ({
+              id: m.id,
+              name: m.name,
+              progress: 0,
+              mastery: 'Beginner' as const,
+              exercisesCompleted: 0,
+              totalExercises: m.exercises,
+            })));
+            const total = modulesData.modules.reduce((sum: number, m: ApiModule) => sum + (m.exercises || 0), 0);
+            setTotalExercises(total);
+          }
+        }
+
+        // In production, fetch user progress from progress service
+        // For now, use localStorage to track completed exercises
+        try {
+          const savedProgress = localStorage.getItem('learnflow_progress');
+          if (savedProgress) {
+            const progress = JSON.parse(savedProgress);
+            setCompletedExercises(progress.completed || 0);
+            setCurrentStreak(progress.streak || 0);
+            setTotalXP(progress.xp || 0);
+
+            // Set achievements based on progress
+            const achievementsList: Achievement[] = [];
+            if (progress.completed > 0) {
+              achievementsList.push({
+                id: '1',
+                title: 'First Steps',
+                description: 'Complete your first exercise',
+                earnedAt: 'Recently',
+                icon: <AwardIcon />,
+              });
+            }
+            if (progress.completed >= 5) {
+              achievementsList.push({
+                id: '2',
+                title: 'Code Warrior',
+                description: 'Complete 5 exercises',
+                earnedAt: 'Recently',
+                icon: <TrophyIcon />,
+              });
+            }
+            if (progress.streak >= 3) {
+              achievementsList.push({
+                id: '3',
+                title: 'On Fire!',
+                description: `Maintain a ${progress.streak}-day streak`,
+                earnedAt: 'Today',
+                icon: <TargetIcon />,
+              });
+            }
+            setAchievements(achievementsList);
+          }
+        } catch (e) {
+          console.error('Failed to load progress from localStorage:', e);
+        }
+      } catch (error) {
+        console.error('Failed to fetch progress data:', error);
+        // Set default values on error
+        setModules([
+          { id: 'basics', name: 'Python Basics', progress: 0, mastery: 'Beginner', exercisesCompleted: 0, totalExercises: 5 },
+          { id: 'control_flow', name: 'Control Flow', progress: 0, mastery: 'Beginner', exercisesCompleted: 0, totalExercises: 6 },
+          { id: 'functions', name: 'Functions', progress: 0, mastery: 'Beginner', exercisesCompleted: 0, totalExercises: 4 },
+        ]);
+      }
+    };
+
+    fetchProgressData();
   }, []);
 
   if (!mounted) {
@@ -88,82 +180,6 @@ export default function ProgressPage() {
       </div>
     );
   }
-
-  // Mock data
-  const modules: Module[] = [
-    {
-      id: '1',
-      name: 'Python Basics',
-      progress: 75,
-      mastery: 'Proficient',
-      exercisesCompleted: 6,
-      totalExercises: 8,
-    },
-    {
-      id: '2',
-      name: 'Control Flow',
-      progress: 40,
-      mastery: 'Learning',
-      exercisesCompleted: 2,
-      totalExercises: 5,
-    },
-    {
-      id: '3',
-      name: 'Functions',
-      progress: 20,
-      mastery: 'Beginner',
-      exercisesCompleted: 1,
-      totalExercises: 5,
-    },
-    {
-      id: '4',
-      name: 'Data Structures',
-      progress: 10,
-      mastery: 'Beginner',
-      exercisesCompleted: 0,
-      totalExercises: 6,
-    },
-    {
-      id: '5',
-      name: 'OOP',
-      progress: 0,
-      mastery: 'Beginner',
-      exercisesCompleted: 0,
-      totalExercises: 4,
-    },
-    {
-      id: '6',
-      name: 'File Handling',
-      progress: 0,
-      mastery: 'Beginner',
-      exercisesCompleted: 0,
-      totalExercises: 3,
-    },
-  ];
-
-  const achievements: Achievement[] = [
-    {
-      id: '1',
-      title: 'First Steps',
-      description: 'Complete your first exercise',
-      earnedAt: '2 days ago',
-      icon: <AwardIcon />,
-    },
-    {
-      id: '2',
-      title: 'Code Warrior',
-      description: 'Complete 5 exercises',
-      earnedAt: '1 day ago',
-      icon: <TrophyIcon />,
-    },
-    {
-      id: '3',
-      title: 'On Fire!',
-      description: 'Maintain a 5-day streak',
-      earnedAt: 'Today',
-      icon: <TargetIcon />,
-    },
-  ];
 
   const getMasteryColor = (mastery: string) => {
     switch (mastery) {
@@ -180,12 +196,7 @@ export default function ProgressPage() {
     }
   };
 
-  const overallProgress = Math.round(
-    modules.reduce((acc, m) => acc + m.progress, 0) / modules.length
-  );
-
-  const totalExercisesCompleted = modules.reduce((acc, m) => acc + m.exercisesCompleted, 0);
-  const totalExercises = modules.reduce((acc, m) => acc + m.totalExercises, 0);
+  const overallProgress = totalExercises > 0 ? Math.round((completedExercises / totalExercises) * 100) : 0;
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -229,10 +240,10 @@ export default function ProgressPage() {
                   Exercises
                 </p>
                 <div className="text-3xl font-bold text-foreground mt-2">
-                  {totalExercisesCompleted}/{totalExercises}
+                  {completedExercises}/{totalExercises}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {Math.round((totalExercisesCompleted / totalExercises) * 100)}% complete
+                  {totalExercises > 0 ? Math.round((completedExercises / totalExercises) * 100) : 0}% complete
                 </p>
               </div>
               <div className="p-3 rounded-xl icon-container-success">
@@ -249,7 +260,7 @@ export default function ProgressPage() {
                 <p className="text-muted-foreground text-sm font-medium uppercase tracking-wider">
                   Current Streak
                 </p>
-                <div className="text-3xl font-bold text-foreground mt-2">5</div>
+                <div className="text-3xl font-bold text-foreground mt-2">{currentStreak}</div>
                 <p className="text-xs text-muted-foreground mt-1">days in a row</p>
               </div>
               <div className="p-3 rounded-xl icon-container-warning">
@@ -264,10 +275,10 @@ export default function ProgressPage() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-muted-foreground text-sm font-medium uppercase tracking-wider">
-                  Achievements
+                  Total XP
                 </p>
-                <div className="text-3xl font-bold text-foreground mt-2">{achievements.length}</div>
-                <p className="text-xs text-muted-foreground mt-1">badges earned</p>
+                <div className="text-3xl font-bold text-foreground mt-2">{totalXP}</div>
+                <p className="text-xs text-muted-foreground mt-1">points earned</p>
               </div>
               <div className="p-3 rounded-xl icon-container-accent">
                 <TrophyIcon />
@@ -281,7 +292,7 @@ export default function ProgressPage() {
       <div>
         <h2 className="mb-4 text-2xl font-bold">Module Progress</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {modules.map((module) => (
+          {modules.length > 0 ? modules.map((module) => (
             <Card key={module.id} className="hover-lift shadow-subtle">
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -306,7 +317,7 @@ export default function ProgressPage() {
                   <p className="text-xs text-muted-foreground">
                     {module.exercisesCompleted} of {module.totalExercises} exercises completed
                   </p>
-                  <Link href={`/exercise/${module.id}`} className="block">
+                  <Link href={`/modules/${module.id}`} className="block">
                     <Button className="w-full border-2 border-cosmic-cyan/40 bg-cosmic-cyan/10 text-cosmic-cyan hover:bg-cosmic-cyan/20 hover:border-cosmic-cyan/60" size="sm" variant="outline">
                       {module.progress > 0 ? 'Continue' : 'Start Learning'} <ChevronRightIcon />
                     </Button>
@@ -314,35 +325,55 @@ export default function ProgressPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          )) : (
+            <Card className="col-span-full p-8 text-center">
+              <p className="text-muted-foreground">Loading modules...</p>
+            </Card>
+          )}
         </div>
       </div>
 
       {/* Recent Achievements */}
-      <div>
-        <h2 className="mb-4 text-2xl font-bold">Recent Achievements</h2>
+      {achievements.length > 0 && (
+        <div>
+          <h2 className="mb-4 text-2xl font-bold">Recent Achievements</h2>
+          <Card className="shadow-elevated">
+            <CardContent className="p-6">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {achievements.map((achievement) => (
+                  <div
+                    key={achievement.id}
+                    className="flex items-start space-x-4 rounded-lg p-4 border border-border hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full icon-container-accent">
+                      {achievement.icon}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-foreground">{achievement.title}</h3>
+                      <p className="text-sm text-muted-foreground">{achievement.description}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{achievement.earnedAt}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* No achievements message */}
+      {achievements.length === 0 && mounted && (
         <Card className="shadow-elevated">
-          <CardContent className="p-6">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {achievements.map((achievement) => (
-                <div
-                  key={achievement.id}
-                  className="flex items-start space-x-4 rounded-lg p-4 border border-border hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full icon-container-accent">
-                    {achievement.icon}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">{achievement.title}</h3>
-                    <p className="text-sm text-muted-foreground">{achievement.description}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{achievement.earnedAt}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <CardContent className="p-8 text-center">
+            <p className="text-muted-foreground">Complete exercises to earn achievements!</p>
+            <Link href="/modules" className="inline-block mt-4">
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                Start Learning
+              </Button>
+            </Link>
           </CardContent>
         </Card>
-      </div>
+      )}
     </div>
   );
 }

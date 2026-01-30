@@ -14,13 +14,13 @@ import type {
 } from '@/types';
 
 const SERVICES = {
-  triage: process.env.NEXT_PUBLIC_TRIAGE_URL || 'http://localhost:8001',
-  concepts: process.env.NEXT_PUBLIC_CONCEPTS_URL || 'http://localhost:8002',
-  debug: process.env.NEXT_PUBLIC_DEBUG_URL || 'http://localhost:8003',
-  exercise: process.env.NEXT_PUBLIC_EXERCISE_URL || 'http://localhost:8004',
-  progress: process.env.NEXT_PUBLIC_PROGRESS_URL || 'http://localhost:8005',
-  codeReview: process.env.NEXT_PUBLIC_CODE_REVIEW_URL || 'http://localhost:8006',
-  chat: process.env.NEXT_PUBLIC_CHAT_URL || 'http://localhost:8007',
+  triage: (process.env.NEXT_PUBLIC_TRIAGE_URL || 'http://localhost:8001').trim(),
+  concepts: (process.env.NEXT_PUBLIC_CONCEPTS_URL || 'http://localhost:8002').trim(),
+  debug: (process.env.NEXT_PUBLIC_DEBUG_URL || 'http://localhost:8003').trim(),
+  exercise: (process.env.NEXT_PUBLIC_EXERCISE_URL || 'http://localhost:8004').trim(),
+  progress: (process.env.NEXT_PUBLIC_PROGRESS_URL || 'http://localhost:8005').trim(),
+  codeReview: (process.env.NEXT_PUBLIC_CODE_REVIEW_URL || 'http://localhost:8006').trim(),
+  chat: (process.env.NEXT_PUBLIC_CHAT_URL || 'http://localhost:8007').trim(),
 };
 
 /**

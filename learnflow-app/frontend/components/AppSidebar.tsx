@@ -76,6 +76,17 @@ const navItems: NavItem[] = [
   { name: 'Settings', href: '/settings', icon: Icons.Settings },
 ];
 
+// Teacher-only nav item
+const teacherNavItem: NavItem = {
+  name: 'Teacher Dashboard',
+  href: '/teacher/dashboard',
+  icon: (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+};
+
 export function AppSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -191,6 +202,38 @@ export function AppSidebar() {
               </Link>
             );
           })}
+
+          {/* Teacher Dashboard Link - Available for demo/testing */}
+          <div className="pt-4 border-t border-border/50">
+            <Link
+              href="/teacher/dashboard"
+              className={cn(
+                'group flex items-center rounded-lg px-3 py-2.5 transition-all duration-200',
+                pathname === '/teacher/dashboard' || pathname.startsWith('/teacher/dashboard')
+                  ? 'bg-primary text-primary-foreground shadow-medium'
+                  : 'text-foreground hover:bg-muted hover:scale-[1.02] hover-lift',
+                isCollapsed ? 'justify-center' : 'justify-start'
+              )}
+              onClick={() => setIsMobileOpen(false)}
+            >
+              <span className="flex items-center gap-3">
+                <span className={cn(
+                  "transition-transform group-hover:scale-110",
+                  isCollapsed && "group-hover:hidden"
+                )}>
+                  {teacherNavItem.icon}
+                </span>
+                {!isCollapsed && (
+                  <>
+                    <span className="ml-3 font-medium">Teacher Dashboard</span>
+                    {user?.role === 'teacher' && (
+                      <span className="ml-auto text-xs bg-primary/20 px-2 py-0.5 rounded text-primary">YOU</span>
+                    )}
+                  </>
+                )}
+              </span>
+            </Link>
+          </div>
         </nav>
 
         {/* User Section */}
