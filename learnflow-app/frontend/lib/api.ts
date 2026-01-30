@@ -13,13 +13,15 @@ import type {
   ClassOverview,
 } from '@/types';
 
-// Service URLs - use proxy path for production (HTTPS) to avoid mixed content
-// Fall back to direct URLs for development
+// Service URLs - use Next.js API route proxy for production (HTTPS)
+// to avoid mixed content issues. The API routes run server-side and can
+// fetch from HTTP backends without browser restrictions.
 const USE_PROXY = typeof window !== 'undefined' && window.location.protocol === 'https:';
 
 const getBaseUrl = (serviceName: string, directUrl: string) => {
   if (USE_PROXY) {
-    return `/api/backend/${serviceName}`;
+    // Use Next.js API route proxy (server-side, can fetch HTTP)
+    return `/api/proxy/${serviceName}`;
   }
   return directUrl;
 };
@@ -30,7 +32,7 @@ const SERVICES = {
   debug: getBaseUrl('debug', (process.env.NEXT_PUBLIC_DEBUG_URL || 'http://localhost:8003').trim()),
   exercise: getBaseUrl('exercise', (process.env.NEXT_PUBLIC_EXERCISE_URL || 'http://localhost:8004').trim()),
   progress: getBaseUrl('progress', (process.env.NEXT_PUBLIC_PROGRESS_URL || 'http://localhost:8005').trim()),
-  codeReview: getBaseUrl('code-review', (process.env.NEXT_PUBLIC_CODE_REVIEW_URL || 'http://localhost:8006').trim()),
+  codeReview: getBaseUrl('codeReview', (process.env.NEXT_PUBLIC_CODE_REVIEW_URL || 'http://localhost:8006').trim()),
   chat: getBaseUrl('chat', (process.env.NEXT_PUBLIC_CHAT_URL || 'http://localhost:8007').trim()),
 };
 
