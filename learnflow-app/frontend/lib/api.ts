@@ -536,6 +536,59 @@ export async function getStudentWorkHistory(
 }
 
 // ============================================================================
+// TEACHER ASSIGNMENT GENERATION (AI-Powered)
+// ============================================================================
+
+/**
+ * Generate a custom assignment based on teacher's prompt and difficulty
+ */
+export async function generateTeacherAssignment(
+  prompt: string,
+  difficulty: 'beginner' | 'intermediate' | 'advanced',
+  topic?: string,
+  moduleId?: string
+): Promise<ApiResponse<{
+  exercise: Exercise;
+  preview: string;
+}>> {
+  return apiRequest(`${SERVICES.exercise}/api/v1/teacher/generate-assignment`, {
+    method: 'POST',
+    body: JSON.stringify({
+      prompt,
+      difficulty,
+      topic,
+      module_id: moduleId,
+    }),
+  });
+}
+
+/**
+ * Save and assign a generated exercise to students
+ */
+export async function saveTeacherAssignment(
+  exerciseId: string,
+  studentIds: string[],
+  note?: string
+): Promise<ApiResponse<{
+  message: string;
+  exercise_id: string;
+  assigned_students: string[];
+  note?: string;
+}>> {
+  return apiRequest(`${SERVICES.exercise}/api/v1/teacher/save-assignment`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      exercise_id: exerciseId,
+      student_ids: studentIds,
+      note,
+    }),
+  });
+}
+
+// ============================================================================
 // EXPORT ALL SERVICES
 // ============================================================================
 
@@ -573,6 +626,8 @@ export const api = {
   generateExerciseForStudent,
   assignExerciseToStudent,
   getStudentWorkHistory,
+  generateTeacherAssignment,
+  saveTeacherAssignment,
 
   // SSE
   subscribeToStruggleAlerts,

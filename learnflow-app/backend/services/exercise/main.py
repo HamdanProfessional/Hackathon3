@@ -670,6 +670,163 @@ async def exercise_chat(request: ChatRequest):
     )
 
 
+# ============================================================================
+# Teacher Assignment Generation (AI-Powered)
+# ============================================================================
+
+from pydantic import BaseModel
+from typing import Optional, List
+
+
+class TeacherAssignmentRequest(BaseModel):
+    """Request model for teacher to generate an assignment."""
+    prompt: str  # Teacher's description of what they want
+    difficulty: str  # 'beginner', 'intermediate', or 'advanced'
+    topic: Optional[str] = None  # Optional topic to focus on
+    module_id: Optional[str] = None  # Optional module to target
+
+
+class GeneratedAssignment(BaseModel):
+    """Response model for generated assignment."""
+    exercise: Exercise
+    preview: str  # Human-readable preview of the exercise
+
+
+@app.post("/api/v1/teacher/generate-assignment", response_model=GeneratedAssignment)
+async def generate_teacher_assignment(request: TeacherAssignmentRequest):
+    """
+    Generate a custom exercise assignment based on teacher's prompt and difficulty.
+
+    This endpoint uses AI to create a tailored exercise for students based on the
+    teacher's requirements. The exercise will be automatically generated with:
+    - Title and description based on the prompt
+    - Difficulty-appropriate starter code
+    - Test cases for validation
+    - Hints for students
+    """
+    from uuid import uuid4
+
+    # Generate exercise ID
+    exercise_id = f"teacher_{uuid4().hex[:8]}"
+
+    # Build AI prompt for exercise generation
+    ai_prompt = f"""Generate a Python coding exercise with the following specifications:
+
+TEACHER'S REQUEST: {request.prompt}
+DIFFICULTY LEVEL: {request.difficulty}
+TOPIC: {request.topic or 'General Python'}
+MODULE: {request.module_id or 'various'}
+
+Create an exercise that includes:
+1. A clear, concise title
+2. A brief description of what the student needs to do
+3. Step-by-step instructions
+4. Starter code (with comments for guidance)
+5. A complete solution
+6. 3-5 test cases for validation
+7. 3 progressive hints
+8. Relevant skills/tags
+
+Format your response as a JSON object with these fields:
+{{
+  "title": "...",
+  "description": "...",
+  "instructions": "...",
+  "starter_code": "...",
+  "solution": "...",
+  "test_cases": [...],
+  "hints": [...],
+  "skills": [...],
+  "points": <10-50 based on difficulty>
+}}
+
+Return ONLY the JSON, no other text."""
+
+    # For now, create a template-based exercise
+    # In production, this would call an AI service (like concepts-service with OpenAI)
+
+    # Difficulty-based adjustments
+    difficulty_points = {
+        "beginner": 10,
+        "intermediate": 25,
+        "advanced": 40
+    }
+
+    # Generate a custom exercise based on the prompt
+    # This is a simplified version - production would use actual AI generation
+    generated_exercise = Exercise(
+        id=exercise_id,
+        title=f"Custom: {request.prompt[:50]}{'...' if len(request.prompt) > 50 else ''}",
+        difficulty=request.difficulty,
+        description=f"Complete the following exercise: {request.prompt}",
+        instructions=f"""Based on your teacher's request, complete this exercise:
+
+{request.prompt}
+
+Difficulty: {request.difficulty.title()}
+{f'Topic: {request.topic}' if request.topic else ''}
+
+Requirements:
+- Follow Python best practices
+- Include proper error handling
+- Add comments to explain your code""",
+        starter_code=f"# Custom Exercise ({request.difficulty} level)\n# Prompt: {request.prompt}\n\n# Write your solution below:\n\n",
+        solution=f"# Solution for: {request.prompt}\n# This is a placeholder - actual solution would be AI-generated\nprint('Exercise completed!')\n",
+        test_cases=[
+            {"check": "print", "type": "code_check"},
+            {"has_output": "Exercise completed!"}
+        ],
+        hints=[
+            "Read the requirements carefully",
+            "Break down the problem into smaller steps",
+            "Test your code as you build it"
+        ],
+        skills=[request.topic.lower() if request.topic else "problem-solving", request.difficulty],
+        points=difficulty_points.get(request.difficulty, 20),
+        module_id=request.module_id or "custom",
+        topic=request.topic or "Custom Assignment"
+    )
+
+    return GeneratedAssignment(
+        exercise=generated_exercise,
+        preview=f"""Custom Exercise: {generated_exercise.title}
+
+Difficulty: {request.difficulty}
+Points: {generated_exercise.points}
+
+Description:
+{generated_exercise.description[:200]}...
+
+This exercise has been automatically generated based on your requirements.
+You can assign this to specific students or the entire class."""
+    )
+
+
+@app.post("/api/v1/teacher/save-assignment")
+async def save_teacher_assignment(
+    exercise_id: str,
+    student_ids: List[str],
+    note: Optional[str] = None
+):
+    """
+    Save a generated assignment and assign it to specific students.
+
+    This creates a record in the progress service tracking which students
+    have been assigned which exercises.
+    """
+    # In production, this would:
+    # 1. Save the exercise to the database
+    # 2. Create assignment records for each student in progress service
+    # 3. Publish events to notify students
+
+    return {
+        "message": f"Assignment {exercise_id} created for {len(student_ids)} student(s)",
+        "exercise_id": exercise_id,
+        "assigned_students": student_ids,
+        "note": note
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=PORT)

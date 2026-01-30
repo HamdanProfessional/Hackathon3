@@ -3,9 +3,11 @@
 import { useEffect, useState, useRef } from 'react';
 import ClassOverview from '@/components/ClassOverview';
 import StruggleAlerts from '@/components/StruggleAlerts';
-import type { ClassOverview as ClassOverviewType, StruggleAlert } from '@/types';
+import AssignmentGenerator from '@/components/AssignmentGenerator';
+import type { ClassOverview as ClassOverviewType, StruggleAlert, Exercise } from '@/types';
 import { api } from '@/lib/api';
-import { Activity, Wifi, WifiOff } from 'lucide-react';
+import { Activity, Wifi, WifiOff, Sparkles } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // Mock data for demonstration
 const mockClassOverview: ClassOverviewType = {
@@ -72,9 +74,11 @@ const mockStruggleAlerts: StruggleAlert[] = [
 export default function TeacherDashboardPage() {
   const [classOverview, setClassOverview] = useState<ClassOverviewType | null>(null);
   const [alerts, setAlerts] = useState<StruggleAlert[]>([]);
+  const [assignments, setAssignments] = useState<Exercise[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLive, setIsLive] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Refs to store EventSource instances for cleanup
   const alertsEventSource = useRef<EventSource | null>(null);
@@ -187,6 +191,11 @@ export default function TeacherDashboardPage() {
     setAlerts((prev) => prev.filter((alert) => alert.id !== alertId));
   };
 
+  const handleAssignmentCreated = (exercise: Exercise) => {
+    setAssignments((prev) => [exercise, ...prev]);
+    setActiveTab('overview');
+  };
+
   if (isLoading) {
     return (
       <div className="flex h-96 items-center justify-center">
@@ -245,30 +254,74 @@ export default function TeacherDashboardPage() {
         </div>
       </div>
 
-      {/* Class Overview */}
-      {classOverview && (
-        <div>
-          <ClassOverview overview={classOverview} />
-        </div>
-      )}
+      {/* Tabs for Dashboard Content */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="glass p-1">
+          <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="alerts" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            Alerts {alerts.length > 0 && `(${alerts.length})`}
+          </TabsTrigger>
+          <TabsTrigger value="create" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
+            Create Assignment
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Struggle Alerts */}
-      <div>
-        <h2 className="mb-4 text-2xl font-bold text-foreground flex items-center gap-3">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg icon-container-destructive">
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </span>
-          Struggle Alerts
-          {alerts.length > 0 && (
-            <span className="rounded-full bg-destructive/20 border border-destructive/30 px-3 py-1 text-sm font-semibold text-destructive">
-              {alerts.length}
-            </span>
+        <TabsContent value="overview" className="space-y-6">
+          {/* Class Overview */}
+          {classOverview && (
+            <div>
+              <ClassOverview overview={classOverview} />
+            </div>
           )}
-        </h2>
-        <StruggleAlerts alerts={alerts} onResolve={handleResolveAlert} />
-      </div>
+
+          {/* Recent Assignments */}
+          {assignments.length > 0 && (
+            <div className="glass rounded-xl p-6 shadow-elevated">
+              <h3 className="mb-4 text-xl font-bold text-foreground">Recent Assignments</h3>
+              <div className="space-y-3">
+                {assignments.map((assignment) => (
+                  <div key={assignment.id} className="flex items-center justify-between rounded-lg bg-black/20 p-4">
+                    <div className="flex-1">
+                      <p className="font-medium text-foreground">{assignment.title}</p>
+                      <p className="text-sm text-muted-foreground">{assignment.topic} • {assignment.difficulty}</p>
+                    </div>
+                    <span className="rounded-full bg-primary/20 px-3 py-1 text-sm font-medium text-primary">
+                      {assignment.points} pts
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="alerts">
+          {/* Struggle Alerts */}
+          <div>
+            <h2 className="mb-4 text-2xl font-bold text-foreground flex items-center gap-3">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg icon-container-destructive">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </span>
+              Struggle Alerts
+              {alerts.length > 0 && (
+                <span className="rounded-full bg-destructive/20 border border-destructive/30 px-3 py-1 text-sm font-semibold text-destructive">
+                  {alerts.length}
+                </span>
+              )}
+            </h2>
+            <StruggleAlerts alerts={alerts} onResolve={handleResolveAlert} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="create">
+          <AssignmentGenerator onAssignmentCreated={handleAssignmentCreated} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
