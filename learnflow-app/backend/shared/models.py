@@ -87,7 +87,7 @@ class ExerciseRequest(BaseModel):
 
 class Exercise(BaseModel):
     """Exercise."""
-    id: int
+    id: str
     title: str
     description: str
     instructions: str
@@ -95,7 +95,7 @@ class Exercise(BaseModel):
     test_cases: list[dict]
     hints: list[str]
     difficulty: str
-    module_id: int
+    module_id: str
     topic: str
 
 

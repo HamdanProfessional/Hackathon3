@@ -12,7 +12,7 @@ import logging
 from typing import Any, Optional
 from functools import lru_cache
 
-from dapr import DaprClient
+from dapr.clients import DaprClient
 from dapr.clients.grpc._state import StateItem
 from dapr.clients.grpc._response import GetSecretResponse
 

@@ -67,7 +67,7 @@ ALL_EXERCISES = {
         description="Ask the user for their favorite color and print a message.",
         instructions="Ask the user for their favorite color and print a message saying \"That's a great color!\"",
         starter_code="# Get user input\n",
-        solution='color = input("What is your favorite color? ")\nprint(f"That's a great color, {color}!")',
+        solution='color = input("What is your favorite color? ")\nprint(f"That\'s a great color, {color}!")',
         test_cases=[{"requires_input": True}],
         hints=["Use the input() function", "f-strings for variable interpolation"],
         skills=["input", "f-strings", "print"],
@@ -228,7 +228,7 @@ ALL_EXERCISES = {
         instructions="Create a function that calculates rectangle area. Default width=10, height=5.",
         starter_code="# Function with defaults\n",
         solution='def rectangle_area(width=10, height=5):\n    return width * height\n\nprint(rectangle_area())\nprint(rectangle_area(15))',
-        test_cases=[50, 75],
+        test_cases=[{"output": "50"}, {"output": "75"}],
         hints=["Default parameters in function definition", "Can override defaults when calling"],
         skills=["functions", "default-parameters", "return"],
         points=25, module_id="functions", topic="Parameters"
