@@ -40,6 +40,8 @@ export default function LoginPage() {
   };
 
   const handleDemoLogin = async (role: 'student' | 'teacher') => {
+    if (isLoading) return; // Prevent concurrent submissions
+
     const demoEmail = role === 'student' ? 'student@example.com' : 'teacher@example.com';
     setEmail(demoEmail);
     setPassword('demo123');

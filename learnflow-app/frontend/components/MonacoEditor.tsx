@@ -35,7 +35,7 @@ export default function CodeEditor({
   readOnly = false,
   height = '100%',
 }: CodeEditorProps) {
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<any | null>(null);
 
   const handleEditorDidMount = (editor: any, monaco: any) => {
     editorRef.current = editor;

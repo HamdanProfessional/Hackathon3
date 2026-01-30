@@ -13,6 +13,19 @@ const AgentIcon = ({ type }: { type: string }) => {
   return icons[type as keyof typeof icons] || null;
 };
 
+// Safe date formatting helper
+const formatTimestamp = (timestamp: string): string => {
+  try {
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) {
+      return 'Just now';
+    }
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return 'Just now';
+  }
+};
+
 interface MessageBubbleProps {
   message: Message;
 }
@@ -64,7 +77,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
           <span className={`mt-1.5 block text-xs ${
             isUser ? 'text-primary-foreground/70' : 'text-muted-foreground'
           }`}>
-            {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            {formatTimestamp(message.timestamp)}
           </span>
         </div>
       </div>
