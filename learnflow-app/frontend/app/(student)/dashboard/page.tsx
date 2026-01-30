@@ -96,12 +96,13 @@ export default function StudentDashboardPage() {
         // Fetch modules from exercise service (uses proxy via API client)
         const modulesResponse = await api.getModules();
         if (modulesResponse.success && modulesResponse.data) {
-          // Calculate total exercises from all modules
+          // API returns {modules: [...]} - iterate over the array
+          const modulesArray = modulesResponse.data.modules || modulesResponse.data;
+          const modulesList = Array.isArray(modulesArray) ? modulesArray : Object.values(modulesArray);
+
           let totalExercises = 0;
-          for (const key in modulesResponse.data) {
-            if (modulesResponse.data[key]?.exercises?.length) {
-              totalExercises += modulesResponse.data[key].exercises.length;
-            }
+          for (const module of modulesList) {
+            totalExercises += module.exercises || 0;
           }
           setExerciseCount(totalExercises);
         }
@@ -119,10 +120,14 @@ export default function StudentDashboardPage() {
 
           // Get streak from localStorage or default to 0
           try {
-            const streakFromStorage = localStorage.getItem('learnflow_streak');
-            setStreak(streakFromStorage ? parseInt(streakFromStorage, 10) : 0);
+            if (typeof window !== 'undefined' && window.localStorage) {
+              const streakFromStorage = localStorage.getItem('learnflow_streak');
+              setStreak(streakFromStorage ? parseInt(streakFromStorage, 10) : 0);
+            } else {
+              setStreak(0);
+            }
           } catch {
-            // localStorage might be unavailable
+            // localStorage might be unavailable (private browsing)
             setStreak(0);
           }
         }
@@ -136,13 +141,15 @@ export default function StudentDashboardPage() {
 
         // Try to get saved values from localStorage
         try {
-          const savedProgress = localStorage.getItem('learnflow_progress');
-          if (savedProgress) {
-            const progress = JSON.parse(savedProgress);
-            setExerciseCount(progress.exerciseCount || 0);
-            setProgress(progress.progress || 0);
-            setStreak(progress.streak || 0);
-            setXp(progress.xp || 0);
+          if (typeof window !== 'undefined' && window.localStorage) {
+            const savedProgress = localStorage.getItem('learnflow_progress');
+            if (savedProgress) {
+              const progress = JSON.parse(savedProgress);
+              setExerciseCount(progress.exerciseCount || 0);
+              setProgress(progress.progress || 0);
+              setStreak(progress.streak || 0);
+              setXp(progress.xp || 0);
+            }
           }
         } catch (e) {
           // Ignore localStorage errors
