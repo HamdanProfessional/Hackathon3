@@ -5,18 +5,49 @@ Provides a unified interface for:
 - State management via Dapr state store
 - Service invocation between microservices
 - Secret access via Dapr secret store
+
+For local development, falls back to direct HTTP calls when Dapr is unavailable.
 """
 
 import json
 import logging
 from typing import Any, Optional
 from functools import lru_cache
+import httpx
+from uuid import UUID
 
 from dapr.clients import DaprClient
 from dapr.clients.grpc._state import StateItem
 from dapr.clients.grpc._response import GetSecretResponse
 
 logger = logging.getLogger(__name__)
+
+
+def _serialize_for_json(data: Any) -> Any:
+    """Convert non-JSON-serializable objects to JSON-compatible types.
+
+    Handles UUID, datetime, and other common types.
+    """
+    if isinstance(data, UUID):
+        return str(data)
+    if isinstance(data, dict):
+        return {k: _serialize_for_json(v) for k, v in data.items()}
+    if isinstance(data, list):
+        return [_serialize_for_json(item) for item in data]
+    return data
+
+# Service URLs for fallback (when Dapr is unavailable)
+SERVICE_PORTS = {
+    "triage-service": 8001,
+    "concepts-service": 8002,
+    "debug-service": 8003,
+    "exercise-service": 8004,
+    "progress-service": 8005,
+    "code-review-service": 8006,
+    "chat-service": 8007,
+}
+# Use Docker service names for container-to-container communication
+SERVICE_BASE_URL = "http://service"  # Will be suffixed with service name
 
 # Dapr component names (from k8s/dapr-components/)
 PUBSUB_COMPONENT_NAME = "learnflow-pubsub"
@@ -170,6 +201,8 @@ class LearnFlowDaprClient:
     ) -> Optional[dict[str, Any]]:
         """Invoke a method on another Dapr-enabled service.
 
+        Falls back to direct HTTP call if Dapr is unavailable.
+
         Args:
             app_id: The target service's Dapr app ID (e.g., "concepts-service")
             method: The method path (e.g., "/chat", "/explain")
@@ -186,6 +219,7 @@ class LearnFlowDaprClient:
                 data={"concept": "variables", "student_id": "123"}
             )
         """
+        # Try Dapr first
         try:
             response = self.client.invoke_method(
                 app_id=app_id,
@@ -197,7 +231,59 @@ class LearnFlowDaprClient:
                 return json.loads(response.data)
             return None
         except Exception as e:
-            logger.error(f"Failed to invoke service '{app_id}{method}': {e}")
+            logger.warning(f"Dapr invocation failed for '{app_id}{method}': {e}")
+            # Fallback to direct HTTP call for local development
+            return await self._invoke_service_http(app_id, method, data, http_verb)
+
+    async def _invoke_service_http(
+        self,
+        app_id: str,
+        method: str,
+        data: Optional[dict[str, Any]] = None,
+        http_verb: str = "POST",
+    ) -> Optional[dict[str, Any]]:
+        """Fallback: Invoke service via direct HTTP call (for local dev without Dapr).
+
+        Args:
+            app_id: Service name (e.g., "concepts-service")
+            method: API path (e.g., "/chat")
+            data: Request body
+            http_verb: HTTP method
+
+        Returns:
+            The JSON response, or None if failed
+        """
+        port = SERVICE_PORTS.get(app_id)
+        if not port:
+            logger.error(f"Unknown service: {app_id}")
+            return None
+
+        url = f"http://{app_id}:{port}{method}"
+
+        try:
+            async with httpx.AsyncClient() as client:
+                # Serialize data to handle UUID and other non-JSON types
+                serialized_data = _serialize_for_json(data) if data else None
+
+                if http_verb == "GET":
+                    response = await client.get(url, params=serialized_data)
+                elif http_verb == "POST":
+                    response = await client.post(url, json=serialized_data)
+                elif http_verb == "PUT":
+                    response = await client.put(url, json=serialized_data)
+                elif http_verb == "DELETE":
+                    response = await client.delete(url, params=serialized_data)
+                else:
+                    logger.error(f"Unsupported HTTP verb: {http_verb}")
+                    return None
+
+                if response.status_code == 200:
+                    return response.json()
+                else:
+                    logger.error(f"HTTP {response.status_code} from {url}: {response.text[:200]}")
+                    return None
+        except Exception as e:
+            logger.error(f"Direct HTTP call failed for {app_id}{method}: {e}")
             return None
 
     # ==================== Secrets ====================
