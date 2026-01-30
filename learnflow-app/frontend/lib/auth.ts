@@ -165,7 +165,23 @@ export function isTokenValid(): boolean {
   if (!token) return false;
 
   try {
+    // Validate base64 format before decoding
+    if (!/^[A-Za-z0-9+/=]+$/.test(token)) {
+      return false;
+    }
+
     const payload = JSON.parse(atob(token));
+
+    // Validate payload structure
+    if (!payload || typeof payload !== 'object') {
+      return false;
+    }
+
+    // Check expiration
+    if (typeof payload.exp !== 'number' || payload.exp < 0) {
+      return false;
+    }
+
     return payload.exp > Date.now();
   } catch {
     return false;

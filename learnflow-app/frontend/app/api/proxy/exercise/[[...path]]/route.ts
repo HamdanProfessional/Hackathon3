@@ -1,7 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Backend exercise service URL
-const EXERCISE_SERVICE = process.env.NEXT_PUBLIC_EXERCISE_URL || 'http://134.209.154.247:30804';
+const EXERCISE_SERVICE = process.env.NEXT_PUBLIC_EXERCISE_URL;
+if (!EXERCISE_SERVICE) {
+  throw new Error('NEXT_PUBLIC_EXERCISE_URL environment variable is required');
+}
+
+// Helper to forward headers from client request to backend
+function getForwardedHeaders(request: NextRequest): HeadersInit {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  // Forward Authorization header if present
+  const authHeader = request.headers.get('authorization');
+  if (authHeader) {
+    headers['Authorization'] = authHeader;
+  }
+
+  // Forward other important headers
+  const contentType = request.headers.get('content-type');
+  if (contentType) {
+    headers['Content-Type'] = contentType;
+  }
+
+  return headers;
+}
 
 export async function GET(request: NextRequest, { params }: { params: { path: string[] } }) {
   const path = params.path?.join('/') || '';
@@ -9,9 +32,7 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
 
   try {
     const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getForwardedHeaders(request),
     });
 
     const data = await response.json();
@@ -30,9 +51,7 @@ export async function POST(request: NextRequest, { params }: { params: { path: s
     const body = await request.json();
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getForwardedHeaders(request),
       body: JSON.stringify(body),
     });
 

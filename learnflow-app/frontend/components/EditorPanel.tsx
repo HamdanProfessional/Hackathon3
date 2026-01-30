@@ -35,12 +35,36 @@ export default function EditorPanel({
     };
   }, []);
 
-  // Debounced auto-save to localStorage
+  // Debounced auto-save to localStorage with quota handling
   const saveToLocalStorage = useCallback((codeToSave: string) => {
     try {
       localStorage.setItem('learnflow_code', codeToSave);
     } catch (e) {
-      // Ignore localStorage errors (might be in private browsing mode)
+      // Handle QuotaExceededError specifically
+      if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+        console.error('LocalStorage quota exceeded, attempting cleanup...');
+        // Try to free up space by removing old data
+        try {
+          const keys = Object.keys(localStorage);
+          // Keep only the most recent item
+          if (keys.length > 1) {
+            keys.forEach((key, index) => {
+              if (index < keys.length - 1 && key !== 'learnflow_streak') {
+                localStorage.removeItem(key);
+              }
+            });
+            // Retry saving after cleanup
+            localStorage.setItem('learnflow_code', codeToSave);
+          }
+        } catch (retryError) {
+          console.error('Failed to save code even after cleanup:', retryError);
+        }
+      } else if (e instanceof DOMException && e.name === 'SecurityError') {
+        // Private browsing mode - expected, no action needed
+        console.debug('localStorage unavailable (private browsing mode)');
+      } else {
+        console.error('Failed to save code to localStorage:', e);
+      }
     }
   }, []);
 
