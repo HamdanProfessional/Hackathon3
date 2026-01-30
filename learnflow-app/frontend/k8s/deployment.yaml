@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: registry.digitalocean.com/learnflow-registry/learnflow-frontend:latest
+        image: registry.digitalocean.com/todo-chatbot-reg/frontend:learnflow-v1
         imagePullPolicy: Always
         ports:
         - name: http
@@ -68,7 +68,7 @@ spec:
           timeoutSeconds: 3
           failureThreshold: 3
       imagePullSecrets:
-      - name: docr-secret
+      - name: registry-todo-chatbot-reg
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
