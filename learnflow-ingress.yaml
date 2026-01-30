@@ -1,0 +1,69 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: learnflow-ingress
+  namespace: learnflow
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+  # Frontend
+  - host: learnflow.144.126.252.229.nip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: learnflow-frontend
+            port:
+              number: 3000
+
+  # Backend API Routes
+  - host: api.144.126.252.229.nip.io
+    http:
+      paths:
+      - path: /triage
+        pathType: Prefix
+        backend:
+          service:
+            name: triage-service
+            port:
+              number: 8001
+      - path: /concepts
+        pathType: Prefix
+        backend:
+          service:
+            name: concepts-service
+            port:
+              number: 8002
+      - path: /debug
+        pathType: Prefix
+        backend:
+          service:
+            name: debug-service
+            port:
+              number: 8003
+      - path: /exercise
+        pathType: Prefix
+        backend:
+          service:
+            name: exercise-service
+            port:
+              number: 8004
+      - path: /progress
+        pathType: Prefix
+        backend:
+          service:
+            name: progress-service
+            port:
+              number: 8005
+      - path: /code-review
+        pathType: Prefix
+        backend:
+          service:
+            name: code-review-service
+            port:
+              number: 8006

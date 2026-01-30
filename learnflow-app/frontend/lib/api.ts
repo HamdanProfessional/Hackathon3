@@ -677,6 +677,8 @@ export const api = {
   getExercise,
   submitExercise,
   executeCode,
+  getModules,
+  getExercises,
 
   // Progress
   getStudentProgress,

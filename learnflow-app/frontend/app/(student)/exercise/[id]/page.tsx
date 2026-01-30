@@ -126,7 +126,7 @@ export default function ExercisePage() {
           resetCode(response.data.starterCode);
         }
       } else {
-        // Use mock data
+        // Use mock data for fallback
         const mockExercise = mockExercises[exerciseId];
         if (mockExercise) {
           setExercise(mockExercise);

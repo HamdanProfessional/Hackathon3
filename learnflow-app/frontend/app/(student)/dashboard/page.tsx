@@ -379,7 +379,7 @@ export default function StudentDashboardPage() {
                       style={{ width: `${module.progress}%` }}
                     />
                   </div>
-                  <Link href={`/exercise/${module.id}`} className="block">
+                  <Link href={`/modules`} className="block">
                     <Button
                       className="w-full"
                       size="sm"

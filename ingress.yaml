@@ -1,0 +1,40 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: learnflow-ingress
+  namespace: learnflow
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - learnflow.yourdomain.com
+    secretName: learnflow-tls
+  rules:
+  - host: learnflow.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: learnflow-frontend
+            port:
+              number: 3000
+      - path: /api/triage
+        pathType: Prefix
+        backend:
+          service:
+            name: triage-service
+            port:
+              number: 8001
+      - path: /api/concepts
+        pathType: Prefix
+        backend:
+          service:
+            name: concepts-service
+            port:
+              number: 8002

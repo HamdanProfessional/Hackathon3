@@ -1,0 +1,129 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exercise-service
+  namespace: learnflow
+  labels:
+    app: exercise-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exercise-service
+  template:
+    metadata:
+      labels:
+        app: exercise-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "exercise-service"
+        dapr.io/app-port: "8004"
+        dapr.io/log-level: "info"
+        dapr.io/sidecar-cpu-limit: "300m"
+        dapr.io/sidecar-memory-limit: "256Mi"
+        dapr.io/enable-app-health-check: "true"
+        dapr.io/app-health-check-path: "/health"
+    spec:
+      containers:
+      - name: exercise
+        image: python:3.13-slim
+        imagePullPolicy: Always
+        command:
+        - sh
+        - -c
+        - |
+          set -e
+          pip install --no-cache-dir uv fastapi uvicorn pydantic httpx
+          mkdir -p /app/services/exercise
+          touch /app/services/__init__.py /app/services/exercise/__init__.py
+
+          cat > /app/services/exercise/main.py << 'EOFPYTHON'
+          from fastapi import FastAPI, HTTPException
+          from fastapi.middleware.cors import CORSMiddleware
+          from pydantic import BaseModel
+          from typing import List, Optional
+          from uuid import uuid4
+
+          SERVICE_NAME = "exercise-service"
+          SERVICE_VERSION = "2.1.0"
+          PORT = 8004
+
+          app = FastAPI(title="LearnFlow Exercise Service", version=SERVICE_VERSION)
+          app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+
+          ALL_EXERCISES = {
+              "ex_1_1": {"id": "ex_1_1", "title": "Your First Variable", "difficulty": "beginner", "description": "Create a variable", "module_id": "basics", "topic": "Variables", "points": 10},
+              "ex_2_1": {"id": "ex_2_1", "title": "If-Else Statement", "difficulty": "beginner", "description": "Check if number is positive", "module_id": "control_flow", "topic": "Conditionals", "points": 15},
+              "ex_3_1": {"id": "ex_3_1", "title": "List Operations", "difficulty": "beginner", "description": "Create a list", "module_id": "data_structures", "topic": "Lists", "points": 20},
+          }
+
+          @app.get("/")
+          async def root():
+              return {"service": SERVICE_NAME, "version": SERVICE_VERSION, "status": "running"}
+
+          @app.get("/health")
+          async def health():
+              return {"status": "healthy", "service": SERVICE_NAME, "version": SERVICE_VERSION}
+
+          @app.get("/modules")
+          async def get_modules():
+              return {"modules": [{"id": "basics", "name": "Python Basics", "exercises": 5}, {"id": "control_flow", "name": "Control Flow", "exercises": 6}, {"id": "data_structures", "name": "Data Structures", "exercises": 5}, {"id": "functions", "name": "Functions", "exercises": 4}, {"id": "oop", "name": "OOP", "exercises": 4}, {"id": "files", "name": "Files", "exercises": 4}, {"id": "errors", "name": "Error Handling", "exercises": 4}, {"id": "libraries", "name": "Libraries", "exercises": 4}]}
+
+          @app.get("/exercises/all")
+          async def get_all_exercises():
+              return {"exercises": list(ALL_EXERCISES.values()), "total": len(ALL_EXERCISES)}
+
+          @app.get("/exercise/{exercise_id}")
+          async def get_exercise(exercise_id: str):
+              for exercise in ALL_EXERCISES.values():
+                  if exercise["id"] == exercise_id:
+                      return exercise
+              raise HTTPException(status_code=404, detail="Exercise not found")
+
+          @app.post("/execute")
+          async def execute_code(submission: dict):
+              return {"output": "Code executed successfully", "error": None, "execution_time": 0.1}
+
+          class TeacherAssignmentRequest(BaseModel):
+              prompt: str
+              difficulty: str
+              topic: Optional[str] = None
+              module_id: Optional[str] = None
+
+          @app.post("/api/v1/teacher/generate-assignment")
+          async def generate_teacher_assignment(request: TeacherAssignmentRequest):
+              exercise_id = f"teacher_{uuid4().hex[:8]}"
+              return {"exercise": {"id": exercise_id, "title": f"Custom: {request.prompt[:50]}", "difficulty": request.difficulty, "points": 20}, "preview": "Created"}
+
+          if __name__ == "__main__":
+              import uvicorn
+              uvicorn.run(app, host="0.0.0.0", port=PORT)
+          EOFPYTHON
+
+          cd /app && python -m uvicorn services.exercise.main:app --host 0.0.0.0 --port 8004
+        ports:
+        - containerPort: 8004
+        env:
+        - name: PORT
+          value: "8004"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: exercise-service
+  namespace: learnflow
+spec:
+  selector:
+    app: exercise-service
+  ports:
+  - port: 8004
+    targetPort: 8004
+  type: ClusterIP
