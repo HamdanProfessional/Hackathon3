@@ -60,7 +60,7 @@ export default function ClassOverviewComponent({ overview }: ClassOverviewProps)
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
-                {overview.topPerformers.slice(0, 5).map((student, index) => (
+                {overview.topPerformers?.slice(0, 5).map((student, index) => (
                   <tr key={student.id} className="transition-colors hover:bg-muted/20">
                     <td className="whitespace-nowrap px-6 py-4">
                       <div className="flex items-center gap-3">

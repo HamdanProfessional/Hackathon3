@@ -38,7 +38,7 @@ export default function TeacherDashboardPage() {
   useEffect(() => {
     // Get class ID from user context or environment
     // In production, teachers have their class ID assigned to their account
-    const classId = process.env.NEXT_PUBLIC_DEFAULT_CLASS_ID || 'class-1';
+    const classId = user?.classId || process.env.NEXT_PUBLIC_DEFAULT_CLASS_ID || 'class-1';
 
     // Track if component is mounted to prevent state updates after unmount
     let isMounted = true;
@@ -181,7 +181,7 @@ export default function TeacherDashboardPage() {
   };
 
   const handleRetry = () => {
-    const classId = 'class-1';
+    const classId = user?.classId || process.env.NEXT_PUBLIC_DEFAULT_CLASS_ID || 'class-1';
     setError(null);
     setIsLoading(true);
 

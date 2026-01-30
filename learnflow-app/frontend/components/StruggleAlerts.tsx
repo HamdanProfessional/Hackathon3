@@ -56,7 +56,7 @@ export default function StruggleAlerts({ alerts, onResolve }: StruggleAlertsProp
 
   return (
     <div className="space-y-4">
-      {alerts.map((alert) => {
+      {alerts?.map((alert) => {
         const Icon = alertIcons[alert.type];
         const colors = alertColors[alert.type];
         const borderColor = severityBorderColors[alert.severity];
