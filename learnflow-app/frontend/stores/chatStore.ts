@@ -53,20 +53,24 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
   // Send a message (with streaming support and persistence)
   sendMessage: async (content: string, context?: ChatContext) => {
-    const { messages, conversationId } = get();
+    const { messages = [], conversationId = null } = get() || {};
     const user = useUserStore.getState().user;
 
-    // Ensure we have a conversation (try to create one if needed)
+    // Ensure we have a conversation (create one synchronously if needed)
     let currentConversationId = conversationId;
     if (!currentConversationId && user) {
-      // Try to create a new conversation in background
-      api.createConversation(user.id).then((result) => {
+      // Create a new conversation and wait for it before proceeding
+      try {
+        const result = await api.createConversation(user.id);
         if (result.success && result.data) {
-          set({ conversationId: result.data.conversation_id });
+          currentConversationId = result.data.conversation_id;
+          set({ conversationId: currentConversationId });
         }
-      }).catch(() => {
-        // Ignore if service is unavailable
-      });
+      } catch (err) {
+        console.debug('Failed to create conversation:', err);
+        // Generate a temporary local conversation ID
+        currentConversationId = `temp-${Date.now()}`;
+      }
     }
 
     // Add user message locally
@@ -79,7 +83,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set((state) => ({ messages: [...state.messages, userMessage] }));
 
     // Try to persist user message to backend (non-blocking)
-    if (currentConversationId) {
+    if (currentConversationId && !currentConversationId.startsWith('temp-')) {
       api.sendMessage(currentConversationId, 'user', content).catch((err) => {
         console.debug('Failed to persist user message:', err);
       });

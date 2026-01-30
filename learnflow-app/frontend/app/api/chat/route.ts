@@ -15,8 +15,11 @@ interface ChatRequest {
   history?: Array<{ role: string; content: string }>;
 }
 
-// Chat service URL (using proxy to avoid mixed content)
-const CHAT_SERVICE_URL = process.env.NEXT_PUBLIC_CHAT_URL || 'http://134.209.154.247:30807';
+// Chat service URL - must be configured via environment variable
+const CHAT_SERVICE_URL = process.env.NEXT_PUBLIC_CHAT_URL;
+if (!CHAT_SERVICE_URL) {
+  throw new Error('CHAT_SERVICE_URL environment variable is required');
+}
 
 export async function POST(request: NextRequest) {
   const body: ChatRequest = await request.json();

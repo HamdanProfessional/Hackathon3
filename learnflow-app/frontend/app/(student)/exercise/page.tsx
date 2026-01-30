@@ -63,8 +63,18 @@ export default function ExerciseListPage() {
       setError(null);
 
       try {
-        const exerciseUrl = (process.env.NEXT_PUBLIC_EXERCISE_URL || 'http://134.209.154.247:30804').trim();
-        const response = await fetch(`${exerciseUrl}/exercises/all`);
+        const exerciseUrl = process.env.NEXT_PUBLIC_EXERCISE_URL;
+        if (!exerciseUrl) {
+          throw new Error('Exercise service URL not configured');
+        }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+        const response = await fetch(`${exerciseUrl.trim()}/exercises/all`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
 
         if (response.ok) {
           const data = await response.json();

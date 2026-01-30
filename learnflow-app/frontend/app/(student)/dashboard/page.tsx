@@ -464,12 +464,12 @@ export default function StudentDashboardPage() {
         <CardContent>
           <div className="space-y-4">
             {[
-              { action: 'Completed', item: 'Python Basics - Exercise 3', time: '2 hours ago', icon: Icons.CheckCircle },
-              { action: 'Started', item: 'Control Flow - Lesson 1', time: 'Yesterday', icon: Icons.Play },
-              { action: 'Earned', item: '5 Day Streak Badge', time: '2 days ago', icon: Icons.Star },
-            ].map((activity, index) => (
+              { id: 'act-1', action: 'Completed', item: 'Python Basics - Exercise 3', time: '2 hours ago', icon: Icons.CheckCircle },
+              { id: 'act-2', action: 'Started', item: 'Control Flow - Lesson 1', time: 'Yesterday', icon: Icons.Play },
+              { id: 'act-3', action: 'Earned', item: '5 Day Streak Badge', time: '2 days ago', icon: Icons.Star },
+            ].map((activity) => (
               <div
-                key={index}
+                key={activity.id}
                 className="flex items-center space-x-4 rounded-lg p-3 transition-all hover:bg-muted/50 hover-lift"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-full icon-container-primary">

@@ -173,7 +173,14 @@ export default function ModuleDetailPage() {
 
       // Fetch actual exercises for this module from the backend
       try {
-        const exercisesRes = await fetch(`/api/proxy/exercise/exercises/all`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+        const exercisesRes = await fetch(`/api/proxy/exercise/exercises/all`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
         if (exercisesRes.ok) {
           const data = await exercisesRes.json();
           // Filter exercises for this module
