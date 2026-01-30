@@ -41,7 +41,7 @@ services:
     volumes:
       - kafka_data:/var/lib/redpanda/data
     healthcheck:
-      test: ["CMD-SHELL", "rpk cluster info | grep -q 'Metadata:'"]
+      test: ["CMD-SHELL", "rpk cluster info | grep -q 'CLUSTER'"]
       interval: 10s
       timeout: 5s
       retries: 5
