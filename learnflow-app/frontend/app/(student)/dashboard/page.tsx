@@ -174,47 +174,47 @@ export default function StudentDashboardPage() {
 
   const modules = [
     {
-      id: 1,
+      id: 'basics',
       title: 'Python Basics',
       description: 'Variables, types, and basic syntax',
       difficulty: 'Easy',
       difficultyColor: 'bg-success/20 text-success',
-      progress: 75,
+      progress: 0,
       icon: <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>,
       iconColor: 'icon-container-primary',
     },
     {
-      id: 2,
+      id: 'control_flow',
       title: 'Control Flow',
       description: 'If statements, loops, and logic',
       difficulty: 'Medium',
       difficultyColor: 'bg-warning/20 text-warning',
-      progress: 40,
+      progress: 0,
       icon: <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" /></svg>,
       iconColor: 'icon-container-accent',
     },
     {
-      id: 3,
+      id: 'functions',
       title: 'Functions',
       description: 'Reusable code blocks',
       difficulty: 'Medium',
       difficultyColor: 'bg-warning/20 text-warning',
-      progress: 20,
+      progress: 0,
       icon: <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 015.263 21h-4.017c-.163 0-.326-.02-.485-.06M7 20h.01" /></svg>,
       iconColor: 'icon-container-success',
     },
     {
-      id: 4,
+      id: 'data_structures',
       title: 'Data Structures',
       description: 'Lists, dictionaries, and sets',
       difficulty: 'Hard',
       difficultyColor: 'bg-accent/20 text-accent',
-      progress: 10,
+      progress: 0,
       icon: <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4m0 0c0 2.21 3.582 4 8 4s8-1.79 8-4" /></svg>,
       iconColor: 'icon-container-warning',
     },
     {
-      id: 5,
+      id: 'oop',
       title: 'OOP',
       description: 'Classes and objects',
       difficulty: 'Hard',
@@ -224,7 +224,7 @@ export default function StudentDashboardPage() {
       iconColor: 'icon-container-destructive',
     },
     {
-      id: 6,
+      id: 'files',
       title: 'File Handling',
       description: 'Read and write files',
       difficulty: 'Medium',
@@ -379,7 +379,7 @@ export default function StudentDashboardPage() {
                       style={{ width: `${module.progress}%` }}
                     />
                   </div>
-                  <Link href={`/modules`} className="block">
+                  <Link href={`/modules/${module.id}`} className="block">
                     <Button
                       className="w-full"
                       size="sm"
