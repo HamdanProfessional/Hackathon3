@@ -22,17 +22,10 @@ Create a default fully qualified app name.
 {{- end }}
 
 {{/*
-Create chart name and version as used by the chart label.
-*/}}
-{{- define "learnflow.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
-{{/*
-Common labels
+Create labels for LearnFlow resources
 */}}
 {{- define "learnflow.labels" -}}
-helm.sh/chart: {{ include "learnflow.chart" . }}
+helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 {{ include "learnflow.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
@@ -41,28 +34,9 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
-Selector labels
+Selector labels for LearnFlow resources
 */}}
 {{- define "learnflow.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "learnflow.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }}
-
-{{/*
-Create the database URL
-*/}}
-{{- define "learnflow.databaseUrl" -}}
-{{- $template := .Values.configMap.databaseUrlTemplate }}
-{{- $username := .Values.postgresql.auth.username }}
-{{- $password := .Values.postgresql.auth.password }}
-{{- $namespace := .Release.Namespace }}
-{{- $database := .Values.postgresql.auth.database }}
-{{- printf $template $username $password $namespace $database }}
-{{- end }}
-
-{{/*
-Service DNS name
-*/}}
-{{- define "learnflow.serviceDns" -}}
-{{- printf "%s.%s.svc.cluster.local" .name .Release.Namespace }}
 {{- end }}

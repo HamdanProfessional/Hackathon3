@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: learnflow
+  namespace: argocd
+  labels:
+    app: learnflow
+    environment: production
+spec:
+  # The project the application belongs to.
+  project: default
+
+  # Source of the application manifests
+  source:
+    repoURL: https://github.com/HamdanProfessional/Hackathon3.git
+    targetRevision: main
+    path: learnflow-app/helm/learnflow
+    helm:
+      valueFiles:
+        - values.yaml
+      # Optional: Override values for specific environment
+      values: |
+        frontend:
+          ingress:
+            hosts:
+              - host: learnflow.174.138.122.121.nip.io
+                paths:
+                  - path: /
+                    pathType: Prefix
+
+  # Destination cluster and namespace
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: learnflow
+
+  # Sync policy
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # Revision history limit for rollback
+  revisionHistoryLimit: 10

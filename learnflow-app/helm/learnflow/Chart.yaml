@@ -1,6 +1,6 @@
 apiVersion: v2
 name: learnflow
-description: A Helm chart for LearnFlow - AI-powered learning platform
+description: A Helm chart for LearnFlow - AI-powered Python learning platform
 type: application
 version: 1.0.0
 appVersion: "1.0.0"
@@ -10,6 +10,4 @@ keywords:
   - ai
 maintainers:
   - name: LearnFlow Team
-home: https://github.com/your-org/learnflow
-sources:
-  - https://github.com/your-org/learnflow
+engine: gotpl
