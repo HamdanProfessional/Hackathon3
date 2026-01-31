@@ -114,6 +114,19 @@ class ExerciseResult(BaseModel):
     hints: list[str] = []
 
 
+class ExecutionResult(BaseModel):
+    """Result of code execution."""
+    success: bool
+    output: str
+    error: Optional[str] = None
+
+
+class CodeExecutionRequest(BaseModel):
+    """Request model for code execution."""
+    code: str
+    exercise_id: Optional[str] = None
+
+
 class ProgressData(BaseModel):
     """Progress data."""
     student_id: UUID

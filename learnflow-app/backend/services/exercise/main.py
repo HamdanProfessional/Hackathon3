@@ -11,7 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from shared.models import (
     HealthResponse, ChatRequest, ChatResponse,
-    ExerciseRequest, Exercise, ExerciseSubmission, ExerciseResult
+    ExerciseRequest, Exercise, ExerciseSubmission, ExerciseResult,
+    ExecutionResult, CodeExecutionRequest
 )
 from shared.dapr_client import get_dapr_client, EventTopics
 
@@ -673,19 +674,6 @@ async def exercise_chat(request: ChatRequest):
 # ============================================================================
 # CODE EXECUTION API (for frontend code editor)
 # ============================================================================
-
-class CodeExecutionRequest(BaseModel):
-    """Request model for code execution."""
-    code: str
-    exercise_id: Optional[str] = None
-
-
-class ExecutionResult(BaseModel):
-    """Result of code execution."""
-    success: bool
-    output: str
-    error: Optional[str] = None
-
 
 @app.post("/api/v1/execute", response_model=ExecutionResult)
 async def execute_code_api(request: CodeExecutionRequest):
