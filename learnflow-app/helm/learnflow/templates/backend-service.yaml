@@ -1,23 +1,24 @@
 {{- range $name, $service := .Values.services }}
 {{- if $service.enabled }}
+{{- $serviceName := printf "%s" $name | lower }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: learnflow-{{ $name }}-service
+  name: learnflow-{{ $serviceName }}-service
   namespace: {{ $.Values.global.namespace }}
   labels:
-    app: learnflow-{{ $name }}-service
+    app: learnflow-{{ $serviceName }}-service
     component: backend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: learnflow-{{ $name }}-service
+      app: learnflow-{{ $serviceName }}-service
   template:
     metadata:
       labels:
-        app: learnflow-{{ $name }}-service
+        app: learnflow-{{ $serviceName }}-service
         component: backend
       annotations:
         dapr.io/enabled: "{{ $service.dapr.enabled }}"
@@ -27,7 +28,7 @@ spec:
       imagePullSecrets:
         {{- toYaml $.Values.global.imagePullSecrets | nindent 8 }}
       containers:
-      - name: {{ $name }}-service
+      - name: {{ $serviceName }}-service
         image: "{{ $.Values.global.imageRegistry }}/{{ $service.image.repository }}:{{ $service.image.tag }}"
         imagePullPolicy: {{ $service.image.pullPolicy | default "Always" }}
         ports:
@@ -82,10 +83,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: learnflow-{{ $name }}-service
+  name: learnflow-{{ $serviceName }}-service
   namespace: {{ $.Values.global.namespace }}
   labels:
-    app: learnflow-{{ $name }}-service
+    app: learnflow-{{ $serviceName }}-service
     component: backend
 spec:
   type: ClusterIP
@@ -95,6 +96,6 @@ spec:
     protocol: TCP
     name: http
   selector:
-    app: learnflow-{{ $name }}-service
+    app: learnflow-{{ $serviceName }}-service
 {{- end }}
 {{- end }}

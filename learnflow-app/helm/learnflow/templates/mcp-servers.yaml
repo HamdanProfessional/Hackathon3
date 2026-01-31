@@ -19,7 +19,7 @@ spec:
         {{- include "learnflow.labels" . | nindent 8 }}
         app.kubernetes.io/component: mcp-code-exec
     spec:
-      {{- with .Values.backend.imagePullSecrets }}
+      {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -50,11 +50,11 @@ spec:
           periodSeconds: 5
         resources:
           requests:
-            cpu: 100m
-            memory: 128Mi
+            cpu: 50m
+            memory: 64Mi
           limits:
-            cpu: 300m
-            memory: 256Mi
+            cpu: 200m
+            memory: 128Mi
         env:
         - name: PYTHONUNBUFFERED
           value: "1"
@@ -97,7 +97,7 @@ spec:
         {{- include "learnflow.labels" . | nindent 8 }}
         app.kubernetes.io/component: mcp-database
     spec:
-      {{- with .Values.backend.imagePullSecrets }}
+      {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -128,11 +128,11 @@ spec:
           periodSeconds: 5
         resources:
           requests:
-            cpu: 100m
-            memory: 128Mi
+            cpu: 50m
+            memory: 64Mi
           limits:
-            cpu: 300m
-            memory: 256Mi
+            cpu: 200m
+            memory: 128Mi
         env:
         - name: DATABASE_HOST
           value: {{ include "learnflow.fullname" . }}-postgresql

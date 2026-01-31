@@ -12,16 +12,37 @@ serviceAccount:
   annotations: {}
   name: ""
 
-# MCP Servers (disabled - deployed separately)
+# MCP Servers
 mcpServers:
-  enabled: false
+  enabled: true
+  codeExecution:
+    enabled: true
+    replicaCount: 1
+    image:
+      repository: mcp-code-exec-server
+      tag: v1
+    port: 9000
+  database:
+    enabled: true
+    replicaCount: 1
+    image:
+      repository: mcp-database-server
+      tag: v1
+    port: 9001
+  k8sOperations:
+    enabled: true
+    replicaCount: 1
+    image:
+      repository: mcp-k8s-operations-server
+      tag: v1
+    port: 9003
 
 # Frontend Configuration
 frontend:
   enabled: true
   image:
     repository: frontend
-    tag: learnflow-v1
+    tag: learnflow-v2
     pullPolicy: Always
 
   replicaCount: 2
@@ -32,20 +53,7 @@ frontend:
     targetPort: 3000
 
   ingress:
-    enabled: true
-    className: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: "letsencrypt-prod"
-      nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    hosts:
-      - host: learnflow.174.138.122.121.nip.io
-        paths:
-          - path: /
-            pathType: Prefix
-    tls:
-      - secretName: learnflow-tls-secret
-        hosts:
-          - learnflow.174.138.122.121.nip.io
+    enabled: false
 
   resources:
     limits:
@@ -133,6 +141,10 @@ services:
 # Infrastructure - Disabled (already deployed via separate Helm charts)
 postgresql:
   enabled: false
+  auth:
+    database: learnflow
+    username: learnflow
+    password: learnflow123
 
 kafka:
   enabled: false

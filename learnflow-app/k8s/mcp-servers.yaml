@@ -1,0 +1,210 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: learnflow-mcp-code-exec
+  namespace: learnflow
+  labels:
+    app: learnflow-mcp-code-exec
+    component: mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: learnflow-mcp-code-exec
+  template:
+    metadata:
+      labels:
+        app: learnflow-mcp-code-exec
+        component: mcp
+    spec:
+      imagePullSecrets:
+        - name: registry-todo-chatbot-reg
+      containers:
+      - name: mcp-code-exec
+        image: registry.digitalocean.com/todo-chatbot-reg/mcp-code-exec-server:v1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 9000
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: learnflow-mcp-code-exec
+  namespace: learnflow
+  labels:
+    app: learnflow-mcp-code-exec
+    component: mcp
+spec:
+  type: ClusterIP
+  ports:
+  - port: 9000
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    app: learnflow-mcp-code-exec
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: learnflow-mcp-database
+  namespace: learnflow
+  labels:
+    app: learnflow-mcp-database
+    component: mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: learnflow-mcp-database
+  template:
+    metadata:
+      labels:
+        app: learnflow-mcp-database
+        component: mcp
+    spec:
+      imagePullSecrets:
+        - name: registry-todo-chatbot-reg
+      containers:
+      - name: mcp-database
+        image: registry.digitalocean.com/todo-chatbot-reg/mcp-database-server:v1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 9001
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: learnflow-mcp-database
+  namespace: learnflow
+  labels:
+    app: learnflow-mcp-database
+    component: mcp
+spec:
+  type: ClusterIP
+  ports:
+  - port: 9001
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    app: learnflow-mcp-database
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: learnflow-mcp-k8s-operations
+  namespace: learnflow
+  labels:
+    app: learnflow-mcp-k8s-operations
+    component: mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: learnflow-mcp-k8s-operations
+  template:
+    metadata:
+      labels:
+        app: learnflow-mcp-k8s-operations
+        component: mcp
+    spec:
+      imagePullSecrets:
+        - name: registry-todo-chatbot-reg
+      containers:
+      - name: mcp-k8s-operations
+        image: registry.digitalocean.com/todo-chatbot-reg/mcp-k8s-operations-server:v1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 9003
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: learnflow-mcp-k8s-operations
+  namespace: learnflow
+  labels:
+    app: learnflow-mcp-k8s-operations
+    component: mcp
+spec:
+  type: ClusterIP
+  ports:
+  - port: 9003
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    app: learnflow-mcp-k8s-operations
