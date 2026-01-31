@@ -7,9 +7,7 @@ if (!PROGRESS_SERVICE) {
 
 // Helper to forward headers from client request to backend
 function getForwardedHeaders(request: NextRequest): HeadersInit {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
+  const headers: HeadersInit = {};
 
   // Forward Authorization header if present
   const authHeader = request.headers.get('authorization');
@@ -30,11 +28,52 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
   const path = params.path?.join('/') || '';
   const url = `${PROGRESS_SERVICE}/${path}`;
 
+  // Check if this is an SSE (Server-Sent Events) request
+  const isSSE = path.includes('/stream');
+
   try {
     const response = await fetch(url, {
       headers: getForwardedHeaders(request),
     });
 
+    if (!response.ok) {
+      return NextResponse.json({ error: `HTTP ${response.status}` }, { status: response.status });
+    }
+
+    // Handle SSE streaming responses
+    if (isSSE) {
+      const headers = new Headers({
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      });
+
+      // Create a readable stream from the response body
+      const reader = response.body?.getReader();
+      if (!reader) {
+        return NextResponse.json({ error: 'Failed to read stream' }, { status: 500 });
+      }
+
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              controller.enqueue(value);
+            }
+          } catch (error) {
+            console.error('SSE stream error:', error);
+          } finally {
+            controller.close();
+          }
+        },
+      });
+
+      return new NextResponse(stream, { headers });
+    }
+
+    // Handle regular JSON responses
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {

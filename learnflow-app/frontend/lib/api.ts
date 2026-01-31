@@ -153,10 +153,10 @@ async function apiRequest<T>(
 /**
  * Route a student query to the appropriate agent
  */
-export async function triageQuery(query: string): Promise<ApiResponse<TriageResult>> {
-  return apiRequest<TriageResult>(`${SERVICES.triage}/api/v1/triage`, {
+export async function triageQuery(query: string, studentId: string): Promise<ApiResponse<TriageResult>> {
+  return apiRequest<TriageResult>(`${SERVICES.triage}/triage`, {
     method: 'POST',
-    body: JSON.stringify({ query }),
+    body: JSON.stringify({ message: query, student_id: studentId }),
   });
 }
 
@@ -169,11 +169,12 @@ export async function triageQuery(query: string): Promise<ApiResponse<TriageResu
  */
 export async function explainConcept(
   concept: string,
+  studentId: string,
   level?: 'beginner' | 'intermediate' | 'advanced'
 ): Promise<ApiResponse<ConceptExplanation>> {
-  return apiRequest<ConceptExplanation>(`${SERVICES.concepts}/api/v1/concepts/explain`, {
+  return apiRequest<ConceptExplanation>(`${SERVICES.concepts}/chat`, {
     method: 'POST',
-    body: JSON.stringify({ concept, level }),
+    body: JSON.stringify({ message: concept, student_id: studentId }),
   });
 }
 
@@ -182,11 +183,11 @@ export async function explainConcept(
  */
 export async function chatWithConcepts(
   message: string,
-  context?: ChatContext
+  studentId: string
 ): Promise<ApiResponse<{ response: string }>> {
-  return apiRequest(`${SERVICES.concepts}/api/v1/concepts/chat`, {
+  return apiRequest(`${SERVICES.concepts}/chat`, {
     method: 'POST',
-    body: JSON.stringify({ message, context }),
+    body: JSON.stringify({ message, student_id: studentId }),
   });
 }
 
@@ -199,25 +200,27 @@ export async function chatWithConcepts(
  */
 export async function analyzeCodeError(
   code: string,
+  studentId: string,
   error?: string
 ): Promise<ApiResponse<DebugAnalysis>> {
-  return apiRequest<DebugAnalysis>(`${SERVICES.debug}/api/v1/debug/analyze`, {
+  return apiRequest<DebugAnalysis>(`${SERVICES.debug}/analyze`, {
     method: 'POST',
-    body: JSON.stringify({ code, error }),
+    body: JSON.stringify({ code, student_id: studentId }),
   });
 }
 
 /**
  * Get progressive hints for debugging
+ * Note: Uses the chat endpoint for hint-based debugging
  */
 export async function getDebugHints(
   code: string,
   error: string,
-  hintLevel: number = 1
+  studentId: string
 ): Promise<ApiResponse<{ hints: string[] }>> {
-  return apiRequest(`${SERVICES.debug}/api/v1/debug/hints`, {
+  return apiRequest(`${SERVICES.debug}/chat`, {
     method: 'POST',
-    body: JSON.stringify({ code, error, hintLevel }),
+    body: JSON.stringify({ message: `Error: ${error}\nCode: ${code}`, student_id: studentId }),
   });
 }
 
@@ -229,13 +232,14 @@ export async function getDebugHints(
  * Generate a new exercise
  */
 export async function generateExercise(
-  moduleId: string,
+  studentId: string,
+  moduleId: number,
   difficulty?: 'easy' | 'medium' | 'hard',
   topic?: string
 ): Promise<ApiResponse<Exercise>> {
   return apiRequest<Exercise>(`${SERVICES.exercise}/generate`, {
     method: 'POST',
-    body: JSON.stringify({ moduleId, difficulty, topic }),
+    body: JSON.stringify({ student_id: studentId, module_id: moduleId, difficulty, topic }),
   });
 }
 
@@ -252,9 +256,15 @@ export async function getExercise(exerciseId: string): Promise<ApiResponse<Exerc
 export async function submitExercise(
   submission: ExerciseSubmission
 ): Promise<ApiResponse<ExerciseResult>> {
+  // Convert camelCase to snake_case for backend
+  const backendSubmission = {
+    student_id: submission.studentId,
+    exercise_id: submission.exerciseId,
+    code: submission.code,
+  };
   return apiRequest<ExerciseResult>(`${SERVICES.exercise}/submit`, {
     method: 'POST',
-    body: JSON.stringify(submission),
+    body: JSON.stringify(backendSubmission),
   });
 }
 
@@ -298,7 +308,7 @@ export async function executeCode(
 ): Promise<ApiResponse<ExecutionResult>> {
   return apiRequest<ExecutionResult>(`${SERVICES.exercise}/api/v1/execute`, {
     method: 'POST',
-    body: JSON.stringify({ code, exerciseId }),
+    body: JSON.stringify({ code, exercise_id: exerciseId }),
   });
 }
 
@@ -357,15 +367,15 @@ export async function getActivityFeed(
 /**
  * Review code for quality and best practices
  */
-export async function reviewCode(code: string): Promise<ApiResponse<{
+export async function reviewCode(code: string, studentId: string): Promise<ApiResponse<{
   score: number;
   feedback: string;
   suggestions: string[];
   issues: Array<{ severity: string; message: string; line?: number }>;
 }>> {
-  return apiRequest(`${SERVICES.codeReview}/api/v1/review`, {
+  return apiRequest(`${SERVICES.codeReview}/review`, {
     method: 'POST',
-    body: JSON.stringify({ code }),
+    body: JSON.stringify({ code, student_id: studentId }),
   });
 }
 
@@ -520,7 +530,11 @@ export function subscribeToStruggleAlerts(
   onError?: (error: Event) => void
 ): EventSource {
   const token = getAuthToken();
-  const url = new URL(`${SERVICES.progress}/api/v1/alerts/stream`);
+  // Use window.location.origin for absolute URL since EventSource requires it
+  const baseUrl = USE_PROXY
+    ? `${typeof window !== 'undefined' ? window.location.origin : ''}${SERVICES.progress}`
+    : SERVICES.progress;
+  const url = new URL(`${baseUrl}/api/v1/alerts/stream`);
   url.searchParams.set('classId', classId);
   if (token) {
     url.searchParams.set('token', token);
@@ -557,7 +571,11 @@ export function subscribeToClassStats(
   onError?: (error: Event) => void
 ): EventSource {
   const token = getAuthToken();
-  const url = new URL(`${SERVICES.progress}/api/v1/class/${classId}/stats/stream`);
+  // Use window.location.origin for absolute URL since EventSource requires it
+  const baseUrl = USE_PROXY
+    ? `${typeof window !== 'undefined' ? window.location.origin : ''}${SERVICES.progress}`
+    : SERVICES.progress;
+  const url = new URL(`${baseUrl}/api/v1/class/${classId}/stats/stream`);
   if (token) {
     url.searchParams.set('token', token);
   }

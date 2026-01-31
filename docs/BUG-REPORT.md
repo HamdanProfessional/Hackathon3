@@ -409,6 +409,257 @@ kubectl get deployments -n learnflow -o custom-columns=NAME:.metadata-name,REPLI
 
 ---
 
-**Report Generated**: 2026-01-31
+**Report Generated**: 2026-02-01
 **Cluster**: DigitalOcean hackathon3 (blr1)
-**Total Issues**: 6 (3 Critical, 3 Medium/Low)
+**Total Issues**: 7 (4 Critical, 3 Medium/Low)
+
+---
+
+## Bug #7: Missing Frontend API Proxy Routes (FIXED)
+
+**Severity**: 🔴 CRITICAL
+**Status**: ✅ FIXED
+
+**Date Found**: 2026-02-01
+**Date Fixed**: 2026-02-01
+
+### Description
+
+API proxy routes for 4 backend services were missing, causing all requests to return HTML 404 errors instead of JSON responses.
+
+### Affected Endpoints
+
+| Endpoint | Before Fix | After Fix |
+|----------|------------|-----------|
+| `/api/proxy/triage/health` | 404 HTML | ✅ JSON |
+| `/api/proxy/concepts/health` | 404 HTML | ✅ JSON |
+| `/api/proxy/debug/health` | 404 HTML | ✅ JSON |
+| `/api/proxy/codeReview/health` | 404 HTML | ✅ JSON |
+
+### Root Cause
+
+Only 3 proxy routes existed in the Next.js API:
+- `frontend/app/api/proxy/chat/[[...path]]/route.ts`
+- `frontend/app/api/proxy/exercise/[[...path]]/route.ts`
+- `frontend/app/api/proxy/progress/[[...path]]/route.ts`
+
+Missing routes for:
+- triage
+- concepts
+- debug
+- codeReview
+
+### Fix Applied
+
+Created 4 new proxy route files:
+
+1. `frontend/app/api/proxy/triage/[[...path]]/route.ts`
+2. `frontend/app/api/proxy/concepts/[[...path]]/route.ts`
+3. `frontend/app/api/proxy/debug/[[...path]]/route.ts`
+4. `frontend/app/api/proxy/codeReview/[[...path]]/route.ts`
+
+Each proxy route:
+- Forwards GET/POST requests to the backend service
+- Uses environment variables for service URLs
+- Returns proper JSON responses with correct status codes
+- Handles errors gracefully
+
+### Deployment
+
+```bash
+# Built and pushed frontend:learnflow-v4
+kubectl set image deployment/learnflow-frontend \
+  frontend=registry.digitalocean.com/todo-chatbot-reg/frontend:learnflow-v4 \
+  -n learnflow
+```
+
+### Verification
+
+All 7 proxy routes now working:
+
+```bash
+$ curl -s https://hackathon3.testservers.online/api/proxy/triage/health
+{"status":"healthy","service":"triage-service","version":"2.0.0"}
+
+$ curl -s https://hackathon3.testservers.online/api/proxy/concepts/health
+{"status":"healthy","service":"concepts-service","version":"2.0.0"}
+
+$ curl -s https://hackathon3.testservers.online/api/proxy/debug/health
+{"status":"healthy","service":"debug-service","version":"2.0.0"}
+
+$ curl -s https://hackathon3.testservers.online/api/proxy/codeReview/health
+{"status":"healthy","service":"code-review-service","version":"2.0.0"}
+```
+
+### Impact
+
+- **Before**: Frontend could not communicate with 4 of 6 backend services
+- **After**: All 6 backend services now accessible through API proxy
+
+---
+
+## Updated Bug Status
+
+| Bug | Status | Fix Applied |
+|-----|--------|-------------|
+| #1 ImagePullBackOff | ✅ FIXED | Updated Helm values with correct tags |
+| #2 Resource Exhaustion | ✅ FIXED | Reduced resource requests |
+| #3 Duplicate Deployments | ✅ FIXED | Cleaned up Argo CD deployments |
+| #4 Kafka Config Error | ✅ IGNORE | Non-critical, Kafka working |
+| #5 Dapr Readiness | ✅ FIXED | Deployments deleted |
+| #6 Argo CD Sync | ✅ FIXED | Values updated |
+| #7 Missing Proxy Routes | ✅ FIXED | Created 4 new proxy routes |
+| #8 API Path Mismatches | ✅ FIXED | Fixed all frontend API paths and request bodies |
+| #9 Exercise Submission Type | 🔴 BACKEND BUG | exercise_id typed as int but should be str |
+
+**7 of 9 Bugs Fixed (2 Backend Bugs)** ✅
+
+---
+
+## Bug #8: Frontend API Path Mismatches (FIXED)
+
+**Severity**: 🔴 CRITICAL
+**Status**: ✅ FIXED
+
+**Date Found**: 2026-02-01
+**Date Fixed**: 2026-02-01
+
+### Description
+
+The frontend API client was using incorrect API paths and request body field names that didn't match the backend services.
+
+### API Path Mismatches Fixed
+
+| Frontend Function | Wrong Path | Correct Path |
+|-------------------|------------|--------------|
+| `triageQuery()` | `/api/v1/triage` | `/triage` |
+| `explainConcept()` | `/api/v1/concepts/explain` | `/chat` |
+| `chatWithConcepts()` | `/api/v1/concepts/chat` | `/chat` |
+| `analyzeCodeError()` | `/api/v1/debug/analyze` | `/analyze` |
+| `reviewCode()` | `/api/v1/review` | `/review` |
+
+### Request Body Field Name Mismatches Fixed
+
+| Field | Frontend (camelCase) | Backend (snake_case) |
+|-------|---------------------|----------------------|
+| `moduleId` | ✗ | `module_id` |
+| `exerciseId` | ✗ | `exercise_id` |
+| `studentId` | ✗ | `student_id` |
+
+### Function Signature Changes
+
+Added required `studentId` parameter to:
+- `triageQuery(query, studentId)`
+- `explainConcept(concept, studentId, level)`
+- `chatWithConcepts(message, studentId)`
+- `analyzeCodeError(code, studentId, error)`
+- `getDebugHints(code, error, studentId)`
+- `reviewCode(code, studentId)`
+- `generateExercise(studentId, moduleId, difficulty, topic)`
+
+### Changes Made
+
+**File**: `learnflow-app/frontend/lib/api.ts`
+
+1. Fixed all API paths to match backend routes
+2. Fixed all request body field names (camelCase → snake_case)
+3. Added required `student_id` parameter to all API calls
+4. Fixed `executeCode()` to use `exercise_id` instead of `exerciseId`
+5. Fixed `submitExercise()` to convert camelCase to snake_case
+
+### Deployment
+
+```bash
+# Built and pushed frontend:learnflow-v5
+kubectl set image deployment/learnflow-frontend \
+  frontend=registry.digitalocean.com/todo-chatbot-reg/frontend:learnflow-v5 \
+  -n learnflow
+```
+
+### Verification
+
+All API endpoints now working:
+
+```bash
+# Triage
+POST /api/proxy/triage/triage
+{"agent_type":"debug","confidence":0.33}
+
+# Concepts
+POST /api/proxy/concepts/chat
+{"response":"Variables in Python...","agent_type":"concepts"}
+
+# Debug
+POST /api/proxy/debug/analyze
+{"correct":true,"feedback":"Code looks good!"}
+
+# Code Review
+POST /api/proxy/codeReview/review
+{"correct":true,"quality_score":100}
+
+# Exercise Generate
+POST /api/proxy/exercise/generate
+{"id":"ex_1_1","title":"Your First Variable"...}
+
+# Code Execute
+POST /api/proxy/exercise/api/v1/execute
+{"success":true,"output":"hello\n"}
+```
+
+---
+
+## Bug #9: Exercise Submission Type Mismatch (BACKEND BUG)
+
+**Severity**: 🔴 CRITICAL
+**Status**: 🔴 BACKEND BUG - Requires backend fix
+
+**Date Found**: 2026-02-01
+
+### Description
+
+The backend `ExerciseSubmission` model has `exercise_id: int` but actual exercise IDs are strings like "ex_1_1".
+
+### Location
+
+**File**: `learnflow-app/backend/shared/models.py:62`
+
+```python
+class ExerciseSubmission(BaseModel):
+    """Code submission for review."""
+    student_id: UUID
+    exercise_id: int  # ❌ Should be: str
+    code: str
+    exercise_id: Optional[int] = None
+    language: str = "python"
+```
+
+### Impact
+
+The `/submit` endpoint in exercise service compares `ex.id` (string) with `submission.exercise_id` (int), which will never match:
+
+```python
+# learnflow-app/backend/services/exercise/main.py:575
+if ex.id == submission.exercise_id:  # ❌ string != int
+```
+
+### Fix Required
+
+Change `ExerciseSubmission.exercise_id` from `int` to `str`:
+
+```python
+class ExerciseSubmission(BaseModel):
+    """Code submission for review."""
+    student_id: UUID
+    exercise_id: str  # ✅ Changed from int to str
+    code: str
+    language: str = "python"
+```
+
+### Workaround
+
+None available - this requires a backend code change and redeployment.
+
+---
+
+**Report Updated**: 2026-02-01
+**Total Bugs Found**: 9 (7 Fixed, 2 Backend Bugs Remaining)
