@@ -90,7 +90,13 @@ async def check_syntax(code: str) -> dict[str, Any]:
 
 @app.get("/")
 async def root():
-    return {"service": "code-execution-mcp", "status": "running", "endpoints": ["/tools/execute_code", "/tools/check_syntax"]}
+    return {"service": "code-execution-mcp", "status": "running", "endpoints": ["/health", "/tools/execute_code", "/tools/check_syntax"]}
+
+
+@app.get("/health")
+async def health():
+    """Health check endpoint for Kubernetes probes."""
+    return {"status": "healthy"}
 
 
 @app.post("/tools/execute_code")

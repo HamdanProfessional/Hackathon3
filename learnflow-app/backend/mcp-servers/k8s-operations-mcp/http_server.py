@@ -23,6 +23,7 @@ async def root():
         "service": "k8s-operations-mcp",
         "status": "running",
         "endpoints": [
+            "/health",
             "/tools/get_pods",
             "/tools/get_services",
             "/tools/get_pod_logs",
@@ -30,6 +31,12 @@ async def root():
             "/tools/check_service_health"
         ]
     }
+
+
+@app.get("/health")
+async def health():
+    """Health check endpoint for Kubernetes probes."""
+    return {"status": "healthy"}
 
 
 @app.get("/tools/get_pods")

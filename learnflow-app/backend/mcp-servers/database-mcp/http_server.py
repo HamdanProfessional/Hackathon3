@@ -39,7 +39,13 @@ CLASS_OVERVIEW = {
 
 @app.get("/")
 async def root():
-    return {"service": "database-mcp", "status": "running", "endpoints": ["/tools/get_student_progress", "/tools/get_exercises", "/tools/submit_exercise", "/tools/get_class_overview"]}
+    return {"service": "database-mcp", "status": "running", "endpoints": ["/health", "/tools/get_student_progress", "/tools/get_exercises", "/tools/submit_exercise", "/tools/get_class_overview"]}
+
+
+@app.get("/health")
+async def health():
+    """Health check endpoint for Kubernetes probes."""
+    return {"status": "healthy"}
 
 
 @app.get("/tools/get_student_progress")
