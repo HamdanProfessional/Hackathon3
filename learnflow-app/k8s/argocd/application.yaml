@@ -13,7 +13,7 @@ spec:
   # Source of the application manifests
   source:
     repoURL: https://github.com/HamdanProfessional/Hackathon3.git
-    targetRevision: main
+    targetRevision: master
     path: learnflow-app/helm/learnflow
     helm:
       valueFiles:
