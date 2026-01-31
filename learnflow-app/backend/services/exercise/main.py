@@ -16,7 +16,7 @@ from shared.models import (
 from shared.dapr_client import get_dapr_client, EventTopics
 
 # MCP Code Execution Service URL
-CODE_EXECUTION_MCP_URL = os.getenv("CODE_EXECUTION_MCP_URL", "http://code-execution-mcp.learnflow.svc.cluster.local:9000")
+CODE_EXECUTION_MCP_URL = os.getenv("CODE_EXECUTION_MCP_URL", "http://learnflow-mcp-code-exec.learnflow.svc.cluster.local:9000")
 
 
 SERVICE_NAME = "exercise-service"
@@ -668,6 +668,67 @@ async def exercise_chat(request: ChatRequest):
         agent_type="exercise",
         confidence=0.95,
     )
+
+
+# ============================================================================
+# CODE EXECUTION API (for frontend code editor)
+# ============================================================================
+
+class CodeExecutionRequest(BaseModel):
+    """Request model for code execution."""
+    code: str
+    exercise_id: Optional[str] = None
+
+
+class ExecutionResult(BaseModel):
+    """Result of code execution."""
+    success: bool
+    output: str
+    error: Optional[str] = None
+
+
+@app.post("/api/v1/execute", response_model=ExecutionResult)
+async def execute_code_api(request: CodeExecutionRequest):
+    """
+    Execute Python code and return the result.
+
+    This endpoint is used by the frontend code editor to run Python code.
+    It uses the MCP Code Execution service for safe, sandboxed execution.
+    """
+    try:
+        async with httpx.AsyncClient() as client:
+            # Call MCP Code Execution service
+            response = await client.post(
+                f"{CODE_EXECUTION_MCP_URL}/tools/execute_code",
+                json={"code": request.code},
+                timeout=10.0
+            )
+
+            if response.status_code == 200:
+                result = response.json()
+                return ExecutionResult(
+                    success=result.get("success", False),
+                    output=result.get("output", ""),
+                    error=result.get("error")
+                )
+            else:
+                return ExecutionResult(
+                    success=False,
+                    output="",
+                    error=f"Code execution service error: {response.status_code}"
+                )
+    except httpx.TimeoutException:
+        return ExecutionResult(
+            success=False,
+            output="",
+            error="Code execution timed out (max 10 seconds)"
+        )
+    except Exception as e:
+        return ExecutionResult(
+            success=False,
+            output="",
+            error=f"Failed to execute code: {str(e)}"
+        )
 
 
 # ============================================================================
