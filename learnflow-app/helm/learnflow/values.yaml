@@ -20,22 +20,43 @@ mcpServers:
     replicaCount: 1
     image:
       repository: mcp-code-exec-server
-      tag: v1
+      tag: v2
     port: 9000
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
   database:
     enabled: true
     replicaCount: 1
     image:
       repository: mcp-database-server
-      tag: v1
+      tag: v2
     port: 9001
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
   k8sOperations:
     enabled: true
     replicaCount: 1
     image:
       repository: mcp-k8s-operations-server
-      tag: v1
+      tag: v2
     port: 9003
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
 
 # Frontend Configuration
 frontend:
@@ -45,7 +66,7 @@ frontend:
     tag: learnflow-v2
     pullPolicy: Always
 
-  replicaCount: 2
+  replicaCount: 1  # Reduced from 2 to save CPU
 
   service:
     type: LoadBalancer
@@ -57,23 +78,19 @@ frontend:
 
   resources:
     limits:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 300m  # Reduced from 500m
+      memory: 384Mi  # Reduced from 512Mi
     requests:
-      cpu: 250m
-      memory: 256Mi
+      cpu: 100m  # Reduced from 250m
+      memory: 128Mi  # Reduced from 256Mi
 
   autoscaling:
-    enabled: true
-    minReplicas: 2
-    maxReplicas: 10
-    targetCPUUtilizationPercentage: 70
-    targetMemoryUtilizationPercentage: 80
+    enabled: false  # Disabled to save resources
 
 # Backend Services
 services:
   triage:
-    enabled: true
+    enabled: false  # Using manual deployment instead
     image:
       repository: learnflow-triage-service
       tag: latest
@@ -84,7 +101,7 @@ services:
     servicePort: 8001
 
   concepts:
-    enabled: true
+    enabled: false  # No :latest tag exists
     image:
       repository: learnflow-concepts-service
       tag: latest
@@ -95,7 +112,7 @@ services:
     servicePort: 8002
 
   debug:
-    enabled: true
+    enabled: false  # No :latest tag exists
     image:
       repository: learnflow-debug-service
       tag: latest
@@ -109,7 +126,7 @@ services:
     enabled: true
     image:
       repository: learnflow-exercise-service
-      tag: latest
+      tag: v3
     dapr:
       enabled: true
       appId: exercise-service
@@ -117,7 +134,7 @@ services:
     servicePort: 8004
 
   progress:
-    enabled: true
+    enabled: false  # Using manual deployment instead
     image:
       repository: learnflow-progress-service
       tag: latest
@@ -128,7 +145,7 @@ services:
     servicePort: 8005
 
   codeReview:
-    enabled: true
+    enabled: false  # No :latest tag exists
     image:
       repository: learnflow-code-review-service
       tag: latest
